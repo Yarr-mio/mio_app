@@ -1,5 +1,8 @@
 # Folder Structure
 
+> 이 문서는 AI(Claude Code 등)가 프로젝트 구조를 파악하기 위한 참고 문서다.
+> `docs/` 폴더에는 이처럼 코드에서 바로 파악하기 어려운 설계 의도와 배치 기준을 기록한다.
+
 Expo SDK 55 + Expo Router + TanStack Query 기반 feature 구조.
 
 ```
@@ -220,20 +223,20 @@ mio_app/
 
 ## TanStack Query 파일 역할
 
-| 파일 | 역할 |
-|------|------|
-| `api/query-client.ts` | QueryClient 인스턴스 생성, staleTime/retry 등 전역 옵션 |
-| `api/query-keys.ts` | 쿼리 키 팩토리 — 키 중복·오타 방지, invalidate 일관성 보장 |
-| `api/endpoints/*.ts` | 순수 fetcher 함수 — useQuery 없이 단독 호출 가능 |
-| `features/*/hooks/use-*.ts` | useQuery / useMutation / useInfiniteQuery 래핑 훅 |
-| `app/_layout.tsx` | QueryClientProvider로 앱 전체 감싸기 |
+| 파일                        | 역할                                                       |
+| --------------------------- | ---------------------------------------------------------- |
+| `api/query-client.ts`       | QueryClient 인스턴스 생성, staleTime/retry 등 전역 옵션    |
+| `api/query-keys.ts`         | 쿼리 키 팩토리 — 키 중복·오타 방지, invalidate 일관성 보장 |
+| `api/endpoints/*.ts`        | 순수 fetcher 함수 — useQuery 없이 단독 호출 가능           |
+| `features/*/hooks/use-*.ts` | useQuery / useMutation / useInfiniteQuery 래핑 훅          |
+| `app/_layout.tsx`           | QueryClientProvider로 앱 전체 감싸기                       |
 
 ## 파일 배치 판단 기준
 
-| 질문 | 위치 |
-|------|------|
-| 딱 한 기능에서만 쓰는 컴포넌트/훅? | `src/features/[기능이름]/` |
-| 두 개 이상 기능에서 쓰는 컴포넌트? | `src/components/` |
-| 서버 요청 순수 함수? | `src/api/endpoints/` |
-| 전역으로 공유되는 상태? | `src/store/` |
-| 특정 기능 안에서만 쓰는 상태? | `src/features/[기능이름]/store/` |
+| 질문                               | 위치                             |
+| ---------------------------------- | -------------------------------- |
+| 딱 한 기능에서만 쓰는 컴포넌트/훅? | `src/features/[기능이름]/`       |
+| 두 개 이상 기능에서 쓰는 컴포넌트? | `src/components/`                |
+| 서버 요청 순수 함수?               | `src/api/endpoints/`             |
+| 전역으로 공유되는 상태?            | `src/store/`                     |
+| 특정 기능 안에서만 쓰는 상태?      | `src/features/[기능이름]/store/` |
