@@ -1,5 +1,7 @@
 import { Platform, Text, type TextProps } from 'react-native';
 
+import { cn } from '@/utils/cn';
+
 export type ThemedTextType =
   | 'default'
   | 'title'
@@ -29,9 +31,6 @@ export type ThemedTextProps = TextProps & {
 
 export function ThemedText({ className, type = 'default', ...rest }: ThemedTextProps) {
   return (
-    <Text
-      className={`text-ink dark:text-ink-night ${typeClasses[type]} ${className ?? ''}`}
-      {...rest}
-    />
+    <Text className={cn('text-ink dark:text-ink-night', typeClasses[type], className)} {...rest} />
   );
 }

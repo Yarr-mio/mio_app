@@ -1,5 +1,7 @@
 import { View, type ViewProps } from 'react-native';
 
+import { cn } from '@/utils/cn';
+
 export type ThemedViewType = 'background' | 'backgroundElement' | 'backgroundSelected';
 
 // 타입별 배경색 className (다크모드 dark: 포함)
@@ -15,5 +17,5 @@ export type ThemedViewProps = ViewProps & {
 };
 
 export function ThemedView({ className, type = 'background', style, ...rest }: ThemedViewProps) {
-  return <View className={`${typeClasses[type]} ${className ?? ''}`} style={style} {...rest} />;
+  return <View className={cn(typeClasses[type], className)} style={style} {...rest} />;
 }
