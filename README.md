@@ -7,7 +7,7 @@ Expo SDK 55 + Expo Router + TanStack Query 기반 React Native 앱.
 ## 개발 환경
 
 - Node.js 20+
-- Expo CLI (`npm install -g expo-cli`)
+- Expo CLI
 - iOS: Xcode + iOS Simulator
 - Android: Android Studio + Emulator 또는 실기기
 
