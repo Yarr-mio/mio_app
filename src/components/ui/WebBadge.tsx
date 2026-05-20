@@ -3,8 +3,8 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { useColorScheme } from 'react-native';
 
-import { ThemedText } from '@/components/themed/themed-text';
-import { ThemedView } from '@/components/themed/themed-view';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { ThemedView } from '@/components/themed/ThemedView';
 
 export function WebBadge() {
   const scheme = useColorScheme();

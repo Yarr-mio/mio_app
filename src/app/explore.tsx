@@ -4,13 +4,13 @@ import React from 'react';
 import { Platform, Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ExternalLink } from '@/components/ui/external-link';
-import { ThemedText } from '@/components/themed/themed-text';
-import { ThemedView } from '@/components/themed/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/ui/web-badge';
+import { ExternalLink } from '@/components/ui/ExternalLink';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { ThemedView } from '@/components/themed/ThemedView';
+import { Collapsible } from '@/components/ui/Collapsible';
+import { WebBadge } from '@/components/ui/WebBadge';
 import { BottomTabInset, MaxContentWidth } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function TabTwoScreen() {
   const safeAreaInsets = useSafeAreaInsets();

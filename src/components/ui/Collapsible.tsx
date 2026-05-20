@@ -3,9 +3,9 @@ import { PropsWithChildren, useState } from 'react';
 import { Pressable } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { ThemedText } from '@/components/themed/themed-text';
-import { ThemedView } from '@/components/themed/themed-view';
-import { useTheme } from '@/hooks/use-theme';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { ThemedView } from '@/components/themed/ThemedView';
+import { useTheme } from '@/hooks/useTheme';
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);

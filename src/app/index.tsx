@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomTabInset } from '@/constants/theme';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/ui/hint-row';
-import { ThemedText } from '@/components/themed/themed-text';
-import { ThemedView } from '@/components/themed/themed-view';
-import { WebBadge } from '@/components/ui/web-badge';
+import { AnimatedIcon } from '@/components/AnimatedIcon';
+import { HintRow } from '@/components/ui/HintRow';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { ThemedView } from '@/components/themed/ThemedView';
+import { WebBadge } from '@/components/ui/WebBadge';
 
 function getDevMenuHint() {
   if (Platform.OS === 'web') {

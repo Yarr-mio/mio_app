@@ -10,9 +10,9 @@ import { SymbolView } from 'expo-symbols';
 import React from 'react';
 import { Pressable, useColorScheme, View } from 'react-native';
 
-import { ExternalLink } from '@/components/ui/external-link';
-import { ThemedText } from '@/components/themed/themed-text';
-import { ThemedView } from '@/components/themed/themed-view';
+import { ExternalLink } from '@/components/ui/ExternalLink';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { ThemedView } from '@/components/themed/ThemedView';
 import { Colors, MaxContentWidth } from '@/constants/theme';
 
 export default function AppTabs() {

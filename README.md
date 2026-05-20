@@ -17,7 +17,7 @@ Expo SDK 55 + Expo Router + TanStack Query 기반 React Native 앱.
 
 ```bash
 # 1. 의존성 설치
-npm install
+pnpm install
 
 # 2. 환경 변수 설정
 cp .env.example .env
