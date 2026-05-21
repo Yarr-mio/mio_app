@@ -11,3 +11,8 @@ Always follow this structure when creating new files.
 
 See [TECH_STACK.md](./docs/TECH_STACK.md) for the full tech stack.
 Always use the libraries listed there. Do not introduce unlisted libraries without confirmation.
+
+# Coding Rules
+
+See [CODING_RULES.md](./docs/CODING_RULES.md) for mandatory coding conventions.
+Always follow these rules when writing or modifying any code in this project.
