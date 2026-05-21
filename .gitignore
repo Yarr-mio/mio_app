@@ -25,12 +25,18 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+pnpm-debug.*
+
+# lock files from other package managers
+package-lock.json
+yarn.lock
 
 # macOS
 .DS_Store
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
