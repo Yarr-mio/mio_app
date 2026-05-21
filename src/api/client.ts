@@ -1,13 +1,9 @@
 import { create } from 'axios';
 
-const baseURL = process.env.EXPO_PUBLIC_API_BASE_URL;
-
-if (!baseURL) {
-  throw new Error('Missing EXPO_PUBLIC_API_BASE_URL');
-}
+import { API_BASE_URL } from '@/constants/config';
 
 const apiClient = create({
-  baseURL,
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
