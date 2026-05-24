@@ -447,3 +447,61 @@ const useAuthStore = create(() => ({
 | 특정 기능 안에서만 쓰는 상태?      | `src/features/[기능명]/store/`                    |
 | 순수 유틸 함수?                    | `src/utils/`                                      |
 | 공유 TypeScript 타입?              | `src/types/`                                      |
+
+---
+
+## 14. SVG 아이콘
+
+SVG 파일은 `react-native-svg` + `react-native-svg-transformer`를 통해 React 컴포넌트로 import한다.
+
+### 저장 위치
+
+`assets/icons/` 폴더에 저장한다.
+
+### 설정 원리
+
+`metro.config.js`가 `.svg` 파일을 `react-native-svg-transformer/expo`로 변환한다.
+`src/types/svg.d.ts`가 `*.svg` import의 타입을 `React.FC<SvgProps>`로 선언한다.
+
+### 사용 패턴
+
+```tsx
+// BAD: react-native-svg 컴포넌트를 직접 조립
+import Svg, { Path } from 'react-native-svg';
+<Svg width={24} height={24}>
+  <Path d="M5 12h14..." />
+</Svg>;
+
+// GOOD: SVG 파일을 컴포넌트로 import
+import HomeIcon from '@/assets/icons/home.svg';
+<HomeIcon width={24} height={24} color={COLORS.primary} />;
+```
+
+### 크기·색상
+
+- `width` / `height` prop으로 크기를 지정한다. 기본값을 넣으면 props 없이도 사용 가능하다.
+  단, SVG 파일 내부의 `fill`이나 `stroke`가 하드코딩되어 있으면 `color` prop이 반영되지 않는다.
+  색상을 동적으로 바꾸려면 SVG 파일의 `fill`/`stroke` 속성 값을 `currentColor`로 변경한다.
+
+```svg
+<!-- BAD: 하드코딩 색상 -->
+<path fill="#FFFFFF" d="..." />
+
+<!-- GOOD: currentColor로 교체 → color prop 반영 -->
+<path fill="currentColor" d="..." />
+```
+
+```tsx
+// currentColor 적용 후
+<HomeIcon width={24} height={24} color="white" />
+<HomeIcon width={20} height={20} color={COLORS.primary} />
+```
+
+### 경로 alias
+
+`tsconfig.json`의 `@/assets/*` alias가 `./assets/*`를 가리키므로 아래처럼 절대 경로로 import한다.
+
+```tsx
+import HomeIcon from '@/assets/icons/home.svg';
+import BackIcon from '@/assets/icons/back.svg';
+```

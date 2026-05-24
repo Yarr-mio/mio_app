@@ -54,6 +54,12 @@ export const InputColors = {
   placeholder: 'rgba(255,255,255,0.3)',
 } as const;
 
+// 탭바 아이콘 색상 — color prop(네이티브)으로 직접 전달
+export const TabBarColors = {
+  iconActive: '#FFFFFF',
+  iconInactive: 'rgba(255,255,255,0.3)',
+} as const;
+
 // 탭바 하단 여백 — SafeAreaView 내부에서 style prop으로 사용
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 
