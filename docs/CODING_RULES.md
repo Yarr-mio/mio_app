@@ -270,7 +270,22 @@ import { Image } from 'expo-image';
 <Image source={uri} contentFit="cover" cachePolicy="memory-disk" />;
 ```
 
-### 10-4. 안전 영역(Safe Area) 하드코딩 금지
+### 10-4. `expo-image`의 `Image`에는 크기를 `style` prop으로 지정
+
+NativeWind의 `className`은 서드파티 컴포넌트에 변환이 적용되지 않아 크기가 0이 되고 이미지가 렌더링되지 않는다.
+레이아웃 관련 클래스(`w-*`, `h-*`, `flex`, `m-*`, `p-*` 등)도 동일하게 `style` prop으로 작성한다.
+
+```tsx
+// BAD
+<Image source={meta.image} className="w-8 h-8" contentFit="contain" />;
+
+// GOOD
+<Image source={meta.image} style={{ width: 32, height: 32 }} contentFit="contain" />;
+```
+
+Tailwind 단위 환산: `1 unit = 4dp` (예: `w-8 = 32dp`, `w-6 = 24dp`)
+
+### 10-5. 안전 영역(Safe Area) 하드코딩 금지
 
 기기별 노치·홈바 높이를 숫자로 하드코딩하지 않는다.
 
