@@ -1,3 +1,4 @@
+import { BackHeader } from '@/components/layout/BackHeader';
 import { DiaryInput } from '@/features/checkin/components/DiaryInput';
 import { EmotionSelector } from '@/features/checkin/components/EmotionSelector';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
@@ -5,7 +6,6 @@ import { useSubmitCheckin } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
 import type { TimeOfDay } from '@/types/checkin';
 import { formatCheckinFullDate } from '@/utils/date';
-import { router } from 'expo-router';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,7 +17,7 @@ function getCurrentTimeOfDay(): TimeOfDay {
 }
 
 export default function CheckinFormScreen() {
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   const { selectedEmotion, conditionScore, memo, setEmotion, setConditionScore, setMemo } =
     useCheckinStore();
   const { mutate: submitCheckin, isPending } = useSubmitCheckin();
@@ -37,12 +37,7 @@ export default function CheckinFormScreen() {
       className="flex-1 bg-midnight"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View className="flex-row items-center px-5" style={{ paddingTop: top + 8 }}>
-        <Pressable onPress={() => router.back()} className="mr-4">
-          <Text className="text-white text-base">←</Text>
-        </Pressable>
-        <Text className="text-white text-lg font-semibold">오늘의 체크인</Text>
-      </View>
+      <BackHeader title="오늘의 체크인" />
 
       <ScrollView
         className="flex-1"

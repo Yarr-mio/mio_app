@@ -329,7 +329,36 @@ NativeWind의 `className`은 서드파티 컴포넌트에 변환이 적용되지
 
 Tailwind 단위 환산: `1 unit = 4dp` (예: `w-8 = 32dp`, `w-6 = 24dp`)
 
-### 10-5. 안전 영역(Safe Area) 하드코딩 금지
+### 10-5. 스택 뒤로가기 헤더 — `BackHeader` 컴포넌트 사용
+
+스택이 쌓여 뒤로가기 헤더가 필요한 화면에서는 직접 구현하지 않고 `src/components/layout/BackHeader.tsx`를 사용한다.
+`BackHeader`는 안전 영역(Safe Area) 처리와 `router.back()` 연결이 내장되어 있다.
+
+| Prop          | 타입        | 필수 여부 | 설명                           |
+| ------------- | ----------- | --------- | ------------------------------ |
+| `title`       | `string`    | 필수      | 헤더 중앙에 표시되는 제목      |
+| `rightAction` | `ReactNode` | 선택      | 헤더 우측 영역에 렌더링할 요소 |
+
+```tsx
+// BAD: 뒤로가기 헤더를 직접 구현
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const { top } = useSafeAreaInsets();
+<View style={{ paddingTop: top + 12 }} className="flex-row items-center px-5 pb-3">
+  <Pressable onPress={() => router.back()}>
+    <Text className="text-white text-xl">←</Text>
+  </Pressable>
+  <Text className="text-white text-lg font-semibold">설정</Text>
+</View>
+
+// GOOD: BackHeader 사용
+import { BackHeader } from '@/components/layout/BackHeader';
+<BackHeader title="설정" />
+
+// 우측 액션이 필요한 경우
+<BackHeader title="체크인" rightAction={<SaveButton />} />
+```
+
+### 10-6. 안전 영역(Safe Area) 하드코딩 금지
 
 기기별 노치·홈바 높이를 숫자로 하드코딩하지 않는다.
 

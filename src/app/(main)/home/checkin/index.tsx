@@ -1,12 +1,11 @@
+import { BackHeader } from '@/components/layout/BackHeader';
 import { CheckinHistoryCard } from '@/features/checkin/components/CheckinHistoryCard';
 import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import type { CheckinRecord } from '@/types/checkin';
 import { router } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CheckinListScreen() {
-  const { top } = useSafeAreaInsets();
   const { data: todayData } = useCheckinToday();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteCheckinList();
@@ -16,13 +15,8 @@ export default function CheckinListScreen() {
   const hasAvailableSlots = (todayData?.available_slots.length ?? 0) > 0;
 
   return (
-    <View className="flex-1 bg-midnight" style={{ paddingTop: top }}>
-      <View className="flex-row items-center px-5 py-4">
-        <Pressable onPress={() => router.back()} className="mr-4">
-          <Text className="text-white text-base">←</Text>
-        </Pressable>
-        <Text className="text-white text-lg font-semibold">체크인</Text>
-      </View>
+    <View className="flex-1 bg-midnight">
+      <BackHeader title="체크인" />
 
       <FlatList
         data={records}

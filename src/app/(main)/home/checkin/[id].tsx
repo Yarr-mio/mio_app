@@ -1,10 +1,11 @@
+import { BackHeader } from '@/components/layout/BackHeader';
 import { EMOTION_META } from '@/constants/emotions';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import { formatCheckinShortDate, formatCheckinTime, isToday } from '@/utils/date';
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CheckinDetailScreen() {
@@ -26,20 +27,11 @@ export default function CheckinDetailScreen() {
   const today = isToday(record.created_at);
 
   return (
-    <View className="flex-1 bg-midnight" style={{ paddingTop: top }}>
-      <View className="flex-row items-center px-5 py-4">
-        <Pressable onPress={() => router.back()} className="mr-4">
-          <Text className="text-white text-base">←</Text>
-        </Pressable>
-        <Text className="text-white text-lg font-semibold">
-          {formatCheckinShortDate(record.created_at)}
-        </Text>
-        {today && (
-          <Pressable className="ml-auto">
-            <Text className="text-fg-muted text-sm">수정</Text>
-          </Pressable>
-        )}
-      </View>
+    <View className="flex-1 bg-midnight">
+      <BackHeader
+        title={formatCheckinShortDate(record.created_at)}
+        rightAction={today ? <Text className="text-fg-muted text-sm">수정</Text> : undefined}
+      />
 
       <ScrollView contentContainerClassName="px-5 pb-10 gap-6">
         <View className="bg-surface rounded-3xl p-6 items-center border border-line gap-4">
