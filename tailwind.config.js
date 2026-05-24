@@ -49,6 +49,9 @@ module.exports = {
 
         // 링크 / 강조색
         link: '#3c87f7', // text-link
+
+        // 주요 액션 색상
+        primary: '#7C63F5', // bg-primary / text-primary
       },
     },
   },

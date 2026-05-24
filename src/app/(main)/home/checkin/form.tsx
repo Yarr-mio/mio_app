@@ -1,4 +1,5 @@
 import { BackHeader } from '@/components/layout/BackHeader';
+import { Button } from '@/components/ui/Button';
 import { DiaryInput } from '@/features/checkin/components/DiaryInput';
 import { EmotionSelector } from '@/features/checkin/components/EmotionSelector';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
@@ -6,7 +7,7 @@ import { useSubmitCheckin } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
 import type { TimeOfDay } from '@/types/checkin';
 import { formatCheckinFullDate } from '@/utils/date';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function getCurrentTimeOfDay(): TimeOfDay {
@@ -69,15 +70,9 @@ export default function CheckinFormScreen() {
       </ScrollView>
 
       <View className="px-5" style={{ paddingBottom: bottom }}>
-        <Pressable
-          onPress={handleSubmit}
-          disabled={!selectedEmotion || isPending}
-          className="bg-white rounded-2xl py-4 items-center disabled:opacity-40"
-        >
-          <Text className="text-midnight font-semibold text-base">
-            {isPending ? '저장 중...' : '완료'}
-          </Text>
-        </Pressable>
+        <Button onPress={handleSubmit} disabled={!selectedEmotion || isPending}>
+          {isPending ? '저장 중...' : '완료'}
+        </Button>
       </View>
     </KeyboardAvoidingView>
   );

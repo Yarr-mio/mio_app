@@ -1,9 +1,10 @@
 import { BackHeader } from '@/components/layout/BackHeader';
+import { Button } from '@/components/ui/Button';
 import { CheckinHistoryCard } from '@/features/checkin/components/CheckinHistoryCard';
 import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import type { CheckinRecord } from '@/types/checkin';
 import { router } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
 export default function CheckinListScreen() {
   const { data: todayData } = useCheckinToday();
@@ -25,19 +26,17 @@ export default function CheckinListScreen() {
         ListHeaderComponent={
           <>
             {hasAvailableSlots && (
-              <View className="bg-surface rounded-2xl p-5 border border-line mb-4">
-                <Text className="text-white text-base font-semibold mb-1">
-                  🌙 오늘의 감정을 기록해요
+              <View className="bg-surface-md rounded-2xl p-6 mb-4 items-center">
+                <Text className="text-4xl mb-3">🌙</Text>
+                <Text className="text-white text-base font-semibold mb-2 text-center">
+                  오늘의 감정을 기록해요
                 </Text>
-                <Text className="text-fg-muted text-sm mb-4">
-                  매일 체크인하면 나의 감정 패턴을 알 수 있어요
+                <Text className="text-fg-muted text-sm mb-5 text-center">
+                  매일 체크인하면 나의 감정 패턴을{'\n'}더 잘 이해할 수 있어요
                 </Text>
-                <Pressable
-                  onPress={() => router.push('/(main)/home/checkin/form')}
-                  className="bg-white rounded-xl py-3 items-center"
-                >
-                  <Text className="text-midnight font-semibold text-sm">지금 체크인하기</Text>
-                </Pressable>
+                <Button size="md" onPress={() => router.push('/(main)/home/checkin/form')}>
+                  지금 체크인하기
+                </Button>
               </View>
             )}
             <Text className="text-fg-dim text-sm font-medium mb-1">이번 달 기록</Text>

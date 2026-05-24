@@ -1,3 +1,5 @@
+import { ArrowLeftIcon } from '@/assets/icons';
+import { FgColors } from '@/constants/theme';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -18,7 +20,7 @@ export function BackHeader({ title, rightAction }: Props) {
         className="w-10 h-10 items-center justify-center"
         hitSlop={8}
       >
-        <Text className="text-white text-xl">←</Text>
+        <ArrowLeftIcon width={20} height={20} color={FgColors.default} />
       </Pressable>
 
       <Text className="flex-1 text-white text-lg font-semibold text-center">{title}</Text>

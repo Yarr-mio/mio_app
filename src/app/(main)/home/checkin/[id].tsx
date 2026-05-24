@@ -1,5 +1,7 @@
+import { ChevronRightIcon } from '@/assets/icons';
 import { BackHeader } from '@/components/layout/BackHeader';
 import { EMOTION_META } from '@/constants/emotions';
+import { FgColors } from '@/constants/theme';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import { formatCheckinShortDate, formatCheckinTime, isToday } from '@/utils/date';
@@ -46,7 +48,10 @@ export default function CheckinDetailScreen() {
         <View className="gap-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-white font-semibold">TO DO 달성</Text>
-            <Text className="text-fg-faint text-sm">자세히 &gt;</Text>
+            <View className="flex-row items-center gap-0.5">
+              <Text className="text-fg-faint text-sm">자세히</Text>
+              <ChevronRightIcon width={14} height={14} color={FgColors.faint} />
+            </View>
           </View>
           <Text className="text-fg-ghost text-sm text-center py-6">오늘의 할 일이 없어요</Text>
         </View>

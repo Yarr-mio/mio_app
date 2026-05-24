@@ -54,6 +54,18 @@ export const InputColors = {
   placeholder: 'rgba(255,255,255,0.3)',
 } as const;
 
+// fg 계층 색상 — NativeWind className 미지원 prop(color 등)에 사용
+export const FgColors = {
+  default: '#FFFFFF',
+  faint: '#FFFFFF66', // white/40
+} as const;
+
+// 버튼 로딩 스피너 색상 — ActivityIndicator color prop에 사용
+export const ButtonColors = {
+  spinnerLight: '#FFFFFF',
+  spinnerDark: '#0D0D1A',
+} as const;
+
 // 탭바 아이콘 색상 — color prop(네이티브)으로 직접 전달
 export const TabBarColors = {
   iconActive: '#FFFFFF',
