@@ -42,6 +42,18 @@ export const Fonts = Platform.select({
   },
 });
 
+// 슬라이더 색상 — className 미지원 네이티브 prop에 사용
+export const SliderColors = {
+  track: '#FFFFFF',
+  trackInactive: 'rgba(255,255,255,0.2)',
+  thumb: '#FFFFFF',
+} as const;
+
+// 텍스트 입력 색상 — placeholderTextColor 등 네이티브 prop에 사용
+export const InputColors = {
+  placeholder: 'rgba(255,255,255,0.3)',
+} as const;
+
 // 탭바 하단 여백 — SafeAreaView 내부에서 style prop으로 사용
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 

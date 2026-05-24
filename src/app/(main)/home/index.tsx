@@ -10,7 +10,7 @@ export default function HomeScreen() {
   const hasAvailableSlots = (todayData?.available_slots.length ?? 0) > 0;
 
   return (
-    <View className="flex-1 bg-[#0D0D1A]" style={{ paddingTop: top }}>
+    <View className="flex-1 bg-midnight" style={{ paddingTop: top }}>
       <View className="px-5 py-4">
         <Text className="text-white text-xl font-bold">홈</Text>
       </View>
@@ -19,12 +19,12 @@ export default function HomeScreen() {
         <Pressable
           onPress={() => router.push('/(main)/home/checkin')}
           disabled={!hasAvailableSlots}
-          className="bg-white/10 rounded-2xl p-5 border border-white/20 disabled:opacity-40"
+          className="bg-surface-md rounded-2xl p-5 border border-line-md disabled:opacity-40"
         >
           <Text className="text-white font-semibold text-base mb-1">
             {hasAvailableSlots ? '오늘의 체크인' : '오늘 체크인 완료 ✓'}
           </Text>
-          <Text className="text-white/50 text-sm">
+          <Text className="text-fg-muted text-sm">
             {hasAvailableSlots ? '지금 감정을 기록해보세요' : '내일 다시 체크인할 수 있어요'}
           </Text>
         </Pressable>

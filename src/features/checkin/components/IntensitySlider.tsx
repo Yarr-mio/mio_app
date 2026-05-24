@@ -1,3 +1,4 @@
+import { SliderColors } from '@/constants/theme';
 import { Slider } from '@miblanchard/react-native-slider';
 import { Text, View } from 'react-native';
 
@@ -29,14 +30,14 @@ export function IntensitySlider({ value, onChange, disabled = false }: Intensity
             onChange(Array.isArray(val) ? val[0] : val);
           }
         }}
-        minimumTrackTintColor="#FFFFFF"
-        maximumTrackTintColor="rgba(255,255,255,0.2)"
-        thumbTintColor="#FFFFFF"
+        minimumTrackTintColor={SliderColors.track}
+        maximumTrackTintColor={SliderColors.trackInactive}
+        thumbTintColor={SliderColors.thumb}
       />
       <View className="flex-row justify-between">
-        <Text className="text-white/50 text-xs">약해요</Text>
+        <Text className="text-fg-muted text-xs">약해요</Text>
         <Text className="text-white text-sm font-medium">{INTENSITY_LABELS[value]}</Text>
-        <Text className="text-white/50 text-xs">매우 강해요</Text>
+        <Text className="text-fg-muted text-xs">매우 강해요</Text>
       </View>
     </View>
   );

@@ -34,7 +34,7 @@ export default function CheckinFormScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#0D0D1A]"
+      className="flex-1 bg-midnight"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View className="flex-row items-center px-5" style={{ paddingTop: top + 8 }}>
@@ -53,7 +53,7 @@ export default function CheckinFormScreen() {
           <Text className="text-white text-xl font-bold">
             {formatCheckinFullDate(new Date().toISOString())}
           </Text>
-          <Text className="text-white/60 text-sm mt-1">지금 어떤 감정이 느껴지나요?</Text>
+          <Text className="text-fg-dim text-sm mt-1">지금 어떤 감정이 느껴지나요?</Text>
         </View>
 
         <EmotionSelector value={selectedEmotion} onChange={setEmotion} />
@@ -66,7 +66,7 @@ export default function CheckinFormScreen() {
         <View className="gap-2">
           <Text className="text-white font-medium">
             한 줄로 지금 기분을 적어볼까요?{' '}
-            <Text className="text-white/40 font-normal">(선택)</Text>
+            <Text className="text-fg-faint font-normal">(선택)</Text>
           </Text>
           <DiaryInput value={memo} onChange={setMemo} />
         </View>
@@ -78,7 +78,7 @@ export default function CheckinFormScreen() {
           disabled={!selectedEmotion || isPending}
           className="bg-white rounded-2xl py-4 items-center disabled:opacity-40"
         >
-          <Text className="text-[#0D0D1A] font-semibold text-base">
+          <Text className="text-midnight font-semibold text-base">
             {isPending ? '저장 중...' : '완료'}
           </Text>
         </Pressable>

@@ -18,6 +18,37 @@ module.exports = {
         'ink-night': '#ffffff', // dark:text-ink-night
         'ink-dim': '#60646C', // text-ink-dim        (textSecondary)
         'ink-dim-night': '#B0B4BA', // dark:text-ink-dim-night
+
+        // ── 다크 스페이스 테마 ──────────────────────────────────────
+        // 앱 메인 배경
+        midnight: '#0D0D1A', // bg-midnight / text-midnight
+
+        // 유리 질감 서피스 (어두운 배경 위의 반투명 흰색 레이어)
+        surface: '#FFFFFF0D', // bg-surface      (white/5)
+        'surface-md': '#FFFFFF1A', // bg-surface-md  (white/10)
+        'surface-lg': '#FFFFFF26', // bg-surface-lg  (white/15)
+
+        // 경계선
+        line: '#FFFFFF1A', // border-line    (white/10)
+        'line-md': '#FFFFFF33', // border-line-md (white/20)
+
+        // 텍스트 계층 (어두운 배경 위 흰색 계열)
+        fg: {
+          DEFAULT: '#FFFFFF', // text-fg        (white)
+          sub: '#FFFFFFCC', // text-fg-sub    (white/80)
+          soft: '#FFFFFFB3', // text-fg-soft   (white/70)
+          dim: '#FFFFFF99', // text-fg-dim    (white/60)
+          muted: '#FFFFFF80', // text-fg-muted  (white/50)
+          faint: '#FFFFFF66', // text-fg-faint  (white/40)
+          ghost: '#FFFFFF4D', // text-fg-ghost  (white/30)
+        },
+
+        // 상태 색상 (opacity modifier와 함께 사용: bg-success/20, border-success/40)
+        success: '#4ade80', // text-success, bg-success/20, border-success/40
+        danger: '#f87171', // text-danger, text-danger/70, bg-danger/10, border-danger/20
+
+        // 링크 / 강조색
+        link: '#3c87f7', // text-link
       },
     },
   },

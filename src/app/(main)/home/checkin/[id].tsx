@@ -16,8 +16,8 @@ export default function CheckinDetailScreen() {
 
   if (!record) {
     return (
-      <View className="flex-1 bg-[#0D0D1A] items-center justify-center" style={{ paddingTop: top }}>
-        <Text className="text-white/50">기록을 불러올 수 없어요</Text>
+      <View className="flex-1 bg-midnight items-center justify-center" style={{ paddingTop: top }}>
+        <Text className="text-fg-muted">기록을 불러올 수 없어요</Text>
       </View>
     );
   }
@@ -26,7 +26,7 @@ export default function CheckinDetailScreen() {
   const isToday = record.created_at.startsWith(new Date().toISOString().split('T')[0]);
 
   return (
-    <View className="flex-1 bg-[#0D0D1A]" style={{ paddingTop: top }}>
+    <View className="flex-1 bg-midnight" style={{ paddingTop: top }}>
       <View className="flex-row items-center px-5 py-4">
         <Pressable onPress={() => router.back()} className="mr-4">
           <Text className="text-white text-base">←</Text>
@@ -36,32 +36,32 @@ export default function CheckinDetailScreen() {
         </Text>
         {isToday && (
           <Pressable className="ml-auto">
-            <Text className="text-white/50 text-sm">수정</Text>
+            <Text className="text-fg-muted text-sm">수정</Text>
           </Pressable>
         )}
       </View>
 
       <ScrollView contentContainerClassName="px-5 pb-10 gap-6">
-        <View className="bg-white/5 rounded-3xl p-6 items-center border border-white/10 gap-4">
+        <View className="bg-surface rounded-3xl p-6 items-center border border-line gap-4">
           <Image source={meta.image} style={{ width: 96, height: 96 }} contentFit="contain" />
           <Text className="text-white text-2xl font-bold">{meta.label}</Text>
           <View className="w-full">
             <IntensitySlider value={record.condition_score} disabled />
           </View>
-          <Text className="text-white/40 text-sm">{formatCheckinTime(record.created_at)}</Text>
+          <Text className="text-fg-faint text-sm">{formatCheckinTime(record.created_at)}</Text>
         </View>
 
         <View className="gap-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-white font-semibold">TO DO 달성</Text>
-            <Text className="text-white/40 text-sm">자세히 &gt;</Text>
+            <Text className="text-fg-faint text-sm">자세히 &gt;</Text>
           </View>
-          <Text className="text-white/30 text-sm text-center py-6">오늘의 할 일이 없어요</Text>
+          <Text className="text-fg-ghost text-sm text-center py-6">오늘의 할 일이 없어요</Text>
         </View>
 
         {record.ai_response !== null && (
-          <View className="bg-white/5 rounded-2xl p-4 border border-white/10 gap-2">
-            <Text className="text-white/60 text-sm font-medium">AI 응답</Text>
+          <View className="bg-surface rounded-2xl p-4 border border-line gap-2">
+            <Text className="text-fg-dim text-sm font-medium">AI 응답</Text>
             <Text className="text-white text-sm leading-relaxed">{record.ai_response}</Text>
           </View>
         )}

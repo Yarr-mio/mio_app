@@ -10,17 +10,17 @@ const STATUS_LABEL: Record<TodoStatus, string> = {
 };
 
 const STATUS_STYLE: Record<TodoStatus, string> = {
-  suggested: 'bg-white/10 border-white/20',
-  completed: 'bg-green-500/20 border-green-500/40',
-  skipped: 'bg-white/5 border-white/10',
-  expired: 'bg-red-500/10 border-red-500/20',
+  suggested: 'bg-surface-md border-line-md',
+  completed: 'bg-success/20 border-success/40',
+  skipped: 'bg-surface border-line',
+  expired: 'bg-danger/10 border-danger/20',
 };
 
 const STATUS_TEXT_STYLE: Record<TodoStatus, string> = {
-  suggested: 'text-white/70',
-  completed: 'text-green-400',
-  skipped: 'text-white/40',
-  expired: 'text-red-400/70',
+  suggested: 'text-fg-soft',
+  completed: 'text-success',
+  skipped: 'text-fg-faint',
+  expired: 'text-danger/70',
 };
 
 interface TodoStatusBadgeProps {

@@ -33,12 +33,12 @@ export function EmotionSelector({ value, onChange }: EmotionSelectorProps) {
             onPress={() => onChange(type)}
             className={cn(
               'flex-1 min-w-[28%] items-center py-4 rounded-2xl border',
-              isSelected ? 'border-white bg-white/10' : 'border-white/20 bg-white/5'
+              isSelected ? 'border-white bg-surface-md' : 'border-line-md bg-surface'
             )}
           >
             <Image source={meta.image} style={{ width: 48, height: 48 }} contentFit="contain" />
             <Text className="text-white text-sm font-medium mt-2">{meta.label}</Text>
-            <Text className="text-white/50 text-xs mt-0.5 text-center px-1">{meta.subLabel}</Text>
+            <Text className="text-fg-muted text-xs mt-0.5 text-center px-1">{meta.subLabel}</Text>
           </Pressable>
         );
       })}

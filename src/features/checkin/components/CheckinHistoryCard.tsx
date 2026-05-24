@@ -14,10 +14,10 @@ export function CheckinHistoryCard({ record, onPress }: CheckinHistoryCardProps)
   const meta = EMOTION_META[record.emotion_type];
 
   return (
-    <Pressable onPress={onPress} className="bg-white/5 rounded-2xl p-4 border border-white/10">
+    <Pressable onPress={onPress} className="bg-surface rounded-2xl p-4 border border-line">
       <View className="flex-row justify-between items-center mb-3">
-        <Text className="text-white/60 text-sm">{formatCheckinFullDate(record.created_at)}</Text>
-        <Text className="text-white/40 text-sm">자세히 &gt;</Text>
+        <Text className="text-fg-dim text-sm">{formatCheckinFullDate(record.created_at)}</Text>
+        <Text className="text-fg-faint text-sm">자세히 &gt;</Text>
       </View>
       <View className="flex-row items-center gap-3">
         <Image source={meta.image} style={{ width: 52, height: 52 }} contentFit="contain" />
@@ -27,11 +27,11 @@ export function CheckinHistoryCard({ record, onPress }: CheckinHistoryCardProps)
             <Chip label={`강도 ${record.condition_score}/5`} />
           </View>
           {record.ai_response ? (
-            <Text className="text-white/60 text-xs" numberOfLines={1}>
+            <Text className="text-fg-dim text-xs" numberOfLines={1}>
               &ldquo;{record.ai_response}&rdquo;
             </Text>
           ) : null}
-          <Text className="text-white/40 text-xs text-left">
+          <Text className="text-fg-faint text-xs text-left">
             {formatCheckinTime(record.created_at)}
           </Text>
         </View>
