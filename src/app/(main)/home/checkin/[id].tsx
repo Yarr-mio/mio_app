@@ -1,7 +1,7 @@
 import { EMOTION_META } from '@/constants/emotions';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
-import { formatCheckinShortDate, formatCheckinTime } from '@/utils/date';
+import { formatCheckinShortDate, formatCheckinTime, isToday } from '@/utils/date';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -23,7 +23,7 @@ export default function CheckinDetailScreen() {
   }
 
   const meta = EMOTION_META[record.emotion_type];
-  const isToday = record.created_at.startsWith(new Date().toISOString().split('T')[0]);
+  const today = isToday(record.created_at);
 
   return (
     <View className="flex-1 bg-midnight" style={{ paddingTop: top }}>
@@ -34,7 +34,7 @@ export default function CheckinDetailScreen() {
         <Text className="text-white text-lg font-semibold">
           {formatCheckinShortDate(record.created_at)}
         </Text>
-        {isToday && (
+        {today && (
           <Pressable className="ml-auto">
             <Text className="text-fg-muted text-sm">수정</Text>
           </Pressable>

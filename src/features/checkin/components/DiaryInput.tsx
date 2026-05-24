@@ -7,7 +7,7 @@ interface DiaryInputProps {
   maxLength?: number;
 }
 
-export function DiaryInput({ value, onChange, maxLength = 200 }: DiaryInputProps) {
+export function DiaryInput({ value, onChange, maxLength = 60 }: DiaryInputProps) {
   return (
     <View className="bg-surface rounded-2xl p-4 border border-line">
       <TextInput
@@ -17,7 +17,7 @@ export function DiaryInput({ value, onChange, maxLength = 200 }: DiaryInputProps
         placeholderTextColor={InputColors.placeholder}
         multiline
         numberOfLines={4}
-        className="text-white text-sm min-h-[80px]"
+        className="text-white text-sm min-h-[55px]"
         textAlignVertical="top"
       />
       <Text className="text-fg-faint text-xs text-right mt-2">
