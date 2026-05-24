@@ -18,6 +18,8 @@ module.exports = {
         'ink-night': '#ffffff', // dark:text-ink-night
         'ink-dim': '#60646C', // text-ink-dim        (textSecondary)
         'ink-dim-night': '#B0B4BA', // dark:text-ink-dim-night
+        // 스플래시 등 항상 다크 배경을 쓰는 화면용 (Colors.dark.background) 임시로 추가!
+        'background-dark': '#000000',
       },
     },
   },
