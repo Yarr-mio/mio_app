@@ -16,6 +16,7 @@ export interface CheckinRecord {
   time_of_day: TimeOfDay;
   emotion_type: EmotionType;
   condition_score: number;
+  memo?: string;
   ai_response: string | null;
   created_at: string;
 }
@@ -24,6 +25,7 @@ export interface UpdatedCheckinRecord {
   checkin_id: string;
   time_of_day: TimeOfDay;
   emotion_type: EmotionType;
+  memo?: string;
   condition_score: number;
   updated_at: string;
 }

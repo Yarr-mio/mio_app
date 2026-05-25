@@ -2,6 +2,7 @@ import { ChevronRightIcon } from '@/assets/icons';
 import { BackHeader } from '@/components/layout/BackHeader';
 import { EMOTION_META } from '@/constants/emotions';
 import { FgColors } from '@/constants/theme';
+import { DiaryInput } from '@/features/checkin/components/DiaryInput';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import { formatCheckinShortDate, formatCheckinTime, isToday } from '@/utils/date';
@@ -44,6 +45,13 @@ export default function CheckinDetailScreen() {
           </View>
           <Text className="text-fg-faint text-sm">{formatCheckinTime(record.created_at)}</Text>
         </View>
+
+        {record.memo ? (
+          <View className="gap-3">
+            <Text className="text-white font-semibold">오늘의 메모</Text>
+            <DiaryInput value={record.memo} editable={false} />
+          </View>
+        ) : null}
 
         <View className="gap-3">
           <View className="flex-row items-center justify-between">

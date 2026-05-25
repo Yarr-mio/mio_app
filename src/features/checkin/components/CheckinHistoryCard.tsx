@@ -31,9 +31,9 @@ export function CheckinHistoryCard({ record, onPress }: CheckinHistoryCardProps)
             <Text className="text-white font-medium">{meta.label}</Text>
             <Chip label={`강도 ${record.condition_score}/5`} />
           </View>
-          {record.ai_response ? (
+          {record.memo ? (
             <Text className="text-fg-dim text-xs" numberOfLines={1}>
-              &ldquo;{record.ai_response}&rdquo;
+              &ldquo;{record.memo}&rdquo;
             </Text>
           ) : null}
           <Text className="text-fg-faint text-xs text-left">
