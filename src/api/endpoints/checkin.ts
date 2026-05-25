@@ -28,11 +28,15 @@ const MOCK_CHECKIN_LIST: CheckinRecord[] = [
 ];
 
 export async function fetchCheckinToday(): Promise<TodayCheckinStatus> {
+  const today = new Date().toISOString().split('T')[0];
+  const todayCheckins = MOCK_CHECKIN_LIST.filter((c) => c.created_at.startsWith(today));
+  const completed = todayCheckins.map((c) => c.time_of_day);
+  const allSlots = ['morning', 'afternoon', 'evening'] as const;
   return {
-    date: new Date().toISOString().split('T')[0],
-    checkins: [],
-    completed_slots: ['morning'],
-    available_slots: ['afternoon', 'evening'],
+    date: today,
+    checkins: todayCheckins,
+    completed_slots: completed,
+    available_slots: allSlots.filter((s) => !completed.includes(s)),
   };
 }
 
