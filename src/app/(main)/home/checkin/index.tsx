@@ -4,12 +4,14 @@ import { CheckinHistoryCard } from '@/features/checkin/components/CheckinHistory
 import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import type { CheckinRecord } from '@/types/checkin';
 import { router } from 'expo-router';
+import { useRef } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
 export default function CheckinListScreen() {
   const { data: todayData } = useCheckinToday();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteCheckinList();
+  const isNavigating = useRef(false);
 
   const records: CheckinRecord[] = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -54,7 +56,14 @@ export default function CheckinListScreen() {
         renderItem={({ item }) => (
           <CheckinHistoryCard
             record={item}
-            onPress={() => router.push(`/(main)/home/checkin/${item.checkin_id}`)}
+            onPress={() => {
+              if (isNavigating.current) return;
+              isNavigating.current = true;
+              router.push(`/(main)/home/checkin/${item.checkin_id}`);
+              setTimeout(() => {
+                isNavigating.current = false;
+              }, 500);
+            }}
           />
         )}
         onEndReached={() => {
