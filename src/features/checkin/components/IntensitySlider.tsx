@@ -17,10 +17,12 @@ interface IntensitySliderProps {
 }
 
 export function IntensitySlider({ value, onChange, disabled = false }: IntensitySliderProps) {
+  const normalizedValue = Math.min(5, Math.max(1, Math.round(value)));
+
   return (
     <View className="gap-2">
       <Slider
-        value={value}
+        value={normalizedValue}
         minimumValue={1}
         maximumValue={5}
         step={1}
@@ -36,7 +38,7 @@ export function IntensitySlider({ value, onChange, disabled = false }: Intensity
       />
       <View className="flex-row justify-between">
         <Text className="text-fg-muted text-xs">약해요</Text>
-        <Text className="text-white text-sm font-medium">{INTENSITY_LABELS[value]}</Text>
+        <Text className="text-white text-sm font-medium">{INTENSITY_LABELS[normalizedValue]}</Text>
         <Text className="text-fg-muted text-xs">매우 강해요</Text>
       </View>
     </View>
