@@ -1,5 +1,5 @@
-import { View } from 'react-native';
+import LoginScreen from '@/features/auth/components/LoginScreen';
 
-export default function LoginScreen() {
-  return <View className="flex-1" />;
+export default function LoginRoute() {
+  return <LoginScreen />;
 }
