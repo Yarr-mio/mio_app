@@ -17,10 +17,14 @@ export function BackHeader({ title, rightAction }: Props) {
     <View className="flex-row items-center px-5 pb-3" style={{ paddingTop: top + 12 }}>
       <Pressable
         onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="뒤로가기"
+        accessibilityHint="이전 화면으로 이동합니다"
         className="w-10 h-10 items-center justify-center"
         hitSlop={8}
       >
         <ArrowLeftIcon width={20} height={20} color={FgColors.default} />
+      </Pressable>
       </Pressable>
 
       <Text className="flex-1 text-white text-lg font-semibold text-center">{title}</Text>
