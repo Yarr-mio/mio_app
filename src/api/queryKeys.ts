@@ -3,5 +3,6 @@ export const queryKeys = {
     all: () => ['checkin'] as const,
     today: () => ['checkin', 'today'] as const,
     list: (from?: string, to?: string) => ['checkin', 'list', { from, to }] as const,
+    detail: (id: string) => ['checkin', 'detail', id] as const,
   },
 };

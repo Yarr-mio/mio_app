@@ -4,7 +4,7 @@ import { EMOTION_META } from '@/constants/emotions';
 import { FgColors } from '@/constants/theme';
 import { DiaryInput } from '@/features/checkin/components/DiaryInput';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
-import { useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
+import { useCheckinDetail } from '@/features/checkin/hooks/useCheckin';
 import { formatCheckinShortDate, formatCheckinTime, isToday } from '@/utils/date';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
@@ -14,11 +14,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function CheckinDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top } = useSafeAreaInsets();
-  const { data } = useInfiniteCheckinList();
+  const { data: record, isPending, isError } = useCheckinDetail(id);
 
-  const record = data?.pages.flatMap((page) => page.data).find((r) => r.checkin_id === id);
+  if (isPending) {
+    return (
+      <View className="flex-1 bg-midnight items-center justify-center" style={{ paddingTop: top }}>
+        <Text className="text-fg-muted">불러오는 중...</Text>
+      </View>
+    );
+  }
 
-  if (!record) {
+  if (isError || !record) {
     return (
       <View className="flex-1 bg-midnight items-center justify-center" style={{ paddingTop: top }}>
         <Text className="text-fg-muted">기록을 불러올 수 없어요</Text>

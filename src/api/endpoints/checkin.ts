@@ -40,6 +40,12 @@ export async function fetchCheckinToday(): Promise<TodayCheckinStatus> {
   };
 }
 
+export async function fetchCheckinDetail(id: string): Promise<CheckinRecord> {
+  const record = MOCK_CHECKIN_LIST.find((c) => c.checkin_id === id);
+  if (!record) throw new Error('Checkin not found');
+  return record;
+}
+
 export async function fetchCheckinList(_params: {
   cursor?: string;
   limit?: number;
