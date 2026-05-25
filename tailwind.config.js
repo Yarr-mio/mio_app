@@ -18,8 +18,17 @@ module.exports = {
         'ink-night': '#ffffff', // dark:text-ink-night
         'ink-dim': '#60646C', // text-ink-dim        (textSecondary)
         'ink-dim-night': '#B0B4BA', // dark:text-ink-dim-night
+
         // 스플래시 등 항상 다크 배경을 쓰는 화면용 (Colors.dark.background) 임시로 추가!
         'background-dark': '#000000',
+        kakao: '#FEE500', // bg-kakao
+        'kakao-text': '#000000D9', // text-kakao
+        apple: '#FFFFFF', // bg-apple
+        'apple-text': '#000000', // text-apple
+
+        // 회원가입·약관 동의 등 항상 다크 배경 화면용
+        midnight: '#050508',
+        primary: '#7B61FF',
       },
     },
   },
