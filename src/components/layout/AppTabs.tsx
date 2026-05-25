@@ -65,7 +65,9 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
               color={isFocused ? TabBarColors.iconActive : TabBarColors.iconInactive}
             />
             <Text className={`text-xs mt-1 ${isFocused ? 'text-fg' : 'text-fg-ghost'}`}>
-              {options.title ?? route.name}
+              {typeof options.tabBarLabel === 'string'
+                ? options.tabBarLabel
+                : (options.title ?? route.name)}
             </Text>
           </Pressable>
         );
