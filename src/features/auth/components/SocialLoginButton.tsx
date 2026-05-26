@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 
-import { AppleIcon, KakaoIcon } from '@/assets/icons';
+import AppleIcon from '@/assets/icons/signup/apple.svg';
+import KakaoIcon from '@/assets/icons/signup/kakao.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Colors } from '@/constants/theme';
 import { cn } from '@/utils/cn';
@@ -14,8 +15,8 @@ interface SocialLoginButtonProps {
 }
 
 const SOCIAL_LOGIN_LABELS: Record<SocialLoginProvider, string> = {
-  kakao: '카카오로 시작하기',
-  apple: 'Apple로 계속하기',
+  kakao: '카카오 로그인',
+  apple: 'Apple 로그인',
 };
 
 const PROVIDER_STYLES: Record<SocialLoginProvider, { container: string; text: string }> = {
@@ -60,12 +61,12 @@ export default function SocialLoginButton({
       {({ pressed }) => (
         <View
           className={cn(
-            'flex-row items-center justify-center gap-[6px]',
+            'flex-row items-center justify-center gap-[25px]',
             pressed && !disabled && 'opacity-80'
           )}
         >
           <Icon width={width} height={height} color={color} />
-          <ThemedText type="default" className={cn('font-semibold', text)}>
+          <ThemedText type="default" className={cn('font-semibold text-lg', text)}>
             {SOCIAL_LOGIN_LABELS[provider]}
           </ThemedText>
         </View>
