@@ -1,5 +1,8 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
+import { AppleIcon, KakaoIcon } from '@/assets/icons';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { Colors } from '@/constants/theme';
 import { cn } from '@/utils/cn';
 
 export type SocialLoginProvider = 'kakao' | 'apple';
@@ -26,12 +29,21 @@ const PROVIDER_STYLES: Record<SocialLoginProvider, { container: string; text: st
   },
 };
 
+const PROVIDER_ICONS: Record<
+  SocialLoginProvider,
+  { Icon: typeof AppleIcon; color: string; width: number; height: number }
+> = {
+  apple: { Icon: AppleIcon, color: Colors.light.text, width: 16, height: 20 },
+  kakao: { Icon: KakaoIcon, color: Colors.light.text, width: 18, height: 18 },
+};
+
 export default function SocialLoginButton({
   provider,
   onPress,
   disabled = false,
 }: SocialLoginButtonProps) {
   const { container, text } = PROVIDER_STYLES[provider];
+  const { Icon, color, width, height } = PROVIDER_ICONS[provider];
 
   return (
     <Pressable
@@ -40,7 +52,7 @@ export default function SocialLoginButton({
       disabled={disabled}
       onPress={onPress}
       className={cn(
-        'h-16 w-full flex-row items-center justify-center gap-6 rounded-xl px-4',
+        'h-16 w-full flex-row items-center justify-center rounded-xl px-4',
         container,
         disabled && 'opacity-50'
       )}
@@ -48,13 +60,14 @@ export default function SocialLoginButton({
       {({ pressed }) => (
         <View
           className={cn(
-            'w-full flex-row items-center justify-center gap-2',
+            'flex-row items-center justify-center gap-[6px]',
             pressed && !disabled && 'opacity-80'
           )}
         >
-          <Text className={cn('text-base font-semibold', text)}>
+          <Icon width={width} height={height} color={color} />
+          <ThemedText type="default" className={cn('font-semibold', text)}>
             {SOCIAL_LOGIN_LABELS[provider]}
-          </Text>
+          </ThemedText>
         </View>
       )}
     </Pressable>

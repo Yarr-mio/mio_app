@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
+import { ThemedText } from '@/components/themed/ThemedText';
 import { SPLASH_DURATION_MS } from '@/constants/config';
 
 interface SplashScreenProps {
@@ -25,8 +26,12 @@ export default function SplashScreen({
   return (
     <View className="flex-1 items-center justify-center bg-background-dark">
       <View className="items-center">
-        <Text className="text-5xl font-bold tracking-widest text-ink-night">MIO</Text>
-        <Text className="mt-3 text-base text-ink-dim-night">마음의 이야기</Text>
+        <ThemedText type="title" className="font-bold tracking-widest text-ink-night">
+          MIO
+        </ThemedText>
+        <ThemedText type="default" className="mt-3 text-ink-dim-night">
+          마음의 이야기
+        </ThemedText>
       </View>
     </View>
   );
