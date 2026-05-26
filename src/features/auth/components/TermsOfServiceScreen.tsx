@@ -7,12 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CheckboxCheckIcon } from '@/assets/icons';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { Button } from '@/components/ui/Button';
 import { StepIndicator } from '@/components/ui/StepIndicator';
 import { FgColors } from '@/constants/theme';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_STEP_COUNT = 4;
 const SIGNUP_CURRENT_STEP = 2;
+const AGREEMENT_CARD_HEIGHT = 'h-[64px]';
 
 type TermId = 'service' | 'privacy' | 'age' | 'marketing';
 
@@ -66,11 +68,14 @@ function AgreementCheckbox({ checked }: AgreementCheckboxProps) {
   return (
     <View
       className={cn(
-        'h-6 w-6 items-center justify-center rounded-md border',
+        'h-7 w-7 items-center justify-center rounded-md border',
         checked ? 'border-accent bg-accent' : 'border-line-md bg-transparent'
       )}
     >
-      {checked ? <CheckboxCheckIcon width={12} height={9} color={FgColors.default} /> : null}
+      {checked ? (
+        // 체크 표시(✓) 크기: width / height prop (SVG viewBox 12×9 기준)
+        <CheckboxCheckIcon width={12} height={9} color={FgColors.default} />
+      ) : null}
     </View>
   );
 }
@@ -85,15 +90,15 @@ interface AgreementRowProps {
 
 function AgreementRow({ label, required, checked, onToggle, onDetailPress }: AgreementRowProps) {
   return (
-    <View className="flex-row items-center gap-3 py-4 h-16">
+    <View className={cn('flex-row items-center gap-3 px-4', AGREEMENT_CARD_HEIGHT)}>
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked }}
         onPress={onToggle}
-        className="flex-1 flex-row items-center gap-3"
+        className="flex-1 flex-row items-center gap-4"
       >
         <AgreementCheckbox checked={checked} />
-        <ThemedText type="default" className="text-fg/90">
+        <ThemedText type="default" className="text-fg-high">
           {label}
         </ThemedText>
         <ThemedText type="small" className="text-badge">
@@ -151,7 +156,7 @@ export default function TermsOfServiceScreen() {
         className="flex-1 px-8"
         style={{ paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }}
       >
-        <View className="pt-4">
+        <View className="pt-4 mt-6">
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
@@ -165,15 +170,15 @@ export default function TermsOfServiceScreen() {
         </View>
 
         <View className="mt-8 gap-5">
-          <AgreementTab selected={isAgreeAllChecked}>
+          <AgreementTab selected={isAgreeAllChecked} className="px-3">
             <Pressable
               accessibilityRole="checkbox"
               accessibilityState={{ checked: isAgreeAllChecked }}
               onPress={handleToggleAgreeAll}
-              className="flex-row items-center gap-3 px-4 py-4 h-16"
+              className={cn('flex-row items-center gap-4 px-4', AGREEMENT_CARD_HEIGHT)}
             >
               <AgreementCheckbox checked={isAgreeAllChecked} />
-              <ThemedText type="default" className="font-semibold text-fg/90">
+              <ThemedText type="default" className="font-semibold text-fg-high">
                 전체 동의하기
               </ThemedText>
             </Pressable>
@@ -197,20 +202,9 @@ export default function TermsOfServiceScreen() {
         </View>
 
         <View className="mt-auto pt-8">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !requiredChecked }}
-            disabled={!requiredChecked}
-            onPress={handleContinue}
-            className={cn(
-              'h-14 w-full items-center justify-center rounded-2xl',
-              requiredChecked ? 'bg-btn-active' : 'bg-btn-disabled'
-            )}
-          >
-            <ThemedText type="default" className="font-semibold text-fg">
-              동의하고 계속하기
-            </ThemedText>
-          </Pressable>
+          <Button disabled={!requiredChecked} onPress={handleContinue}>
+            동의하고 계속하기
+          </Button>
         </View>
       </View>
     </View>
