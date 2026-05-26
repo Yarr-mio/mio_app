@@ -205,6 +205,7 @@ mio_app/
 │   └── global.css                        # NativeWind 전역 스타일
 │
 ├── assets/
+│   ├── icons/                            # SVG 아이콘 파일 (react-native-svg-transformer로 컴포넌트 변환)
 │   ├── images/
 │   │   ├── characters/                   # 캐릭터 이미지 (5종)
 │   │   └── tabIcons/

@@ -42,6 +42,37 @@ export const Fonts = Platform.select({
   },
 });
 
+// 슬라이더 색상 — className 미지원 네이티브 prop에 사용
+export const SliderColors = {
+  track: '#FFFFFF',
+  trackInactive: 'rgba(255,255,255,0.2)',
+  thumb: '#FFFFFF',
+} as const;
+
+// 텍스트 입력 색상 — placeholderTextColor 등 네이티브 prop에 사용
+export const InputColors = {
+  placeholder: 'rgba(255,255,255,0.3)',
+} as const;
+
+// fg 계층 색상 — NativeWind className 미지원 prop(color 등)에 사용
+export const FgColors = {
+  default: '#FFFFFF',
+  muted: '#FFFFFF80', // white/50
+  faint: '#FFFFFF66', // white/40
+} as const;
+
+// 버튼 로딩 스피너 색상 — ActivityIndicator color prop에 사용
+export const ButtonColors = {
+  spinnerLight: '#FFFFFF',
+  spinnerDark: '#0D0D1A',
+} as const;
+
+// 탭바 아이콘 색상 — color prop(네이티브)으로 직접 전달
+export const TabBarColors = {
+  iconActive: '#FFFFFF',
+  iconInactive: 'rgba(255,255,255,0.3)',
+} as const;
+
 // 탭바 하단 여백 — SafeAreaView 내부에서 style prop으로 사용
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 

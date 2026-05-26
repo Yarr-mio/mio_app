@@ -122,12 +122,56 @@ function EmotionBadge({ type, size = 'md', onPress }: EmotionBadgeProps) { ... }
 const styles = StyleSheet.create({ container: { flex: 1 } });
 
 // GOOD
-<View className="flex-1 bg-background-dark p-4" />;
+<View className="flex-1 bg-midnight p-4" />;
 
 // 동적 클래스
 import { cn } from '@/utils/cn';
 <View className={cn('rounded-xl p-4', isActive && 'bg-primary', isDisabled && 'opacity-50')} />;
 ```
+
+### 5-1. 색상 — 테마 토큰 사용, 하드코딩 금지
+
+className 및 네이티브 prop 어디서도 색상값을 직접 작성하지 않는다.
+
+- NativeWind className: `tailwind.config.js`의 커스텀 색상 토큰을 사용한다.
+- 네이티브 prop(`placeholderTextColor`, `minimumTrackTintColor` 등): `constants/theme.ts`에서 상수로 정의하고 import해서 사용한다.
+
+**토큰 저장 위치**
+
+| 종류                      | 저장 위치                                    |
+| ------------------------- | -------------------------------------------- |
+| NativeWind용 색상 토큰    | `tailwind.config.js` → `theme.extend.colors` |
+| 네이티브 prop용 색상 상수 | `constants/theme.ts`                         |
+
+```tsx
+// BAD — 하드코딩
+<View className="bg-[#0D0D1A] border-white/10" />
+<Text className="text-white/60" />
+<TextInput placeholderTextColor="rgba(255,255,255,0.3)" />
+<Slider minimumTrackTintColor="#FFFFFF" />
+
+// GOOD — 테마 토큰 사용
+<View className="bg-midnight border-line" />
+<Text className="text-fg-dim" />
+
+import { InputColors, SliderColors } from '@/constants/theme';
+<TextInput placeholderTextColor={InputColors.placeholder} />
+<Slider minimumTrackTintColor={SliderColors.track} />
+```
+
+**현재 정의된 주요 토큰 (`tailwind.config.js`)**
+
+| 토큰                                                                | 설명                                     |
+| ------------------------------------------------------------------- | ---------------------------------------- |
+| `bg-midnight`                                                       | 앱 메인 배경 (`#0D0D1A`)                 |
+| `text-midnight`                                                     | 밝은 배경(예: 흰 버튼) 위 텍스트         |
+| `bg-surface` / `bg-surface-md` / `bg-surface-lg`                    | 유리 질감 카드 배경 (white 5%/10%/15%)   |
+| `border-line` / `border-line-md`                                    | 경계선 (white 10%/20%)                   |
+| `text-fg-dim` / `text-fg-muted` / `text-fg-faint` / `text-fg-ghost` | 보조 텍스트 계층 (white 60%/50%/40%/30%) |
+| `text-fg-soft` / `text-fg-sub`                                      | 보조 텍스트 계층 (white 70%/80%)         |
+| `text-success` / `bg-success/20` / `border-success/40`              | 성공 상태                                |
+| `text-danger` / `bg-danger/10` / `border-danger/20`                 | 오류/만료 상태                           |
+| `text-link`                                                         | 링크 강조색                              |
 
 ---
 
@@ -270,7 +314,51 @@ import { Image } from 'expo-image';
 <Image source={uri} contentFit="cover" cachePolicy="memory-disk" />;
 ```
 
-### 10-4. 안전 영역(Safe Area) 하드코딩 금지
+### 10-4. `expo-image`의 `Image`에는 크기를 `style` prop으로 지정
+
+NativeWind의 `className`은 서드파티 컴포넌트에 변환이 적용되지 않아 크기가 0이 되고 이미지가 렌더링되지 않는다.
+레이아웃 관련 클래스(`w-*`, `h-*`, `flex`, `m-*`, `p-*` 등)도 동일하게 `style` prop으로 작성한다.
+
+```tsx
+// BAD
+<Image source={meta.image} className="w-8 h-8" contentFit="contain" />;
+
+// GOOD
+<Image source={meta.image} style={{ width: 32, height: 32 }} contentFit="contain" />;
+```
+
+Tailwind 단위 환산: `1 unit = 4dp` (예: `w-8 = 32dp`, `w-6 = 24dp`)
+
+### 10-5. 스택 뒤로가기 헤더 — `BackHeader` 컴포넌트 사용
+
+스택이 쌓여 뒤로가기 헤더가 필요한 화면에서는 직접 구현하지 않고 `src/components/layout/BackHeader.tsx`를 사용한다.
+`BackHeader`는 안전 영역(Safe Area) 처리와 `router.back()` 연결이 내장되어 있다.
+
+| Prop          | 타입        | 필수 여부 | 설명                           |
+| ------------- | ----------- | --------- | ------------------------------ |
+| `title`       | `string`    | 필수      | 헤더 중앙에 표시되는 제목      |
+| `rightAction` | `ReactNode` | 선택      | 헤더 우측 영역에 렌더링할 요소 |
+
+```tsx
+// BAD: 뒤로가기 헤더를 직접 구현
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const { top } = useSafeAreaInsets();
+<View style={{ paddingTop: top + 12 }} className="flex-row items-center px-5 pb-3">
+  <Pressable onPress={() => router.back()}>
+    <Text className="text-white text-xl">←</Text>
+  </Pressable>
+  <Text className="text-white text-lg font-semibold">설정</Text>
+</View>
+
+// GOOD: BackHeader 사용
+import { BackHeader } from '@/components/layout/BackHeader';
+<BackHeader title="설정" />
+
+// 우측 액션이 필요한 경우
+<BackHeader title="체크인" rightAction={<SaveButton />} />
+```
+
+### 10-6. 안전 영역(Safe Area) 하드코딩 금지
 
 기기별 노치·홈바 높이를 숫자로 하드코딩하지 않는다.
 
@@ -359,3 +447,61 @@ const useAuthStore = create(() => ({
 | 특정 기능 안에서만 쓰는 상태?      | `src/features/[기능명]/store/`                    |
 | 순수 유틸 함수?                    | `src/utils/`                                      |
 | 공유 TypeScript 타입?              | `src/types/`                                      |
+
+---
+
+## 14. SVG 아이콘
+
+SVG 파일은 `react-native-svg` + `react-native-svg-transformer`를 통해 React 컴포넌트로 import한다.
+
+### 저장 위치
+
+`assets/icons/` 폴더에 저장한다.
+
+### 설정 원리
+
+`metro.config.js`가 `.svg` 파일을 `react-native-svg-transformer/expo`로 변환한다.
+`src/types/svg.d.ts`가 `*.svg` import의 타입을 `React.FC<SvgProps>`로 선언한다.
+
+### 사용 패턴
+
+```tsx
+// BAD: react-native-svg 컴포넌트를 직접 조립
+import Svg, { Path } from 'react-native-svg';
+<Svg width={24} height={24}>
+  <Path d="M5 12h14..." />
+</Svg>;
+
+// GOOD: SVG 파일을 컴포넌트로 import
+import HomeIcon from '@/assets/icons/home.svg';
+<HomeIcon width={24} height={24} color={COLORS.primary} />;
+```
+
+### 크기·색상
+
+- `width` / `height` prop으로 크기를 지정한다. 기본값을 넣으면 props 없이도 사용 가능하다.
+  단, SVG 파일 내부의 `fill`이나 `stroke`가 하드코딩되어 있으면 `color` prop이 반영되지 않는다.
+  색상을 동적으로 바꾸려면 SVG 파일의 `fill`/`stroke` 속성 값을 `currentColor`로 변경한다.
+
+```svg
+<!-- BAD: 하드코딩 색상 -->
+<path fill="#FFFFFF" d="..." />
+
+<!-- GOOD: currentColor로 교체 → color prop 반영 -->
+<path fill="currentColor" d="..." />
+```
+
+```tsx
+// currentColor 적용 후
+<HomeIcon width={24} height={24} color="white" />
+<HomeIcon width={20} height={20} color={COLORS.primary} />
+```
+
+### 경로 alias
+
+`tsconfig.json`의 `@/assets/*` alias가 `./assets/*`를 가리키므로 아래처럼 절대 경로로 import한다.
+
+```tsx
+import HomeIcon from '@/assets/icons/home.svg';
+import BackIcon from '@/assets/icons/back.svg';
+```

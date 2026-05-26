@@ -20,7 +20,7 @@ const typeClasses: Record<ThemedTextType, string> = {
   smallBold: 'text-sm leading-5 font-bold',
   subtitle: 'text-3xl leading-[44px] font-semibold',
   link: 'text-sm leading-[30px]',
-  linkPrimary: 'text-sm leading-[30px] text-[#3c87f7]',
+  linkPrimary: 'text-sm leading-[30px] text-link',
   code: `text-xs font-mono ${Platform.OS === 'android' ? 'font-bold' : 'font-medium'}`,
 };
 

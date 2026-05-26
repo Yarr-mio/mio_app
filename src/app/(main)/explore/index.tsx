@@ -1,5 +1,5 @@
 import { View } from 'react-native';
 
-export default function CheckinScreen() {
+export default function ExploreScreen() {
   return <View className="flex-1" />;
 }
