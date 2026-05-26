@@ -35,6 +35,8 @@ module.exports = {
         // 텍스트 계층 (어두운 배경 위 흰색 계열)
         fg: {
           DEFAULT: '#FFFFFF', // text-fg        (white)
+          highlight: '#EEEAF8', // text-fg-highlight — 앱 디폴트 텍스트
+          high: '#FFFFFFE6', // text-fg-high   (white/90)
           sub: '#FFFFFFCC', // text-fg-sub    (white/80)
           soft: '#FFFFFFB3', // text-fg-soft   (white/70)
           dim: '#FFFFFF99', // text-fg-dim    (white/60)
@@ -42,6 +44,9 @@ module.exports = {
           faint: '#FFFFFF66', // text-fg-faint  (white/40)
           ghost: '#FFFFFF4D', // text-fg-ghost  (white/30)
         },
+
+        // 폼 라벨/비활성 칩 등 기본 보조 텍스트
+        label: '#D9D9D9', // text-label
 
         // 상태 색상 (opacity modifier와 함께 사용: bg-success/20, border-success/40)
         success: '#4ade80', // text-success, bg-success/20, border-success/40
@@ -51,15 +56,13 @@ module.exports = {
         link: '#3c87f7', // text-link
 
         // 주요 액션 색상
-        primary: '#7C63F5', // bg-primary / text-primary
+        primary: '#7060E0', // bg-primary / text-primary
 
         // 회원가입 페이지
         subtitle: '#959595', // text-subtitle — 페이지 서브 텍스트
         accent: '#9D7FEE', // bg-accent/5, border-accent/10, bg-accent/10, border-accent/50
         badge: '#5A5490', // text-badge — [필수] / [선택]
         'btn-disabled': '#9C9C9C', // bg-btn-disabled
-        'btn-active': '#7060E0', // bg-btn-active
-
         //로그인 버튼 (애플/카카오)
         kakao: '#FEE500', // bg-kakao
         'kakao-text': '#000000D9', // text-kakao
