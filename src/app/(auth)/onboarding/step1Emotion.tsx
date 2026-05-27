@@ -1,5 +1,5 @@
-import { View } from 'react-native';
+import { Step1EmotionScreen } from '@/features/onboarding/components/Step1EmotionScreen';
 
-export default function Step1EmotionScreen() {
-  return <View className="flex-1" />;
+export default function Step1EmotionRoute() {
+  return <Step1EmotionScreen />;
 }
