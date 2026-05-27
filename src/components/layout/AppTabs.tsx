@@ -9,7 +9,7 @@ import {
   MessageTextIcon,
   SecurityUserIcon,
 } from '@/assets/icons';
-import { TabBarColors } from '@/constants/theme';
+import { TabBarColors, TabBarLabelColors, TabBarShadowStyle } from '@/constants/theme';
 
 const TAB_ICONS = {
   home: HomeIcon,
@@ -25,7 +25,10 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
   const { bottom } = useSafeAreaInsets();
 
   return (
-    <View className="flex-row bg-midnight border-t border-line" style={{ paddingBottom: bottom }}>
+    <View
+      className="flex-row overflow-visible bg-tab-bar"
+      style={[{ paddingBottom: bottom }, TabBarShadowStyle]}
+    >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -64,7 +67,12 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
               height={24}
               color={isFocused ? TabBarColors.iconActive : TabBarColors.iconInactive}
             />
-            <Text className={`text-xs mt-1 ${isFocused ? 'text-fg' : 'text-fg-ghost'}`}>
+            <Text
+              className="mt-1 text-xs"
+              style={{
+                color: isFocused ? TabBarLabelColors.active : TabBarLabelColors.inactive,
+              }}
+            >
               {typeof options.tabBarLabel === 'string'
                 ? options.tabBarLabel
                 : (options.title ?? route.name)}
