@@ -61,8 +61,15 @@ module.exports = {
         // 회원가입 페이지
         subtitle: '#959595', // text-subtitle — 페이지 서브 텍스트
         accent: '#9D7FEE', // bg-accent/5, border-accent/10, bg-accent/10, border-accent/50
+
+        // 온보딩
+        'progress-inactive': '#E9E9E9', // bg-progress-inactive — 진행 바 미완료
+        'step-muted': '#9CA3AF', // text-step-muted — 단계 표시 (n/3)
+        'onboarding-surface': '#131238', // bg-onboarding-surface — 강도 슬라이더 박스
+        'onboarding-border': '#2C295F', // border-onboarding-border
         badge: '#5A5490', // text-badge — [필수] / [선택]
         'btn-disabled': '#9C9C9C', // bg-btn-disabled
+
         //로그인 버튼 (애플/카카오)
         kakao: '#FEE500', // bg-kakao
         'kakao-text': '#000000D9', // text-kakao
