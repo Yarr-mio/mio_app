@@ -1,9 +1,45 @@
 /** @type {import('tailwindcss').Config} */
+const NOTO_WEIGHT_CLASSES = [
+  ['thin', 'thin'],
+  ['extralight', 'extralight'],
+  ['light', 'light'],
+  ['normal', 'sans'],
+  ['medium', 'medium'],
+  ['semibold', 'semibold'],
+  ['bold', 'bold'],
+  ['extrabold', 'extrabold'],
+  ['black', 'black'],
+];
+
+/** font-medium 등을 fontWeight 대신 NotoSansKR fontFamily로 매핑 */
+function notoFontWeightPlugin({ addUtilities, theme }) {
+  const utilities = {};
+  for (const [weightClass, familyKey] of NOTO_WEIGHT_CLASSES) {
+    const fontFamily = theme(`fontFamily.${familyKey}`);
+    if (!fontFamily) continue;
+    const name = Array.isArray(fontFamily) ? fontFamily[0] : fontFamily;
+    utilities[`.font-${weightClass}`] = { fontFamily: name };
+  }
+  addUtilities(utilities, { respectImportant: true });
+}
+
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['NotoSansKR-Regular'], // font-sans
+        thin: ['NotoSansKR-Thin'], // font-thin
+        extralight: ['NotoSansKR-ExtraLight'], // font-extralight
+        light: ['NotoSansKR-Light'], // font-light
+        medium: ['NotoSansKR-Medium'], // font-medium
+        semibold: ['NotoSansKR-SemiBold'], // font-semibold
+        bold: ['NotoSansKR-Bold'], // font-bold
+        extrabold: ['NotoSansKR-ExtraBold'], // font-extrabold
+        black: ['NotoSansKR-Black'], // font-black
+        mono: ['NotoSansKR-Regular'], // font-mono
+      },
       borderRadius: {
         card: '20px', // rounded-card — 온보딩 선택/소개 박스
       },
@@ -98,4 +134,5 @@ module.exports = {
       },
     },
   },
+  plugins: [notoFontWeightPlugin],
 };
