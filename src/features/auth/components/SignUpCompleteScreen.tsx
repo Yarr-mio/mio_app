@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -60,8 +60,13 @@ function FeatureHighlightCard({ emoji, lines }: FeatureHighlightCardProps) {
 
 export default function SignUpCompleteScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
+
+  const handleStartPartnerMatching = () => {
+    router.push('/(auth)/onboarding/step1Emotion');
+  };
 
   return (
     <View className="flex-1 bg-midnight">
@@ -112,7 +117,7 @@ export default function SignUpCompleteScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button>파트너 매칭 시작</Button>
+          <Button onPress={handleStartPartnerMatching}>파트너 매칭 시작</Button>
         </View>
       </View>
     </View>
