@@ -53,7 +53,7 @@ function SelectionChip({ label, selected, onPress, className }: SelectionChipPro
         className
       )}
     >
-      <ThemedText type="default" className={selected ? 'text-fg-default' : 'text-label'}>
+      <ThemedText type="defaultRegular" className={selected ? 'text-fg-default' : 'text-label'}>
         {label}
       </ThemedText>
     </Pressable>
@@ -115,11 +115,11 @@ export default function SignUpInfoScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerClassName="grow pb-4"
         >
-          <View className="mt-10">
-            <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+          <View className="mt-12">
+            <ThemedText type="title" className="text-fg">
               MIO에게{'\n'}나를 소개해요
             </ThemedText>
-            <ThemedText type="default" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
               언제든지 수정할 수 있어요
             </ThemedText>
           </View>
@@ -134,7 +134,7 @@ export default function SignUpInfoScreen() {
 
           <View className="mt-8 gap-8">
             <View className="gap-3">
-              <ThemedText type="default" className="text-label">
+              <ThemedText type="smallTitle" className="text-label">
                 닉네임
               </ThemedText>
               <View
@@ -156,7 +156,7 @@ export default function SignUpInfoScreen() {
                   accessibilityLabel="닉네임"
                 />
               </View>
-              <ThemedText type="small" className="ml-2 text-label">
+              <ThemedText type="smallRegular" className="ml-2 text-label">
                 닉네임 설정은 최대 {NICKNAME_MAX_LENGTH}자까지 가능해요
               </ThemedText>
             </View>

@@ -46,7 +46,7 @@ interface FeatureHighlightCardProps {
 function FeatureHighlightCard({ emoji, lines }: FeatureHighlightCardProps) {
   return (
     <View className="flex-1 items-center rounded-2xl border border-accent/10 bg-accent/5 px-2 py-6">
-      <ThemedText type="default" className="text-2xl leading-8">
+      <ThemedText type="default" className="text-center">
         {emoji}
       </ThemedText>
       <ThemedText type="small" className="mt-2 text-center text-fg-high">
@@ -93,13 +93,10 @@ export default function SignUpCompleteScreen() {
           </View>
 
           <View className="mt-[56px] items-center">
-            <ThemedText
-              type="default"
-              className="text-center text-[25px] font-extrabold leading-8 text-fg-default"
-            >
+            <ThemedText type="title" className="text-center text-fg">
               {nickname} 님,{'\n'}미오가 기다리고 있었어요
             </ThemedText>
-            <ThemedText type="default" className="mt-8 text-center leading-6 text-subtitle">
+            <ThemedText type="subtitle" className="mt-8 text-center text-subtitle">
               만나서 반가워요{'\n'}
               {nickname} 님의 소울 메이트를 찾으러 가 볼까요?
             </ThemedText>
