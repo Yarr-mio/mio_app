@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 
 // 다크/라이트 원시 색상값 — NativeTabs 등 className을 못 쓰는 네이티브 prop에 사용
 export const Colors = {
@@ -93,6 +93,17 @@ export const EmotionSelectBoxLayout = {
   iconSize: 85,
 } as const;
 
+/** 온보딩 Step3 대화 방식 카드 */
+export const OnboardingStyleCardLayout = {
+  iconSlotSize: 92,
+  iconRenderScale: 0.9,
+} as const;
+
+/** 온보딩 완료(5단계) 캐릭터 아이콘 */
+export const OnboardingCompleteLayout = {
+  characterIconSize: 240,
+} as const;
+
 // 텍스트 입력 색상 — placeholderTextColor 등 네이티브 prop에 사용
 export const InputColors = {
   placeholder: 'rgba(255,255,255,0.3)',
@@ -106,17 +117,47 @@ export const FgColors = {
   faint: '#FFFFFF66', // white/40
 } as const;
 
+// 페이지 서브 텍스트 — text-subtitle, SVG color prop 등
+export const SubtitleColors = {
+  DEFAULT: '#959595',
+} as const;
+
 // 버튼 로딩 스피너 색상 — ActivityIndicator color prop에 사용
 export const ButtonColors = {
   spinnerLight: '#FFFFFF',
   spinnerDark: '#0D0D1A',
 } as const;
 
-// 탭바 아이콘 색상 — color prop(네이티브)으로 직접 전달
+// 탭바 아이콘/라벨/배경 — TabBar 레이아웃·NativeWind bg-tab-bar와 배경값 동일 유지 (tailwind.config.js)
 export const TabBarColors = {
-  iconActive: '#FFFFFF',
-  iconInactive: 'rgba(255,255,255,0.3)',
+  background: '#04030A',
+  iconActive: '#7060E0',
+  iconInactive: 'rgba(255,255,255,0.3)', // white 30%
 } as const;
+
+export const TabBarLabelColors = {
+  active: '#7060E0',
+  inactive: 'rgba(217,217,217,0.7)', // D9D9D9 70%
+} as const;
+
+/** 탭바 상단 그림자*/
+export const TabBarShadowStyle = Platform.select<ViewStyle>({
+  ios: {
+    shadowColor: '#8D8D8D',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 0,
+  },
+  android: {
+    elevation: 0,
+    shadowColor: '#8D8D8D',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  default: {},
+});
 
 // 탭바 하단 여백 — SafeAreaView 내부에서 style prop으로 사용
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;

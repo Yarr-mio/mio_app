@@ -4,6 +4,9 @@ module.exports = {
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
+      borderRadius: {
+        card: '20px', // rounded-card — 온보딩 선택/소개 박스
+      },
       colors: {
         // Light 기본값 / dark: 접두사로 다크모드 적용
         // 배경 계열
@@ -22,6 +25,7 @@ module.exports = {
         // ── 다크 스페이스 테마 ──────────────────────────────────────
         // 앱 메인 배경
         midnight: '#0D0D1A', // bg-midnight / text-midnight
+        'tab-bar': '#04030A', // bg-tab-bar — 하단 탭바 (constants/theme TabBarColors.background와 동일 유지)
 
         // 유리 질감 서피스 (어두운 배경 위의 반투명 흰색 레이어)
         surface: '#FFFFFF0D', // bg-surface      (white/5)
@@ -62,15 +66,15 @@ module.exports = {
         subtitle: '#959595', // text-subtitle — 페이지 서브 텍스트
         accent: '#9D7FEE', // 강조색 (서브 탭 선택 시 base)
 
-        // ── 서브 버튼 탭 (온보딩·회원가입 등 선택형 칩) ─────────────────
-        // 선택됨: #9D7FEE 10% 배경 + 50% stroke → bg-sub-tab-selected-bg, border-sub-tab-selected-border
+        // ── 서브 버튼 탭 (선택형 칩) ─────────────────
+        // 선택됨: #9D7FEE 10% 배경 + 50% stroke = bg-sub-tab-selected-bg, border-sub-tab-selected-border
         'sub-tab-selected-bg': '#9D7FEE1A',
         'sub-tab-selected-border': '#9D7FEE80',
         // 비활성 (step2Concern 제외 공통): #FFFFFF 5% 배경 + 10% stroke
-        // → bg-sub-tab-inactive-bg, border-sub-tab-inactive-border
+        // = bg-sub-tab-inactive-bg, border-sub-tab-inactive-border
         'sub-tab-inactive-bg': '#FFFFFF0D',
         'sub-tab-inactive-border': '#FFFFFF1A',
-        // 비활성 (step2Concern 전용): #E4E4E4 stroke, 배경 없음 → border-sub-tab-concern-inactive-border
+        // 비활성 (step2Concern 전용): #E4E4E4 stroke, 배경 없음 = border-sub-tab-concern-inactive-border
         'sub-tab-concern-inactive-border': '#E4E4E4',
 
         // 온보딩
@@ -80,6 +84,11 @@ module.exports = {
         'onboarding-border': '#2C295F', // border-onboarding-border
         badge: '#5A5490', // text-badge — [필수] / [선택]
         'btn-disabled': '#9C9C9C', // bg-btn-disabled
+
+        // Label (components/ui/Label.tsx)
+        'label-bg': '#9D7FEE33', // bg-label-bg — #9D7FEE 20%
+        'label-border': '#D8D0F833', // border-label-border — #D8D0F8 20%
+        'label-text': '#9F92F3', // text-label-text
 
         //로그인 버튼 (애플/카카오)
         kakao: '#FEE500', // bg-kakao
