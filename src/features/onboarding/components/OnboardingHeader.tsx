@@ -31,7 +31,7 @@ export function OnboardingHeader({ currentStep, totalSteps }: OnboardingHeaderPr
           />
         </Pressable>
 
-        <ThemedText type="default" className="font-semibold text-step-muted">
+        <ThemedText type="smallTitle" className="text-step-muted">
           {stepLabel}
         </ThemedText>
       </View>

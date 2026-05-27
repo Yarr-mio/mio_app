@@ -37,10 +37,10 @@ export function OnboardingCompleteScreen() {
       >
         <View className="flex-1">
           <View className="mt-10">
-            <ThemedText type="default" className="text-fg">
+            <ThemedText type="subtitle" className="text-fg">
               반가워요!
             </ThemedText>
-            <ThemedText type="subtitle" className="mt-2 font-bold leading-10 text-fg">
+            <ThemedText type="title" className="mt-2 text-fg">
               {character.name}와 함께{'\n'}여정을 떠나 볼까요?
             </ThemedText>
           </View>
@@ -58,7 +58,7 @@ export function OnboardingCompleteScreen() {
 
           <View className="mt-16">
             <View className="rounded-card border-2 border-sub-tab-inactive-border bg-sub-tab-inactive-bg p-8">
-              <ThemedText type="default" className="font-semibold text-fg-default">
+              <ThemedText type="smallTitle" className="text-fg-default">
                 {character.greeting}
               </ThemedText>
             </View>

@@ -85,11 +85,11 @@ function StyleOptionCard({
           contentFit="contain"
         />
       </View>
-      <View className="flex-1 gap-1">
-        <ThemedText type="default" className="font-semibold text-fg-default">
+      <View className="flex-1 gap-2">
+        <ThemedText type="smallTitle" className="text-fg-default">
           {title}
         </ThemedText>
-        <ThemedText type="default" className="font-normal leading-5 text-fg-default/80">
+        <ThemedText type="default" className="text-fg-default/80 text-sm">
           {description}
         </ThemedText>
       </View>
@@ -149,10 +149,10 @@ export function Step3StyleScreen() {
           contentContainerClassName="grow pb-4"
         >
           <View className="mt-10">
-            <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+            <ThemedText type="title" className="text-fg">
               어떤 대화 방식이{'\n'}편하세요?
             </ThemedText>
-            <ThemedText type="default" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
               나중에 언제든지 바꿀 수 있어요
             </ThemedText>
           </View>

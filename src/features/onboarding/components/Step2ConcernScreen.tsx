@@ -60,10 +60,7 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
     >
       <View className={cn('flex-row items-center', selected && 'gap-2')}>
         {selected && <CheckboxCheckIcon width={12} height={9} color={FgColors.onDefault} />}
-        <ThemedText
-          type="default"
-          className={cn('font-semibold', selected ? 'text-fg-default' : 'text-label')}
-        >
+        <ThemedText type="default" className={selected ? 'text-fg-default' : 'text-label'}>
           {label}
         </ThemedText>
       </View>
@@ -122,10 +119,10 @@ export function Step2ConcernScreen() {
           contentContainerClassName="grow pb-4"
         >
           <View className="mt-10">
-            <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+            <ThemedText type="title" className="text-fg">
               주요 고민이 뭔가요?
             </ThemedText>
-            <ThemedText type="default" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
               해당되는 것을 선택해 주세요
             </ThemedText>
           </View>

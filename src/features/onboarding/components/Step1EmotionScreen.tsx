@@ -1,8 +1,8 @@
-import { EmotionSelectBox } from '@/components/ui/EmotionSelectBox';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { EmotionIntensitySlider } from '@/components/ui/EmotionIntensitySlider';
+import { EmotionSelectBox } from '@/components/ui/EmotionSelectBox';
 import { ONBOARDING_DEFAULT_EMOJI_SCORE, ONBOARDING_TOTAL_STEPS } from '@/constants/onboarding';
 import { PressableConfig, ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
@@ -90,10 +90,10 @@ export function Step1EmotionScreen() {
           contentContainerClassName="grow pb-4"
         >
           <View className="mt-10">
-            <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+            <ThemedText type="title" className="text-fg">
               지금,{'\n'}당신의 감정은 어떤가요?
             </ThemedText>
-            <ThemedText type="default" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
               수면 위로 떠올랐던 감정에 집중해 봐요
             </ThemedText>
           </View>
@@ -110,10 +110,10 @@ export function Step1EmotionScreen() {
             pointerEvents={isEmotionSelected ? 'auto' : 'none'}
           >
             <View className="gap-1">
-              <ThemedText type="default" className="font-semibold text-fg-default">
+              <ThemedText type="smallTitle" className="text-fg-default">
                 감정의 강도는 어떤가요?
               </ThemedText>
-              <ThemedText type="default" className="font-semibold text-subtitle">
+              <ThemedText type="subtitle" className="text-subtitle text-base">
                 슬라이더를 움직여 강도를 조절해 보세요
               </ThemedText>
             </View>

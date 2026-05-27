@@ -99,11 +99,11 @@ function CharacterOptionCard({
         />
       </View>
       <View className="flex-1 gap-2">
-        <ThemedText type="default" className="font-semibold text-fg-default">
+        <ThemedText type="smallTitle" className="text-fg-default">
           {name}
         </ThemedText>
         <Label label={chipLabel} />
-        <ThemedText type="small" className="font-normal leading-5 text-fg-default/80">
+        <ThemedText type="default" className="text-fg-default/80 text-sm leading-5">
           {quote}
         </ThemedText>
       </View>
@@ -160,10 +160,10 @@ export function Step4CharacterScreen() {
           contentContainerClassName="grow pb-4"
         >
           <View className="mt-10">
-            <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+            <ThemedText type="title" className="text-fg">
               {pageTitle}
             </ThemedText>
-            <ThemedText type="default" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
               {ONBOARDING_STEP4_SUBTITLE}
             </ThemedText>
           </View>
