@@ -35,7 +35,7 @@ export const ONBOARDING_CHARACTERS = [
     image: require('../../assets/images/characters/bau.png'),
     iconImage: require('../../assets/images/characters/bau.png'),
     greeting:
-      '안녕! 나는 바우예요.\n지금 할 수 있는 작은 한 걸음부터 같이 계획해봐요. 내가 옆에서 응원할게요. ✨',
+      '안녕! 나는 바우예요.\n지금 할 수 있는 작은 한 걸음부터 같이 계획해 봐요. 내가 옆에서 응원할게요. ✨',
   },
   {
     id: 'rumi',
