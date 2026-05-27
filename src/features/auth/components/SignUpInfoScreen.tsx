@@ -53,7 +53,7 @@ function SelectionChip({ label, selected, onPress, className }: SelectionChipPro
         className
       )}
     >
-      <ThemedText type="default" className={selected ? 'text-fg-highlight' : 'text-label'}>
+      <ThemedText type="default" className={selected ? 'text-fg-default' : 'text-label'}>
         {label}
       </ThemedText>
     </Pressable>

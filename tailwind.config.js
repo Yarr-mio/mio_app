@@ -35,7 +35,7 @@ module.exports = {
         // 텍스트 계층 (어두운 배경 위 흰색 계열)
         fg: {
           DEFAULT: '#FFFFFF', // text-fg        (white)
-          highlight: '#EEEAF8', // text-fg-highlight — 앱 디폴트 텍스트
+          default: '#EEEAF8', // text-fg-default — 앱 디폴트 텍스트
           high: '#FFFFFFE6', // text-fg-high   (white/90)
           sub: '#FFFFFFCC', // text-fg-sub    (white/80)
           soft: '#FFFFFFB3', // text-fg-soft   (white/70)

@@ -90,7 +90,7 @@ export default function SignUpCompleteScreen() {
           <View className="mt-[56px] items-center">
             <ThemedText
               type="default"
-              className="text-center text-[25px] font-extrabold leading-8 text-fg-highlight"
+              className="text-center text-[25px] font-extrabold leading-8 text-fg-default"
             >
               {nickname} 님,{'\n'}미오가 기다리고 있었어요
             </ThemedText>
