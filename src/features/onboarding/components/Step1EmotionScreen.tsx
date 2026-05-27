@@ -104,7 +104,7 @@ export function Step1EmotionScreen() {
 
           <View
             className={cn(
-              'mt-8 overflow-visible rounded-2xl border border-onboarding-border bg-onboarding-surface p-6 shadow-lg shadow-black/25',
+              'mt-8 overflow-visible rounded-xl border border-onboarding-border bg-onboarding-surface p-6 shadow-lg shadow-black/25',
               !isEmotionSelected && 'opacity-40'
             )}
             pointerEvents={isEmotionSelected ? 'auto' : 'none'}

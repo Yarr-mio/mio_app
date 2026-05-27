@@ -29,7 +29,7 @@ export function EmotionSelectBox({ value, onChange }: EmotionSelectBoxProps) {
             accessibilityState={{ selected: isSelected }}
             onPress={() => onChange(type)}
             className={cn(
-              'min-w-[30%] flex-1 items-center rounded-card border py-3',
+              'min-w-[30%] flex-1 items-center rounded-xl border py-3',
               isSelected ? 'border-accent/40 bg-surface-md' : 'border-transparent'
             )}
           >
