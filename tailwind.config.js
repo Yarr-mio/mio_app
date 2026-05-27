@@ -60,7 +60,18 @@ module.exports = {
 
         // 회원가입 페이지
         subtitle: '#959595', // text-subtitle — 페이지 서브 텍스트
-        accent: '#9D7FEE', // bg-accent/5, border-accent/10, bg-accent/10, border-accent/50
+        accent: '#9D7FEE', // 강조색 (서브 탭 선택 시 base)
+
+        // ── 서브 버튼 탭 (온보딩·회원가입 등 선택형 칩) ─────────────────
+        // 선택됨: #9D7FEE 10% 배경 + 50% stroke → bg-sub-tab-selected-bg, border-sub-tab-selected-border
+        'sub-tab-selected-bg': '#9D7FEE1A',
+        'sub-tab-selected-border': '#9D7FEE80',
+        // 비활성 (step2Concern 제외 공통): #FFFFFF 5% 배경 + 10% stroke
+        // → bg-sub-tab-inactive-bg, border-sub-tab-inactive-border
+        'sub-tab-inactive-bg': '#FFFFFF0D',
+        'sub-tab-inactive-border': '#FFFFFF1A',
+        // 비활성 (step2Concern 전용): #E4E4E4 stroke, 배경 없음 → border-sub-tab-concern-inactive-border
+        'sub-tab-concern-inactive-border': '#E4E4E4',
 
         // 온보딩
         'progress-inactive': '#E9E9E9', // bg-progress-inactive — 진행 바 미완료

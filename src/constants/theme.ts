@@ -101,6 +101,7 @@ export const InputColors = {
 // fg 계층 색상 — NativeWind className 미지원 prop(color 등)에 사용
 export const FgColors = {
   default: '#FFFFFF',
+  onDefault: '#EEEAF8', // text-fg-default
   muted: '#FFFFFF80', // white/50
   faint: '#FFFFFF66', // white/40
 } as const;
