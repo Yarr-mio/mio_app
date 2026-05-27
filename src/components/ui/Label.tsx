@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { View } from 'react-native';
 
 interface LabelProps {
   label: string;
@@ -16,7 +17,9 @@ interface LabelProps {
 export function Label({ label }: LabelProps) {
   return (
     <View className="self-start rounded-full border border-label-border bg-label-bg px-2.5 py-0.5">
-      <Text className="text-label-text text-xs">{label}</Text>
+      <ThemedText type="smallMedium" className="text-label-text">
+        {label}
+      </ThemedText>
     </View>
   );
 }

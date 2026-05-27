@@ -38,7 +38,7 @@ export function EmotionSelectBox({ value, onChange }: EmotionSelectBoxProps) {
               style={{ width: iconSize, height: iconSize }}
               contentFit="contain"
             />
-            <ThemedText type="small" className="mt-2 font-bold text-fg">
+            <ThemedText type="smallTitle" className="mt-2 text-fg">
               {meta.label}
             </ThemedText>
             <ThemedText type="small" className="mt-1 px-1 text-center font-normal text-fg">
