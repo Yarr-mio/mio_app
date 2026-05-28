@@ -9,13 +9,13 @@ import { useEffect } from 'react';
 import { View, useColorScheme } from 'react-native';
 
 import queryClient from '@/api/queryClient';
-import { NOTO_SANS_KR_FONTS } from '@/constants/fonts';
+import { NANUM_MYEONGJO_FONTS, NOTO_SANS_KR_FONTS } from '@/constants/fonts';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [fontsLoaded, fontError] = useFonts(NOTO_SANS_KR_FONTS);
+  const [fontsLoaded, fontError] = useFonts({ ...NOTO_SANS_KR_FONTS, ...NANUM_MYEONGJO_FONTS });
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

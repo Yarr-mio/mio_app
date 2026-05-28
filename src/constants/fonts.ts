@@ -10,3 +10,10 @@ export const NOTO_SANS_KR_FONTS = {
   'NotoSansKR-SemiBold': require('@/assets/fonts/NotoSansKR-SemiBold.ttf'),
   'NotoSansKR-Thin': require('@/assets/fonts/NotoSansKR-Thin.ttf'),
 } as const;
+
+/**
+ * 스플래시 스크린 및 로그인 화면에서만 사용됨!
+ */
+export const NANUM_MYEONGJO_FONTS = {
+  NanumMyeongjoExtraBold: require('@/assets/fonts/NanumMyeongjoExtraBold.ttf'),
+} as const;

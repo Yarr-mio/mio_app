@@ -39,6 +39,7 @@ module.exports = {
         extrabold: ['NotoSansKR-ExtraBold'], // font-extrabold
         black: ['NotoSansKR-Black'], // font-black
         mono: ['NotoSansKR-Regular'], // font-mono
+        NanumMyeongjoExtraBold: ['NanumMyeongjoExtraBold'], // font-NanumMyeongjoExtraBold
       },
       borderRadius: {
         card: '20px', // rounded-card — 온보딩 선택/소개 박스

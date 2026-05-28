@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -22,11 +22,18 @@ export default function LoginScreen() {
     <View className="flex-1 bg-midnight">
       <AuthBackground variant="login" />
       <ScreenContainer className="flex-1 px-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
-        <View className="flex-1 items-center justify-center">
-          <ThemedText type="title" className="font-bold tracking-widest text-ink-night">
+        <View className="flex-1 items-center justify-center gap-6">
+          <Text
+            className="tracking-[0.22em] text-ink-night"
+            // Custom font exception: ThemedText(type="title")의 기본 font-bold 처리로 fontFamily override가 불안정해 RN Text + style로 직접 지정
+            style={{ fontFamily: 'NanumMyeongjoExtraBold', fontSize: 45 }}
+          >
             MIO
-          </ThemedText>
-          <ThemedText type="default" className="mt-3 text-center text-ink-dim-night">
+          </Text>
+          <ThemedText
+            type="smallTitle"
+            className="text-center text-sm tracking-[0.25em] text-fg-muted"
+          >
             마음의 이야기
           </ThemedText>
         </View>
