@@ -17,7 +17,7 @@ export function OnboardingCompleteScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { character_id, emotion_state, emoji_score, concern_types, preferred_style, reset } =
+  const { character_id, emotion_state, emoji_score, concern_types, preferred_style } =
     useOnboardingStore();
   const { setOnboardingResult } = useUserStore();
   const selectedCharacterId = character_id ?? ONBOARDING_DEFAULT_CHARACTER_ID;
@@ -34,7 +34,6 @@ export function OnboardingCompleteScreen() {
       characterId: selectedCharacterId,
     });
 
-    reset();
     if (__DEV__) {
       // 저장된 데이터 콘솔 확인용!!
       // console.log('[userStore] 온보딩 완료 후 저장값:', useUserStore.getState());
