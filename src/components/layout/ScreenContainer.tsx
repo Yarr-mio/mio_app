@@ -1,7 +1,7 @@
 /**
- * 화면 최상위 컨테이너
+ * 화면 최상위 컨테이너입니다!
  * - 노치/다이나믹 아일랜드/홈바 등 기기별 safe-area 패딩을 자동 처리
- * - 좌우 패딩·배경색 등 화면별 스타일은 className으로 직접 지정
+ * - 좌우 패딩 및 배경색 등 화면별 스타일은 className으로 직접 지정
  * - useSafeAreaInsets()를 매 화면마다 반복 작성하지 않아도 되도록 추상화
  */
 import { ScreenSpacing } from '@/constants/theme';
