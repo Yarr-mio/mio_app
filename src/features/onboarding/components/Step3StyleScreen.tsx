@@ -1,3 +1,4 @@
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
@@ -6,37 +7,21 @@ import {
   ONBOARDING_TOTAL_STEPS,
   type OnboardingStyleType,
 } from '@/constants/onboarding';
-import { OnboardingStyleCardLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
+import {
+  OnboardingStyleCardClasses,
+  OnboardingStyleCardLayout,
+  PressableConfig,
+  ScreenSpacing,
+} from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
+import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ONBOARDING_CURRENT_STEP = 3;
-
-interface SkipButtonProps {
-  onPress: () => void;
-  className?: string;
-}
-
-function SkipButton({ onPress, className }: SkipButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel="건너뛰기"
-      className={className}
-      hitSlop={PressableConfig.hitSlop}
-    >
-      <ThemedText type="default" className="text-subtitle">
-        건너뛰기
-      </ThemedText>
-    </Pressable>
-  );
-}
 
 interface StyleOptionCardProps {
   title: string;
@@ -70,15 +55,7 @@ function StyleOptionCard({
       )}
       hitSlop={PressableConfig.hitSlop}
     >
-      <View
-        style={{
-          width: iconSlotSize,
-          height: iconSlotSize,
-          overflow: 'hidden',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <View className={OnboardingStyleCardClasses.iconSlot}>
         <Image
           source={characterImage}
           style={{ width: iconRenderSize, height: iconRenderSize }}
@@ -98,7 +75,6 @@ function StyleOptionCard({
 }
 
 export function Step3StyleScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { preferred_style, setPreferredStyle, setCharacterId } = useOnboardingStore();
 
@@ -129,13 +105,7 @@ export function Step3StyleScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{
-          paddingTop: insets.top,
-          paddingBottom: Math.max(insets.bottom, ScreenSpacing.bottomInsetMin),
-        }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <OnboardingHeader
             currentStep={ONBOARDING_CURRENT_STEP}
@@ -175,9 +145,13 @@ export function Step3StyleScreen() {
           <Button disabled={!isStyleSelected} onPress={handleNext}>
             다음
           </Button>
-          <SkipButton onPress={handleSkip} className="items-center py-4" />
+          <OnboardingSkipButton
+            label="건너뛰기"
+            onPress={handleSkip}
+            className="items-center py-4"
+          />
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

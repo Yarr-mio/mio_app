@@ -7,6 +7,7 @@ import {
 } from '@/constants/characters';
 import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import { userStoreUtils, useUserStore } from '@/store/userStore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
@@ -16,12 +17,29 @@ export function OnboardingCompleteScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { character_id } = useOnboardingStore();
+  const { character_id, emotion_state, emoji_score, concern_types, preferred_style, reset } =
+    useOnboardingStore();
+  const { setOnboardingResult } = useUserStore();
   const selectedCharacterId = character_id ?? ONBOARDING_DEFAULT_CHARACTER_ID;
   const character = getOnboardingCharacterById(selectedCharacterId);
 
   const handleStart = () => {
-    router.push('/(main)/chat');
+    const emotionSelection =
+      emotion_state && emoji_score ? { emotion: emotion_state, intensity: emoji_score } : null;
+
+    setOnboardingResult({
+      emotionSelection,
+      concernTypes: userStoreUtils.normalizeConcernTypes(concern_types),
+      preferredStyle: preferred_style,
+      characterId: selectedCharacterId,
+    });
+
+    reset();
+    if (__DEV__) {
+      // 저장된 데이터 콘솔 확인용!!
+      // console.log('[userStore] 온보딩 완료 후 저장값:', useUserStore.getState());
+    }
+    router.push('/(main)/home');
   };
 
   return (

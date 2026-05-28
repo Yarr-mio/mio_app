@@ -99,6 +99,11 @@ export const OnboardingStyleCardLayout = {
   iconRenderScale: 0.9,
 } as const;
 
+/** NativeWind className — OnboardingStyleCardLayout px 값과 동일하게 유지 */
+export const OnboardingStyleCardClasses = {
+  iconSlot: 'h-[92px] w-[92px] overflow-hidden items-center justify-center',
+} as const;
+
 /** 온보딩 완료(5단계) 캐릭터 아이콘 */
 export const OnboardingCompleteLayout = {
   characterIconSize: 240,

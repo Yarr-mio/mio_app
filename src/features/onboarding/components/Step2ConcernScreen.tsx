@@ -9,6 +9,7 @@ import {
 } from '@/constants/onboarding';
 import { FgColors, PressableConfig, ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
+import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { useRouter } from 'expo-router';
@@ -16,27 +17,6 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ONBOARDING_CURRENT_STEP = 2;
-
-interface SkipButtonProps {
-  onPress: () => void;
-  className?: string;
-}
-
-function SkipButton({ onPress, className }: SkipButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel="건너뛰기"
-      className={className}
-      hitSlop={PressableConfig.hitSlop}
-    >
-      <ThemedText type="default" className="text-subtitle">
-        건너뛰기
-      </ThemedText>
-    </Pressable>
-  );
-}
 
 interface ConcernButtonProps {
   label: string;
@@ -143,7 +123,11 @@ export function Step2ConcernScreen() {
           <Button disabled={!isConcernSelected} onPress={handleNext}>
             다음
           </Button>
-          <SkipButton onPress={handleSkip} className="items-center py-4" />
+          <OnboardingSkipButton
+            label="건너뛰기"
+            onPress={handleSkip}
+            className="items-center py-4"
+          />
         </View>
       </View>
     </View>

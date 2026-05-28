@@ -1,4 +1,3 @@
-import { ChevronRightIcon } from '@/assets/icons';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
@@ -13,12 +12,8 @@ import {
   type OnboardingCharacterId,
 } from '@/constants/characters';
 import type { OnboardingStyleType } from '@/constants/onboarding';
-import {
-  OnboardingStyleCardLayout,
-  PressableConfig,
-  ScreenSpacing,
-  SubtitleColors,
-} from '@/constants/theme';
+import { OnboardingStyleCardLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
+import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { getRecommendedCharacterIds } from '@/features/onboarding/utils/getRecommendedCharacterIds';
 import { cn } from '@/utils/cn';
@@ -34,18 +29,11 @@ interface SeeMoreCharactersButtonProps {
 
 function SeeMoreCharactersButton({ onPress }: SeeMoreCharactersButtonProps) {
   return (
-    <Pressable
+    <OnboardingSkipButton
+      label={`${ONBOARDING_STEP4_SEE_MORE_LABEL} >`}
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={ONBOARDING_STEP4_SEE_MORE_LABEL}
       className="flex-row items-center justify-center gap-1 py-4"
-      hitSlop={PressableConfig.hitSlop}
-    >
-      <ThemedText type="default" className="text-subtitle">
-        {ONBOARDING_STEP4_SEE_MORE_LABEL}
-      </ThemedText>
-      <ChevronRightIcon width={14} height={14} color={SubtitleColors.DEFAULT} />
-    </Pressable>
+    />
   );
 }
 

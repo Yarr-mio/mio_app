@@ -1,43 +1,22 @@
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { EmotionIntensitySlider } from '@/components/ui/EmotionIntensitySlider';
 import { EmotionSelectBox } from '@/components/ui/EmotionSelectBox';
 import { ONBOARDING_DEFAULT_EMOJI_SCORE, ONBOARDING_TOTAL_STEPS } from '@/constants/onboarding';
-import { PressableConfig, ScreenSpacing } from '@/constants/theme';
+import { ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
+import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import type { EmotionType } from '@/types/checkin';
 import { cn } from '@/utils/cn';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, View } from 'react-native';
 
 const ONBOARDING_CURRENT_STEP = 1;
 
-interface SkipButtonProps {
-  onPress: () => void;
-  className?: string;
-}
-
-function SkipButton({ onPress, className }: SkipButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel="건너뛰기"
-      className={className}
-      hitSlop={PressableConfig.hitSlop}
-    >
-      <ThemedText type="default" className="text-subtitle">
-        건너뛰기
-      </ThemedText>
-    </Pressable>
-  );
-}
-
 export function Step1EmotionScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { emotion_state, emoji_score, setEmotionState, setEmojiScore } = useOnboardingStore();
 
@@ -70,13 +49,7 @@ export function Step1EmotionScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{
-          paddingTop: insets.top,
-          paddingBottom: Math.max(insets.bottom, ScreenSpacing.bottomInsetMin),
-        }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <OnboardingHeader
             currentStep={ONBOARDING_CURRENT_STEP}
@@ -104,7 +77,7 @@ export function Step1EmotionScreen() {
 
           <View
             className={cn(
-              'mt-8 overflow-visible rounded-xl border border-onboarding-border bg-onboarding-surface p-6 shadow-lg shadow-black/25',
+              'mt-8 overflow-visible rounded-card border border-onboarding-border bg-onboarding-surface p-6 shadow-lg shadow-black/25',
               !isEmotionSelected && 'opacity-40'
             )}
             pointerEvents={isEmotionSelected ? 'auto' : 'none'}
@@ -134,9 +107,13 @@ export function Step1EmotionScreen() {
           <Button disabled={!isEmotionSelected} onPress={handleNext}>
             다음
           </Button>
-          <SkipButton onPress={handleSkip} className="items-center py-4" />
+          <OnboardingSkipButton
+            label="건너뛰기"
+            onPress={handleSkip}
+            className="items-center py-4"
+          />
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }
