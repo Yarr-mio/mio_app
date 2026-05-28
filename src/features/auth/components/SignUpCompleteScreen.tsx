@@ -1,12 +1,13 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { StepIndicator } from '@/components/ui/StepIndicator';
+import { ScreenSpacing } from '@/constants/theme';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
@@ -59,7 +60,6 @@ function FeatureHighlightCard({ emoji, lines }: FeatureHighlightCardProps) {
 }
 
 export default function SignUpCompleteScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
@@ -71,10 +71,7 @@ export default function SignUpCompleteScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{ paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
@@ -116,7 +113,7 @@ export default function SignUpCompleteScreen() {
         <View className="pt-4">
           <Button onPress={handleStartPartnerMatching}>파트너 매칭 시작</Button>
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

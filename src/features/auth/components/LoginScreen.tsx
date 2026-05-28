@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 
 export default function LoginScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const handleKakaoLogin = () => {
@@ -21,10 +21,7 @@ export default function LoginScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground variant="login" />
-      <View
-        className="flex-1 px-6"
-        style={{ paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }}
-      >
+      <ScreenContainer className="flex-1 px-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="flex-1 items-center justify-center">
           <ThemedText type="title" className="font-bold tracking-widest text-ink-night">
             MIO
@@ -38,7 +35,7 @@ export default function LoginScreen() {
           <SocialLoginButton provider="apple" onPress={handleAppleLogin} />
           <SocialLoginButton provider="kakao" onPress={handleKakaoLogin} />
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }
