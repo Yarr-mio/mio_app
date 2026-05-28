@@ -6,8 +6,8 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { StepIndicator } from '@/components/ui/StepIndicator';
 import { ScreenSpacing } from '@/constants/theme';
+import { StepIndicator } from '@/features/auth/components/StepIndicator';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 

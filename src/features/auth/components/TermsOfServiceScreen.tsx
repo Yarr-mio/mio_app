@@ -8,8 +8,8 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { StepIndicator } from '@/components/ui/StepIndicator';
 import { FgColors, ScreenSpacing } from '@/constants/theme';
+import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_STEP_COUNT = 4;
