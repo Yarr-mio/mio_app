@@ -1,5 +1,5 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -9,7 +9,9 @@ import {
   MessageTextIcon,
   SecurityUserIcon,
 } from '@/assets/icons';
-import { TabBarColors } from '@/constants/theme';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { TabBarColors, TabBarShadowStyle } from '@/constants/theme';
+import { cn } from '@/utils/cn';
 
 const TAB_ICONS = {
   home: HomeIcon,
@@ -25,7 +27,10 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
   const { bottom } = useSafeAreaInsets();
 
   return (
-    <View className="flex-row bg-midnight border-t border-line" style={{ paddingBottom: bottom }}>
+    <View
+      className="flex-row overflow-visible bg-tab-bar"
+      style={[{ paddingBottom: bottom }, TabBarShadowStyle]}
+    >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -64,11 +69,14 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
               height={24}
               color={isFocused ? TabBarColors.iconActive : TabBarColors.iconInactive}
             />
-            <Text className={`text-xs mt-1 ${isFocused ? 'text-fg' : 'text-fg-ghost'}`}>
+            <ThemedText
+              type="small"
+              className={cn('mt-1', isFocused ? 'text-primary' : 'text-label/70')}
+            >
               {typeof options.tabBarLabel === 'string'
                 ? options.tabBarLabel
                 : (options.title ?? route.name)}
-            </Text>
+            </ThemedText>
           </Pressable>
         );
       })}

@@ -1,5 +1,9 @@
-import { Redirect } from 'expo-router';
+import { useRouter } from 'expo-router';
+
+import SplashScreen from '@/features/auth/components/SplashScreen';
 
 export default function Index() {
-  return <Redirect href="/home" />;
+  const router = useRouter();
+
+  return <SplashScreen onFinish={() => router.replace('/(auth)/login')} />;
 }
