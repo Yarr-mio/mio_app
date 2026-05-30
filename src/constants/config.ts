@@ -1,25 +1,23 @@
-/**
- * 앱 전역 설정/상수.
- *
- * Coding Rules 준수:
- * - 환경변수(process.env.EXPO_PUBLIC_*)는 오직 이 파일에서만 읽는다. (규칙 #9)
- * - 매직 넘버/문자열을 여기로 모아두고, 다른 레이어에서는 import해서 쓴다. (규칙 #2)
- */
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || 'https://api-dev.mio.app';
 
 /**
- * mock 모드 플래그.
+ * mock 모드 플래그
  *
  * - true: `api/endpoints/*`가 실제 서버 호출 대신 명세 기반 mock 응답을 반환
  * - false: `API_BASE_URL`로 실제 네트워크 요청 수행
  */
 export const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK === 'true';
 
+/** 약관 동의 API 요청 시 사용하는 약관 버전 */
+export const AUTH_CONSENT_VERSION = '1.0';
+
+/** 카카오 네이티브 앱 키 (Kakao SDK 초기화 및 config plugin용) */
+export const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '';
+
 /**
- * HTTP 상태 코드 상수.
- *
- * - 인터셉터나 에러 처리에서 숫자(401)를 직접 쓰지 않도록 상수화.
+ * HTTP 상태 코드 상수
+ * - 인터셉터나 에러 처리에서 숫자(401)를 직접 쓰지 않도록 상수화
  */
 export const HTTP_STATUS = {
   UNAUTHORIZED: 401,

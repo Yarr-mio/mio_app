@@ -25,6 +25,8 @@
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
     "@miblanchard/react-native-slider": "^2.6.0",
+    "@react-native-kakao/core": "^2.4.5",
+    "@react-native-kakao/user": "^2.4.5",
     "@react-navigation/bottom-tabs": "^7.15.5",
     "@react-navigation/elements": "^2.9.10",
     "@react-navigation/native": "^7.1.33",
@@ -33,6 +35,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.3.0",
     "expo": "~55.0.24",
+    "expo-build-properties": "^56.0.16",
     "expo-constants": "~55.0.16",
     "expo-crypto": "^56.0.4",
     "expo-device": "~55.0.17",
