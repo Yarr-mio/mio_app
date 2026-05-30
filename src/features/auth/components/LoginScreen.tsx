@@ -4,6 +4,7 @@ import { Alert, Text, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { Button } from '@/components/ui/Button';
 import { ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 import { useSocialLogin } from '@/features/auth/hooks/useAuth';
@@ -39,6 +40,10 @@ export default function LoginScreen() {
     Alert.alert('애플 로그인', '애플 로그인은 준비 중입니다.');
   };
 
+  const handleGoHome = () => {
+    router.replace('/(main)/home');
+  };
+
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground variant="login" />
@@ -70,6 +75,9 @@ export default function LoginScreen() {
             onPress={handleKakaoLogin}
             disabled={socialLogin.isPending}
           />
+          <Button onPress={handleGoHome} disabled={socialLogin.isPending}>
+            홈화면 이동
+          </Button>
         </View>
       </ScreenContainer>
     </View>
