@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { FgColors, ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { AUTH_ROUTES } from '@/features/auth/constants/routes';
 import { useSignupConsent } from '@/features/auth/hooks/useAuth';
 import { buildSignupConsents, type TermConsentId } from '@/features/auth/utils/buildSignupConsents';
 import { cn } from '@/utils/cn';
@@ -148,7 +149,7 @@ export default function TermsOfServiceScreen() {
       await signupConsent.mutateAsync({
         consents: buildSignupConsents(checkedState),
       });
-      router.push('/(auth)/signup/info');
+      router.push(AUTH_ROUTES.signupInfo);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : '약관 동의에 실패했습니다. 다시 시도해 주세요.';

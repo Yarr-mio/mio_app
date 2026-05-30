@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { InputColors, ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { AUTH_ROUTES } from '@/features/auth/constants/routes';
 import { useSignupProfile } from '@/features/auth/hooks/useAuth';
 import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
 import { useUserStore } from '@/store/userStore';
@@ -116,7 +117,7 @@ export default function SignUpInfoScreen() {
       });
 
       router.push({
-        pathname: '/(auth)/signup/complete',
+        pathname: AUTH_ROUTES.signupComplete,
         params: { nickname: trimmedNickname },
       });
     } catch (error) {
