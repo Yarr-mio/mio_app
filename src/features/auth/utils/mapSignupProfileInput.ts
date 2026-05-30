@@ -8,6 +8,11 @@ const USER_AGE_TO_API: Record<UserAgeRange, AgeRange> = {
   '40s': '40대',
 };
 
+const USER_GENDER_TO_API: Record<UserGender, Gender> = {
+  female: 'female',
+  male: 'male',
+};
+
 interface SignupProfileFormInput {
   nickname: string;
   gender: UserGender | null;
@@ -22,7 +27,7 @@ export function mapSignupProfileInput(input: SignupProfileFormInput): AuthSignup
   }
 
   if (input.gender) {
-    body.gender = input.gender as Gender;
+    body.gender = USER_GENDER_TO_API[input.gender];
   }
 
   return body;
