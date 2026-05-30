@@ -13,8 +13,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   ios: {
     icon: './assets/expo.icon',
+    bundleIdentifier: 'com.mio.yarr',
   },
   android: {
+    package: 'com.mio.yarr',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -68,7 +70,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       '@react-native-kakao/core',
       {
+        // URL Scheme(kakao{NATIVE_APP_KEY}) 등 네이티브 설정용
         nativeAppKey: KAKAO_NATIVE_APP_KEY,
+        ios: {
+          // 카카오톡 로그인 후 앱 복귀 URL 처리
+          handleKakaoOpenUrl: true,
+        },
       },
     ],
   ],
