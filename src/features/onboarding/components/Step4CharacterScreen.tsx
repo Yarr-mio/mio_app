@@ -129,6 +129,8 @@ export function Step4CharacterScreen() {
     if (!isCharacterSelected) {
       return;
     }
+    // 온보딩 마지막 API: POST /v1/onboarding/character -> signup_step = ONBOARDING_COMPLETED
+    // 이후 POST /v1/auth/signup/complete는 OnboardingCompleteScreen.handleStart에서 호출
     router.push('/(auth)/onboarding/onboardingComplete');
   };
 

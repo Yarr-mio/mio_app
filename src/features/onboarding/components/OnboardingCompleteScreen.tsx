@@ -24,6 +24,15 @@ export function OnboardingCompleteScreen() {
   const character = getOnboardingCharacterById(selectedCharacterId);
 
   const handleStart = () => {
+    /**
+     * TODO(signup/complete): POST /v1/auth/signup/complete 호출 위치
+     *
+     * 백엔드 명세(v1.2.0) 기준 진입 조건: signup_step = ONBOARDING_COMPLETED
+     * (POST /v1/onboarding/character 완료 후)
+     *
+     * useSignupComplete().mutateAsync()를 여기서 호출한 뒤 홈으로 이동해야 함
+     * 현재는 SignUpCompleteScreen(온보딩 전)에 임시 연동되어 있으므로 추후 이전 필요!!
+     */
     const emotionSelection =
       emotion_state && emoji_score ? { emotion: emotion_state, intensity: emoji_score } : null;
 

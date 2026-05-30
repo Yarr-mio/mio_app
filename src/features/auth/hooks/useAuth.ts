@@ -1,34 +1,32 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { postAuthLogin, postAuthLogout, postAuthRefresh } from '@/api/auth';
+import {
+  postAuthLogin,
+  postAuthLogout,
+  postAuthRefresh,
+  postAuthSignupComplete,
+  postAuthSignupConsent,
+  postAuthSignupProfile,
+} from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
-import type { AuthLoginResponse, SocialProvider } from '@/types/auth';
+import type {
+  AuthLoginResponse,
+  AuthSignupCompleteResponse,
+  AuthSignupConsentRequest,
+  AuthSignupConsentResponse,
+  AuthSignupProfileRequest,
+  AuthSignupProfileResponse,
+  SocialProvider,
+} from '@/types/auth';
 import { storage } from '@/utils/storage';
 
-/**
- * Auth 관련 TanStack Query 훅 모음.
- *
- * 레이어 책임(CODING_RULES.md #1/#11):
- * - endpoints(auth.ts)는 "순수 API 호출"만 담당한다.
- * - 이 파일은 TanStack Query의 `useMutation`으로 감싸서,
- *   "호출 상태(isPending/isError 등)"와 "성공 시 side-effect(토큰 저장)"를 담당한다.
- *
- * 저장 정책(요구사항 #5):
- * - access_token: Zustand 메모리 상태에 저장 (앱 재시작 시 초기화됨)
- * - refresh_token: Secure Storage에 저장 (앱 재시작 후에도 유지됨)
- */
 interface SocialLoginInput {
   provider: SocialProvider;
-  id_token: string | null;
-  access_token: string | null;
+  idToken: string | null;
+  accessToken: string | null;
 }
 
-/**
- * 소셜 로그인 mutation.
- *
- * - 성공 시: access_token → 메모리 저장, refresh_token → Secure Storage 저장
- * - 이후 다른 API 요청은 `api/client.ts` request interceptor가 Authorization 헤더를 자동 주입한다.
- */
+// 카카오/애플 로그인
 export function useSocialLogin() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
@@ -41,12 +39,37 @@ export function useSocialLogin() {
   });
 }
 
-/**
- * 로그아웃 mutation.
- *
- * - 서버에는 "현재 device_id의 세션만" 무효화 요청 (POST /v1/auth/logout)
- * - 로컬에서는 즉시 access/refresh 토큰을 삭제해 "로그인 상태"를 해제한다.
- */
+// 이용약관 동의
+export function useSignupConsent() {
+  return useMutation<AuthSignupConsentResponse, Error, AuthSignupConsentRequest>({
+    mutationFn: (body) => postAuthSignupConsent(body),
+  });
+}
+
+// 프로필 설정 화면
+export function useSignupProfile() {
+  return useMutation<AuthSignupProfileResponse, Error, AuthSignupProfileRequest>({
+    mutationFn: (body) => postAuthSignupProfile(body),
+  });
+}
+
+// 회원가입 완료
+export function useSignupComplete() {
+  /**
+   * POST /v1/auth/signup/complete
+   *
+   * 명세 진입 조건: signup_step = ONBOARDING_COMPLETED (온보딩 전체 완료 후)
+   * 실제 호출 위치: OnboardingCompleteScreen.handleStart (마지막 온보딩 단계)
+   *
+   * TODO: 온보딩 작업 시 SignUpCompleteScreen에 임시 연동된 호출을 제거하고,
+   *       OnboardingCompleteScreen으로 이전해야 함!!!
+   */
+  return useMutation<AuthSignupCompleteResponse, Error, void>({
+    mutationFn: () => postAuthSignupComplete(),
+  });
+}
+
+// 로그아웃
 export function useLogout() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
@@ -59,14 +82,7 @@ export function useLogout() {
   });
 }
 
-/**
- * refresh_token 기반 Access Token 갱신 mutation.
- *
- * 참고:
- * - 실제 앱 흐름에서는 `api/client.ts` 인터셉터가 401(AUTH_TOKEN_EXPIRED)에서 자동 갱신을 수행한다.
- * - 하지만 앱 시작 시 스플래시에서 "refresh_token이 있으면 미리 갱신" 같은 케이스에서
- *   UI 레이어가 직접 사용할 수 있도록 별도 훅으로도 제공한다.
- */
+// 새 access token 발급
 export function useRefreshToken() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
 

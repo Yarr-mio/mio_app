@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { Alert, ScrollView, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { useSignupComplete } from '@/features/auth/hooks/useAuth';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
@@ -61,11 +62,31 @@ function FeatureHighlightCard({ emoji, lines }: FeatureHighlightCardProps) {
 
 export default function SignUpCompleteScreen() {
   const router = useRouter();
+  const signupComplete = useSignupComplete();
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
 
-  const handleStartPartnerMatching = () => {
-    router.push('/(auth)/onboarding/step1Emotion');
+  /**
+   * TODO(signup/complete): POST /v1/auth/signup/complete는 명세상 signup_step = ONBOARDING_COMPLETED
+   * 이후(온보딩 완료 후) 호출해야 함!! 현재는 mock 연동을 위해 임시로 이 화면에서 호출
+   * 실서버 연동 시 SIGNUP_STEP_INVALID가 발생할 수 있음
+   *
+   * 올바른 호출 위치: OnboardingCompleteScreen.handleStart
+   * (src/features/onboarding/components/OnboardingCompleteScreen.tsx)
+   *
+   * 온보딩 작업 시 해당 사항 수정할 것!
+   */
+  const handleStartPartnerMatching = async () => {
+    try {
+      await signupComplete.mutateAsync();
+      router.push('/(auth)/onboarding/step1Emotion');
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
+      Alert.alert('가입 완료', message);
+    }
   };
 
   return (
@@ -111,7 +132,9 @@ export default function SignUpCompleteScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button onPress={handleStartPartnerMatching}>파트너 매칭 시작</Button>
+          <Button disabled={signupComplete.isPending} onPress={handleStartPartnerMatching}>
+            파트너 매칭 시작
+          </Button>
         </View>
       </ScreenContainer>
     </View>

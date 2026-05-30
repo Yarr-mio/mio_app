@@ -1,72 +1,42 @@
 import { useRouter } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
-import { getAuthSignupStatus } from '@/api/auth';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 import { useSocialLogin } from '@/features/auth/hooks/useAuth';
-import type { SignupStep } from '@/types/auth';
+import { signInWithKakao } from '@/features/auth/utils/kakaoLogin';
+import { navigateAfterLogin } from '@/features/auth/utils/navigateAfterLogin';
 
-type AuthRoute =
-  | '/(auth)/signup/termsOfService'
-  | '/(auth)/onboarding/step1Emotion'
-  | '/(main)/home';
-
-function routeForSignupStep(step: SignupStep): AuthRoute {
-  switch (step) {
-    case 'SOCIAL_AUTHENTICATED':
-      return '/(auth)/signup/termsOfService';
-    case 'PROFILE_COMPLETED':
-      return '/(auth)/onboarding/step1Emotion';
-    case 'ONBOARDING_COMPLETED':
-    case 'COMPLETED':
-      return '/(main)/home';
+function getLoginErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
   }
+  return '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.';
 }
 
 export default function LoginScreen() {
   const router = useRouter();
   const socialLogin = useSocialLogin();
 
-  const handleLoginSuccess = async (signupStep: SignupStep, isNewUser: boolean) => {
-    if (isNewUser) {
-      if (signupStep !== 'SOCIAL_AUTHENTICATED') {
-        const status = await getAuthSignupStatus();
-        router.replace(routeForSignupStep(status.data.signup_step));
-        return;
-      }
-      router.replace(routeForSignupStep(signupStep));
-      return;
-    }
-
-    if (signupStep === 'COMPLETED') {
-      router.replace('/(main)/home');
-      return;
-    }
-
-    const status = await getAuthSignupStatus();
-    router.replace(routeForSignupStep(status.data.signup_step));
-  };
-
   const handleKakaoLogin = async () => {
-    const res = await socialLogin.mutateAsync({
-      provider: 'kakao',
-      access_token: 'mock_kakao_access_token',
-      id_token: null,
-    });
-    await handleLoginSuccess(res.data.signup_step, res.data.is_new_user);
+    try {
+      const accessToken = await signInWithKakao();
+      const res = await socialLogin.mutateAsync({
+        provider: 'kakao',
+        accessToken,
+        idToken: null,
+      });
+      await navigateAfterLogin(router, res.data.signup_step, res.data.is_new_user);
+    } catch (error) {
+      Alert.alert('카카오 로그인', getLoginErrorMessage(error));
+    }
   };
 
   const handleAppleLogin = async () => {
-    const res = await socialLogin.mutateAsync({
-      provider: 'apple',
-      id_token: 'mock_apple_id_token',
-      access_token: null,
-    });
-    await handleLoginSuccess(res.data.signup_step, res.data.is_new_user);
+    Alert.alert('애플 로그인', '애플 로그인은 준비 중입니다.');
   };
 
   return (

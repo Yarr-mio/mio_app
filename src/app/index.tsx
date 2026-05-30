@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 
 import { postAuthRefresh } from '@/api/auth';
-import { USE_MOCK } from '@/constants/config';
 import SplashScreen from '@/features/auth/components/SplashScreen';
 import { useAuthStore } from '@/store/authStore';
 import { storage } from '@/utils/storage';
@@ -11,7 +10,6 @@ export default function Index() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
   const handleFinish = async () => {
-    console.log('USE_MOCK:', USE_MOCK);
     const refreshToken = await storage.refreshToken.get();
     if (!refreshToken) {
       router.replace('/(auth)/login');

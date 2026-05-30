@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -9,6 +9,8 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { InputColors, ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { useSignupProfile } from '@/features/auth/hooks/useAuth';
+import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
 import { useUserStore } from '@/store/userStore';
 import type { UserAgeRange, UserGender } from '@/types/user';
 import { cn } from '@/utils/cn';
@@ -80,6 +82,7 @@ function SelectableField({ label, children }: SelectableFieldProps) {
 
 export default function SignUpInfoScreen() {
   const router = useRouter();
+  const signupProfile = useSignupProfile();
   const { setSignupInfo } = useUserStore();
   const [nickname, setNickname] = useState('');
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
@@ -90,22 +93,37 @@ export default function SignUpInfoScreen() {
   const canContinue = trimmedNickname.length > 0;
   const isNicknameActive = isNicknameFocused || nickname.length > 0;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!canContinue) {
       return;
     }
 
     const normalizedGender = gender === 'none' ? null : gender;
-    setSignupInfo({
-      nickname: trimmedNickname,
-      gender: normalizedGender,
-      ageRange: age,
-    });
 
-    router.push({
-      pathname: '/(auth)/signup/complete',
-      params: { nickname: trimmedNickname },
-    });
+    try {
+      await signupProfile.mutateAsync(
+        mapSignupProfileInput({
+          nickname: trimmedNickname,
+          gender: normalizedGender,
+          ageRange: age,
+        })
+      );
+
+      setSignupInfo({
+        nickname: trimmedNickname,
+        gender: normalizedGender,
+        ageRange: age,
+      });
+
+      router.push({
+        pathname: '/(auth)/signup/complete',
+        params: { nickname: trimmedNickname },
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '프로필 저장에 실패했습니다. 다시 시도해 주세요.';
+      Alert.alert('프로필 설정', message);
+    }
   };
 
   return (
@@ -199,7 +217,7 @@ export default function SignUpInfoScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button disabled={!canContinue} onPress={handleContinue}>
+          <Button disabled={!canContinue || signupProfile.isPending} onPress={handleContinue}>
             다음
           </Button>
         </View>
