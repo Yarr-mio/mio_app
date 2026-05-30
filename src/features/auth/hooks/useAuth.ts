@@ -8,7 +8,7 @@ import {
   postAuthSignupComplete,
   postAuthSignupConsent,
   postAuthSignupProfile,
-} from '@/api/auth';
+} from '@/api/endpoints/auth';
 import { useAuthStore } from '@/store/authStore';
 import type {
   AuthLoginResponse,
