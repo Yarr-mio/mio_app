@@ -66,7 +66,7 @@ export default function SocialLoginButton({
           )}
         >
           <Icon width={width} height={height} color={color} />
-          <ThemedText type="default" className={cn('font-semibold text-lg', text)}>
+          <ThemedText type="defaultBold" className={cn('text-xl', text)}>
             {SOCIAL_LOGIN_LABELS[provider]}
           </ThemedText>
         </View>

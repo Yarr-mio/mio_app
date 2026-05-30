@@ -2,13 +2,15 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { StepIndicator } from '@/components/ui/StepIndicator';
-import { InputColors } from '@/constants/theme';
+import { InputColors, ScreenSpacing } from '@/constants/theme';
+import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { useUserStore } from '@/store/userStore';
+import type { UserAgeRange, UserGender } from '@/types/user';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
@@ -18,8 +20,8 @@ const SIGNUP_CURRENT_STEP = 3;
 const NICKNAME_MAX_LENGTH = 10;
 const PROFILE_IMAGE_SIZE = 107;
 
-type GenderOption = 'female' | 'male' | 'none';
-type AgeOption = '10s' | '20s' | '30s' | '40s';
+type GenderOption = UserGender | 'none';
+type AgeOption = UserAgeRange;
 
 const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
   { value: 'female', label: '여성' },
@@ -53,7 +55,7 @@ function SelectionChip({ label, selected, onPress, className }: SelectionChipPro
         className
       )}
     >
-      <ThemedText type="default" className={selected ? 'text-fg-default' : 'text-label'}>
+      <ThemedText type="defaultRegular" className={selected ? 'text-fg-default' : 'text-label'}>
         {label}
       </ThemedText>
     </Pressable>
@@ -77,8 +79,8 @@ function SelectableField({ label, children }: SelectableFieldProps) {
 }
 
 export default function SignUpInfoScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { setSignupInfo } = useUserStore();
   const [nickname, setNickname] = useState('');
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [gender, setGender] = useState<GenderOption | null>(null);
@@ -92,6 +94,14 @@ export default function SignUpInfoScreen() {
     if (!canContinue) {
       return;
     }
+
+    const normalizedGender = gender === 'none' ? null : gender;
+    setSignupInfo({
+      nickname: trimmedNickname,
+      gender: normalizedGender,
+      ageRange: age,
+    });
+
     router.push({
       pathname: '/(auth)/signup/complete',
       params: { nickname: trimmedNickname },
@@ -101,10 +111,7 @@ export default function SignUpInfoScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{ paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
@@ -115,11 +122,11 @@ export default function SignUpInfoScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerClassName="grow pb-4"
         >
-          <View className="mt-10">
-            <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+          <View className="mt-12">
+            <ThemedText type="title" className="text-fg">
               MIO에게{'\n'}나를 소개해요
             </ThemedText>
-            <ThemedText type="default" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
               언제든지 수정할 수 있어요
             </ThemedText>
           </View>
@@ -134,7 +141,7 @@ export default function SignUpInfoScreen() {
 
           <View className="mt-8 gap-8">
             <View className="gap-3">
-              <ThemedText type="default" className="text-label">
+              <ThemedText type="smallTitle" className="text-label">
                 닉네임
               </ThemedText>
               <View
@@ -156,7 +163,7 @@ export default function SignUpInfoScreen() {
                   accessibilityLabel="닉네임"
                 />
               </View>
-              <ThemedText type="small" className="ml-2 text-label">
+              <ThemedText type="smallRegular" className="ml-2 text-label">
                 닉네임 설정은 최대 {NICKNAME_MAX_LENGTH}자까지 가능해요
               </ThemedText>
             </View>
@@ -196,7 +203,7 @@ export default function SignUpInfoScreen() {
             다음
           </Button>
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

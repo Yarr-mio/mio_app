@@ -1,5 +1,5 @@
-import { View } from 'react-native';
+import { Step3StyleScreen } from '@/features/onboarding/components/Step3StyleScreen';
 
-export default function Step3StyleScreen() {
-  return <View className="flex-1" />;
+export default function Step3StyleRoute() {
+  return <Step3StyleScreen />;
 }

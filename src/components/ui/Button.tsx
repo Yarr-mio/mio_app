@@ -46,8 +46,8 @@ export function Button({
       ) : (
         <Text
           className={cn(
-            'font-semibold',
-            size === 'md' ? 'text-sm' : 'text-lg',
+            'font-bold',
+            size === 'md' ? 'text-sm' : 'text-xl',
             variant === 'primary' && 'text-white',
             variant === 'ghost' && 'text-fg',
             variant === 'white' && 'text-midnight'

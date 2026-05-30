@@ -2,14 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CheckboxCheckIcon } from '@/assets/icons';
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { StepIndicator } from '@/components/ui/StepIndicator';
-import { FgColors } from '@/constants/theme';
+import { FgColors, ScreenSpacing } from '@/constants/theme';
+import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_STEP_COUNT = 4;
@@ -72,10 +72,7 @@ function AgreementCheckbox({ checked }: AgreementCheckboxProps) {
         checked ? 'border-accent bg-accent' : 'border-line-md bg-transparent'
       )}
     >
-      {checked ? (
-        // 체크 표시(✓) 크기: width / height prop (SVG viewBox 12×9 기준)
-        <CheckboxCheckIcon width={12} height={9} color={FgColors.default} />
-      ) : null}
+      {checked ? <CheckboxCheckIcon width={12} height={9} color={FgColors.default} /> : null}
     </View>
   );
 }
@@ -98,7 +95,7 @@ function AgreementRow({ label, required, checked, onToggle, onDetailPress }: Agr
         className="flex-1 flex-row items-center gap-4"
       >
         <AgreementCheckbox checked={checked} />
-        <ThemedText type="default" className="text-fg-high">
+        <ThemedText type="smallTitle" className="text-fg-high">
           {label}
         </ThemedText>
         <ThemedText type="small" className="text-badge">
@@ -118,7 +115,6 @@ function AgreementRow({ label, required, checked, onToggle, onDetailPress }: Agr
 }
 
 export default function TermsOfServiceScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [checkedState, setCheckedState] = useState(INITIAL_CHECKED_STATE);
 
@@ -152,19 +148,16 @@ export default function TermsOfServiceScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{ paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
-        <View className="mt-10">
-          <ThemedText type="subtitle" className="font-bold leading-10 text-fg">
+        <View className="mt-12">
+          <ThemedText type="title" className="text-fg">
             먼저 약관에{'\n'}동의해 주세요
           </ThemedText>
-          <ThemedText type="default" className="mt-3 text-subtitle">
+          <ThemedText type="subtitle" className="mt-3 text-subtitle">
             MIO를 안전하게 이용하기 위한 약관이에요
           </ThemedText>
         </View>
@@ -178,7 +171,7 @@ export default function TermsOfServiceScreen() {
               className={cn('flex-row items-center gap-4 px-4', AGREEMENT_CARD_HEIGHT)}
             >
               <AgreementCheckbox checked={isAgreeAllChecked} />
-              <ThemedText type="default" className="font-semibold text-fg-high">
+              <ThemedText type="smallTitle" className="text-fg-high">
                 전체 동의하기
               </ThemedText>
             </Pressable>
@@ -206,7 +199,7 @@ export default function TermsOfServiceScreen() {
             동의하고 계속하기
           </Button>
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

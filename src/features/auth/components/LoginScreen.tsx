@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
 
 import { getAuthSignupStatus } from '@/api/auth';
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 import { useSocialLogin } from '@/features/auth/hooks/useAuth';
 import type { SignupStep } from '@/types/auth';
@@ -27,7 +28,6 @@ function routeForSignupStep(step: SignupStep): AuthRoute {
 }
 
 export default function LoginScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const socialLogin = useSocialLogin();
 
@@ -72,15 +72,19 @@ export default function LoginScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground variant="login" />
-      <View
-        className="flex-1 px-6"
-        style={{ paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) }}
-      >
-        <View className="flex-1 items-center justify-center">
-          <ThemedText type="title" className="font-bold tracking-widest text-ink-night">
+      <ScreenContainer className="flex-1 px-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
+        <View className="flex-1 items-center justify-center gap-6">
+          <Text
+            className="tracking-[0.22em] text-ink-night"
+            // Custom font exception: ThemedText(type="title")의 기본 font-bold 처리로 fontFamily override가 불안정해 RN Text + style로 직접 지정
+            style={{ fontFamily: 'NanumMyeongjoExtraBold', fontSize: 45 }}
+          >
             MIO
-          </ThemedText>
-          <ThemedText type="default" className="mt-3 text-center text-ink-dim-night">
+          </Text>
+          <ThemedText
+            type="smallTitle"
+            className="text-center text-sm tracking-[0.25em] text-fg-muted"
+          >
             마음의 이야기
           </ThemedText>
         </View>
@@ -97,7 +101,7 @@ export default function LoginScreen() {
             disabled={socialLogin.isPending}
           />
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

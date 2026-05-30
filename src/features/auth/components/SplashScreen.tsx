@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { SPLASH_DURATION_MS } from '@/constants/config';
@@ -25,11 +25,15 @@ export default function SplashScreen({
 
   return (
     <View className="flex-1 items-center justify-center bg-background-dark">
-      <View className="items-center">
-        <ThemedText type="title" className="font-bold tracking-widest text-ink-night">
+      <View className="items-center gap-6">
+        <Text
+          className="tracking-[0.22em] text-ink-night"
+          // Custom font exception: ThemedText(type="title")의 기본 font-bold 처리로 fontFamily override가 불안정해 RN Text + style로 직접 지정
+          style={{ fontFamily: 'NanumMyeongjoExtraBold', fontSize: 45 }}
+        >
           MIO
-        </ThemedText>
-        <ThemedText type="default" className="mt-3 text-ink-dim-night">
+        </Text>
+        <ThemedText type="smallTitle" className="text-sm tracking-[0.25em]  text-fg-muted">
           마음의 이야기
         </ThemedText>
       </View>
