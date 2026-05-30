@@ -7,41 +7,19 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
-import { useSocialLogin } from '@/features/auth/hooks/useAuth';
-import { signInWithKakao } from '@/features/auth/utils/kakaoLogin';
-import { navigateAfterLogin } from '@/features/auth/utils/navigateAfterLogin';
-
-function getLoginErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.';
-}
+import { AUTH_ROUTES } from '@/features/auth/constants/routes';
+import { useKakaoLogin } from '@/features/auth/hooks/useKakaoLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const socialLogin = useSocialLogin();
-
-  const handleKakaoLogin = async () => {
-    try {
-      const accessToken = await signInWithKakao();
-      const res = await socialLogin.mutateAsync({
-        provider: 'kakao',
-        accessToken,
-        idToken: null,
-      });
-      await navigateAfterLogin(router, res.data.signup_step, res.data.is_new_user);
-    } catch (error) {
-      Alert.alert('카카오 로그인', getLoginErrorMessage(error));
-    }
-  };
+  const kakaoLogin = useKakaoLogin();
 
   const handleAppleLogin = async () => {
     Alert.alert('애플 로그인', '애플 로그인은 준비 중입니다.');
   };
 
   const handleGoHome = () => {
-    router.replace('/(main)/home');
+    router.replace(AUTH_ROUTES.home);
   };
 
   return (
@@ -68,14 +46,20 @@ export default function LoginScreen() {
           <SocialLoginButton
             provider="apple"
             onPress={handleAppleLogin}
-            disabled={socialLogin.isPending}
+            disabled={kakaoLogin.isPending}
           />
           <SocialLoginButton
             provider="kakao"
-            onPress={handleKakaoLogin}
-            disabled={socialLogin.isPending}
+            onPress={kakaoLogin.login}
+            disabled={kakaoLogin.isPending}
           />
-          <Button onPress={handleGoHome} disabled={socialLogin.isPending}>
+          {kakaoLogin.error ? (
+            // ErrorState 컴포넌트 구현 후 교체할 것
+            <ThemedText type="small" className="text-center text-danger">
+              {kakaoLogin.error}
+            </ThemedText>
+          ) : null}
+          <Button onPress={handleGoHome} disabled={kakaoLogin.isPending}>
             홈화면 이동
           </Button>
         </View>
