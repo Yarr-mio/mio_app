@@ -11,15 +11,7 @@ const VARIANT_CLEAR_MASK = 0x3f;
 const VARIANT_RFC4122_MASK = 0x80;
 
 /**
- * device_id 생성/영속화 유틸.
- *
- * 요구사항:
- * - device_id는 최초 1회 생성 후 영속 저장
- * - 이후 모든 API 요청 헤더 `X-Device-Id` 및 일부 Body(device_id)에 동일 값 사용
- *
- * 구현 포인트:
- * - Expo 환경에서는 Node의 crypto.randomUUID()를 직접 쓰기 어려우므로 `expo-crypto` 사용
- * - UUIDv4 규격에 맞게 "버전/variant" 비트를 세팅한다.
+ * deviceId(UUID v4) 생성/영속화 유틸
  */
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
