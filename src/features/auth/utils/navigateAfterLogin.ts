@@ -1,9 +1,15 @@
-import type { Router } from 'expo-router';
-
-import { getAuthSignupStatus } from '@/api/auth';
+import type { AuthRoute } from '@/features/auth/constants/routes';
+import { AUTH_ROUTES } from '@/features/auth/constants/routes';
 import type { SignupStep } from '@/types/auth';
 
 import { routeForSignupStep } from './routeForSignupStep';
+
+export function shouldFetchSignupStatus(signupStep: SignupStep, isNewUser: boolean): boolean {
+  return (
+    (isNewUser && signupStep !== 'SOCIAL_AUTHENTICATED') ||
+    (!isNewUser && signupStep !== 'COMPLETED')
+  );
+}
 
 /**
  * 로그인 성공 후 signup_step / is_new_user 기준 라우팅
@@ -11,25 +17,19 @@ import { routeForSignupStep } from './routeForSignupStep';
  * - is_new_user: false + signup_step: COMPLETED일 경우 홈
  * - is_new_user: true 또는 가입 미완료일 경우 routeForSignupStep() 호출!
  */
-export async function navigateAfterLogin(
-  router: Router,
+export function resolveSignupRoute(
   signupStep: SignupStep,
-  isNewUser: boolean
-): Promise<void> {
+  isNewUser: boolean,
+  fetchedSignupStep?: SignupStep
+): AuthRoute {
   if (!isNewUser && signupStep === 'COMPLETED') {
-    router.replace('/(main)/home');
-    return;
+    return AUTH_ROUTES.home;
   }
 
-  let targetStep = signupStep;
-  const shouldFetchStatus =
-    (isNewUser && signupStep !== 'SOCIAL_AUTHENTICATED') ||
-    (!isNewUser && signupStep !== 'COMPLETED');
+  const targetStep =
+    shouldFetchSignupStatus(signupStep, isNewUser) && fetchedSignupStep
+      ? fetchedSignupStep
+      : signupStep;
 
-  if (shouldFetchStatus) {
-    const status = await getAuthSignupStatus();
-    targetStep = status.data.signup_step;
-  }
-
-  router.replace(routeForSignupStep(targetStep));
+  return routeForSignupStep(targetStep);
 }
