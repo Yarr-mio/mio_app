@@ -2,7 +2,7 @@ import type { AuthRoute } from '@/features/auth/constants/routes';
 import { AUTH_ROUTES } from '@/features/auth/constants/routes';
 import type { SignupStep } from '@/types/auth';
 
-import { routeForSignupStep } from './routeForSignupStep';
+import { routeForSignupStep } from '@/features/auth/utils/routeForSignupStep';
 
 export function shouldFetchSignupStatus(signupStep: SignupStep, isNewUser: boolean): boolean {
   return (
