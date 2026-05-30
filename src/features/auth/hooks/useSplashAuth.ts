@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 
-import { AUTH_ROUTES } from '@/features/auth/constants/routes';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { useRefreshToken } from '@/features/auth/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { storage } from '@/utils/storage';
