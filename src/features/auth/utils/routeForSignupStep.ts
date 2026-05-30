@@ -1,4 +1,4 @@
-import { AUTH_ROUTES, type AuthRoute } from '@/features/auth/constants/routes';
+import { AUTH_ROUTES, type AuthRoute } from '@/constants/routes';
 import type { SignupStep } from '@/types/auth';
 
 export function routeForSignupStep(step: SignupStep): AuthRoute {

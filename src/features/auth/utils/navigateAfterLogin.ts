@@ -1,5 +1,4 @@
-import type { AuthRoute } from '@/features/auth/constants/routes';
-import { AUTH_ROUTES } from '@/features/auth/constants/routes';
+import { AUTH_ROUTES, type AuthRoute } from '@/constants/routes';
 import type { SignupStep } from '@/types/auth';
 
 import { routeForSignupStep } from '@/features/auth/utils/routeForSignupStep';
