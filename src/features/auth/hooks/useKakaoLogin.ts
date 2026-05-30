@@ -1,8 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
-import { getAuthSignupStatus } from '@/api/auth';
-import { useSocialLogin } from '@/features/auth/hooks/useAuth';
+import { useSignupStatus, useSocialLogin } from '@/features/auth/hooks/useAuth';
 import { signInWithKakao } from '@/features/auth/utils/kakaoLogin';
 import {
   resolveSignupRoute,
@@ -26,6 +25,7 @@ function getLoginErrorMessage(error: unknown): string {
 export function useKakaoLogin() {
   const router = useRouter();
   const socialLogin = useSocialLogin();
+  const signupStatus = useSignupStatus();
   const [error, setError] = useState<string | null>(null);
   const [isSdkPending, setIsSdkPending] = useState(false);
 
@@ -51,7 +51,7 @@ export function useKakaoLogin() {
       let fetchedSignupStep: SignupStep | undefined;
 
       if (shouldFetchSignupStatus(signup_step, is_new_user)) {
-        const status = await getAuthSignupStatus();
+        const status = await signupStatus.mutateAsync();
         fetchedSignupStep = status.data.signup_step;
       }
 
@@ -66,7 +66,7 @@ export function useKakaoLogin() {
     login: () => {
       void login();
     },
-    isPending: isSdkPending || socialLogin.isPending,
+    isPending: isSdkPending || socialLogin.isPending || signupStatus.isPending,
     error,
   };
 }
