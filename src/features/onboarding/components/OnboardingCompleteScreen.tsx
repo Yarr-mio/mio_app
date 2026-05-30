@@ -5,8 +5,8 @@ import {
   getOnboardingCharacterById,
   ONBOARDING_DEFAULT_CHARACTER_ID,
 } from '@/constants/characters';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
-import { AUTH_ROUTES } from '@/features/auth/constants/routes';
 import { useSignupComplete } from '@/features/auth/hooks/useAuth';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { userStoreUtils, useUserStore } from '@/store/userStore';

@@ -10,7 +10,7 @@ import { View, useColorScheme } from 'react-native';
 
 import queryClient from '@/api/queryClient';
 import { NANUM_MYEONGJO_FONTS, NOTO_SANS_KR_FONTS } from '@/constants/fonts';
-import { AUTH_ROUTES } from '@/features/auth/constants/routes';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/store/authStore';
 
 SplashScreen.preventAutoHideAsync();
