@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
 import {
+  getAuthSignupStatus,
   postAuthLogin,
   postAuthLogout,
   postAuthRefresh,
@@ -16,6 +17,7 @@ import type {
   AuthSignupConsentResponse,
   AuthSignupProfileRequest,
   AuthSignupProfileResponse,
+  AuthSignupStatusResponse,
   SocialProvider,
 } from '@/types/auth';
 import { storage } from '@/utils/storage';
@@ -53,17 +55,15 @@ export function useSignupProfile() {
   });
 }
 
-// 회원가입 완료
+// 가입 이탈 후 재진입 시 signup_step 조회
+export function useSignupStatus() {
+  return useMutation<AuthSignupStatusResponse, Error, void>({
+    mutationFn: () => getAuthSignupStatus(),
+  });
+}
+
+// 회원가입 최종 완료
 export function useSignupComplete() {
-  /**
-   * POST /v1/auth/signup/complete
-   *
-   * 명세 진입 조건: signup_step = ONBOARDING_COMPLETED (온보딩 전체 완료 후)
-   * 실제 호출 위치: OnboardingCompleteScreen.handleStart (마지막 온보딩 단계)
-   *
-   * TODO: 온보딩 작업 시 SignUpCompleteScreen에 임시 연동된 호출을 제거하고,
-   *       OnboardingCompleteScreen으로 이전해야 함!!!
-   */
   return useMutation<AuthSignupCompleteResponse, Error, void>({
     mutationFn: () => postAuthSignupComplete(),
   });
