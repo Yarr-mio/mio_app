@@ -165,6 +165,7 @@ export async function postAuthRefresh(body: AuthRefreshRequest): Promise<AuthRef
 
   const { data } = await apiClient.post<AuthRefreshResponse>('/v1/auth/refresh', body, {
     _skipAuthRefresh: true,
+    _skipAuthInjection: true,
   });
   return data;
 }
