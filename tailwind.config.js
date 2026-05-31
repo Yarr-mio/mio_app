@@ -88,6 +88,11 @@ module.exports = {
 
         // 폼 라벨/비활성 칩 등 기본 보조 텍스트
         label: '#D9D9D9', // text-label
+        'label-muted': '#D9D9D9B3', // text-label-muted — label 70% (TabBarLabelColors.inactive과 동일)
+
+        // 홈 캐릭터 말풍선 (glass + fallback)
+        'speech-bubble-bg': '#FFFFFF0F', // bg-speech-bubble-bg — white 6%
+        'speech-bubble-border': '#BABABA1A', // border-speech-bubble-border — #BABABA 10%
 
         // 상태 색상 (opacity modifier와 함께 사용: bg-success/20, border-success/40)
         success: '#4ade80', // text-success, bg-success/20, border-success/40
