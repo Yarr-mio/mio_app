@@ -35,8 +35,8 @@ export function useSocialLogin() {
   return useMutation<AuthLoginResponse, Error, SocialLoginInput>({
     mutationFn: (input) => postAuthLogin(input),
     onSuccess: async (res) => {
-      setAccessToken(res.data.access_token);
       await storage.refreshToken.set(res.data.refresh_token);
+      setAccessToken(res.data.access_token);
     },
   });
 }
