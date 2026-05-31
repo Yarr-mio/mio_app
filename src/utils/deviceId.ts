@@ -10,6 +10,8 @@ const VERSION_4_MASK = 0x40;
 const VARIANT_CLEAR_MASK = 0x3f;
 const VARIANT_RFC4122_MASK = 0x80;
 
+let pendingDeviceId: Promise<string> | null = null;
+
 /**
  * deviceId(UUID v4) 생성/영속화 유틸
  */
@@ -35,10 +37,23 @@ async function createUuidV4(): Promise<string> {
 }
 
 export async function getOrCreateDeviceId(): Promise<string> {
-  // 이미 저장된 값이 있으면 그대로 재사용 (앱 재설치 전까지 동일)
-  const existing = await storage.deviceId.get();
-  if (existing) return existing;
-  const id = await createUuidV4();
-  await storage.deviceId.set(id);
-  return id;
+  if (pendingDeviceId) {
+    return pendingDeviceId;
+  }
+
+  pendingDeviceId = (async () => {
+    const existing = await storage.deviceId.get();
+    if (existing) {
+      return existing;
+    }
+    const id = await createUuidV4();
+    await storage.deviceId.set(id);
+    return id;
+  })();
+
+  try {
+    return await pendingDeviceId;
+  } finally {
+    pendingDeviceId = null;
+  }
 }
