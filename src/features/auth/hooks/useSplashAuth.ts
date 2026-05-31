@@ -14,13 +14,13 @@ export function useSplashAuth() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
   const handleFinish = async () => {
-    const refreshToken = await storage.refreshToken.get();
-    if (!refreshToken) {
-      router.replace(AUTH_ROUTES.login);
-      return;
-    }
-
     try {
+      const refreshToken = await storage.refreshToken.get();
+      if (!refreshToken) {
+        router.replace(AUTH_ROUTES.login);
+        return;
+      }
+
       await refreshTokenMutation.mutateAsync();
       router.replace(AUTH_ROUTES.home);
     } catch {
