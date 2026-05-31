@@ -37,13 +37,11 @@ export function useKakaoLogin() {
     setError(null);
 
     try {
-      let accessToken: string;
-      try {
-        setIsSdkPending(true);
-        accessToken = await signInWithKakao();
-      } finally {
-        setIsSdkPending(false);
-      }
+      setIsSdkPending(true);
+
+      const accessToken = await signInWithKakao();
+
+      setIsSdkPending(false);
 
       const res = await socialLogin.mutateAsync({
         provider: 'kakao',
@@ -62,6 +60,7 @@ export function useKakaoLogin() {
       const route = resolveSignupRoute(signup_step, is_new_user, fetchedSignupStep);
       router.replace(route);
     } catch (err) {
+      setIsSdkPending(false);
       setError(getLoginErrorMessage(err));
     }
   };
