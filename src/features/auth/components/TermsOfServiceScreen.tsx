@@ -1,25 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 
 import { CheckboxCheckIcon } from '@/assets/icons';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { FgColors, ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { useSignupConsent } from '@/features/auth/hooks/useAuth';
+import { buildSignupConsents, type TermConsentId } from '@/features/auth/utils/buildSignupConsents';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_STEP_COUNT = 4;
 const SIGNUP_CURRENT_STEP = 2;
 const AGREEMENT_CARD_HEIGHT = 'h-[64px]';
 
-type TermId = 'service' | 'privacy' | 'age' | 'marketing';
-
 interface TermItem {
-  id: TermId;
+  id: TermConsentId;
   label: string;
   required: boolean;
 }
@@ -33,7 +34,7 @@ const TERM_ITEMS: TermItem[] = [
 
 const REQUIRED_TERM_IDS = TERM_ITEMS.filter((item) => item.required).map((item) => item.id);
 
-const INITIAL_CHECKED_STATE: Record<TermId, boolean> = {
+const INITIAL_CHECKED_STATE: Record<TermConsentId, boolean> = {
   service: false,
   privacy: false,
   age: false,
@@ -116,12 +117,13 @@ function AgreementRow({ label, required, checked, onToggle, onDetailPress }: Agr
 
 export default function TermsOfServiceScreen() {
   const router = useRouter();
+  const signupConsent = useSignupConsent();
   const [checkedState, setCheckedState] = useState(INITIAL_CHECKED_STATE);
 
   const requiredChecked = REQUIRED_TERM_IDS.every((id) => checkedState[id]);
   const isAgreeAllChecked = TERM_ITEMS.every((item) => checkedState[item.id]);
 
-  const handleToggleTerm = (id: TermId) => {
+  const handleToggleTerm = (id: TermConsentId) => {
     setCheckedState((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -138,11 +140,21 @@ export default function TermsOfServiceScreen() {
     });
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!requiredChecked) {
       return;
     }
-    router.push('/(auth)/signup/info');
+
+    try {
+      await signupConsent.mutateAsync({
+        consents: buildSignupConsents(checkedState),
+      });
+      router.push(AUTH_ROUTES.signupInfo);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '약관 동의에 실패했습니다. 다시 시도해 주세요.';
+      Alert.alert('약관 동의', message);
+    }
   };
 
   return (
@@ -195,7 +207,7 @@ export default function TermsOfServiceScreen() {
         </View>
 
         <View className="mt-auto pt-8">
-          <Button disabled={!requiredChecked} onPress={handleContinue}>
+          <Button disabled={!requiredChecked || signupConsent.isPending} onPress={handleContinue}>
             동의하고 계속하기
           </Button>
         </View>

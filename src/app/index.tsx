@@ -1,9 +1,8 @@
-import { useRouter } from 'expo-router';
-
 import SplashScreen from '@/features/auth/components/SplashScreen';
+import { useSplashAuth } from '@/features/auth/hooks/useSplashAuth';
 
 export default function Index() {
-  const router = useRouter();
+  const splashAuth = useSplashAuth();
 
-  return <SplashScreen onFinish={() => router.replace('/(auth)/login')} />;
+  return <SplashScreen onFinish={splashAuth.handleFinish} />;
 }

@@ -6,6 +6,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
 
@@ -65,7 +66,7 @@ export default function SignUpCompleteScreen() {
   const nickname = resolveNickname(nicknameParam);
 
   const handleStartPartnerMatching = () => {
-    router.push('/(auth)/onboarding/step1Emotion');
+    router.push(AUTH_ROUTES.onboardingStep1);
   };
 
   return (

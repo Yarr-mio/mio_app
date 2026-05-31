@@ -5,12 +5,14 @@ import {
   getOnboardingCharacterById,
   ONBOARDING_DEFAULT_CHARACTER_ID,
 } from '@/constants/characters';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
+import { useSignupComplete } from '@/features/auth/hooks/useAuth';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { userStoreUtils, useUserStore } from '@/store/userStore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function OnboardingCompleteScreen() {
@@ -20,10 +22,11 @@ export function OnboardingCompleteScreen() {
   const { character_id, emotion_state, emoji_score, concern_types, preferred_style } =
     useOnboardingStore();
   const { setOnboardingResult } = useUserStore();
+  const signupComplete = useSignupComplete();
   const selectedCharacterId = character_id ?? ONBOARDING_DEFAULT_CHARACTER_ID;
   const character = getOnboardingCharacterById(selectedCharacterId);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const emotionSelection =
       emotion_state && emoji_score ? { emotion: emotion_state, intensity: emoji_score } : null;
 
@@ -34,11 +37,16 @@ export function OnboardingCompleteScreen() {
       characterId: selectedCharacterId,
     });
 
-    if (__DEV__) {
-      // 저장된 데이터 콘솔 확인용!!
-      // console.log('[userStore] 온보딩 완료 후 저장값:', useUserStore.getState());
+    try {
+      await signupComplete.mutateAsync();
+      router.replace(AUTH_ROUTES.home);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
+      Alert.alert('가입 완료', message);
     }
-    router.push('/(main)/home');
   };
 
   return (
@@ -83,7 +91,9 @@ export function OnboardingCompleteScreen() {
         </View>
 
         <View className="pt-4">
-          <Button onPress={handleStart}>{character.name}와 시작하기</Button>
+          <Button disabled={signupComplete.isPending} onPress={handleStart}>
+            {character.name}와 시작하기
+          </Button>
         </View>
       </View>
     </View>

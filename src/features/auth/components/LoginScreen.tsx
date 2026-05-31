@@ -1,21 +1,25 @@
 import { useRouter } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { Button } from '@/components/ui/Button';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
+import { useKakaoLogin } from '@/features/auth/hooks/useKakaoLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const kakaoLogin = useKakaoLogin();
 
-  const handleKakaoLogin = () => {
-    router.push('/(auth)/signup/termsOfService');
+  const handleAppleLogin = async () => {
+    Alert.alert('애플 로그인', '애플 로그인은 준비 중입니다.');
   };
 
-  const handleAppleLogin = () => {
-    router.push('/(auth)/signup/termsOfService');
+  const handleGoHome = () => {
+    router.replace(AUTH_ROUTES.home);
   };
 
   return (
@@ -39,8 +43,27 @@ export default function LoginScreen() {
         </View>
 
         <View className="gap-3 pb-2">
-          <SocialLoginButton provider="apple" onPress={handleAppleLogin} />
-          <SocialLoginButton provider="kakao" onPress={handleKakaoLogin} />
+          <SocialLoginButton
+            provider="apple"
+            onPress={handleAppleLogin}
+            disabled={kakaoLogin.isPending}
+          />
+          <SocialLoginButton
+            provider="kakao"
+            onPress={kakaoLogin.login}
+            disabled={kakaoLogin.isPending}
+          />
+          {kakaoLogin.error ? (
+            // ErrorState 컴포넌트 구현 후 교체할 것
+            <ThemedText type="small" className="text-center text-danger">
+              {kakaoLogin.error}
+            </ThemedText>
+          ) : null}
+          {__DEV__ ? (
+            <Button onPress={handleGoHome} disabled={kakaoLogin.isPending}>
+              홈화면 이동
+            </Button>
+          ) : null}
         </View>
       </ScreenContainer>
     </View>

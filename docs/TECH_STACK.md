@@ -14,6 +14,7 @@
 | 애니메이션      | Reanimated 4 + Lottie           | 4.2.1 / 미설치 | 상호작용·영상형 애니메이션 역할 분담    |
 | 폼 관리         | React Hook Form + Zod           | 미설치         | 체크인 일기, 온보딩 입력 검증           |
 | 인증 자동 갱신  | TanStack Query + Axios 인터셉터 | —              |                                         |
+| 소셜 로그인     | @react-native-kakao/core + user | ^2.4.x         | Kakao 네이티브 SDK. Expo config plugin  |
 
 > **네비게이션 참고**
 > Expo Router가 파일 기반 라우팅을 담당하며, 내부적으로 React Navigation(`@react-navigation/native`, `@react-navigation/bottom-tabs`)을 사용한다.
@@ -30,6 +31,18 @@
 > - Reanimated 3과 API 대부분 호환되지만, 일부 API 변경 있음
 > - 코드 작성 전 [Reanimated 4 공식 문서](https://docs.swmansion.com/react-native-reanimated/) 확인 필요
 
+> **카카오 로그인 참고**
+>
+> - **패키지 역할**
+>   - `@react-native-kakao/core` — SDK 초기화(`initializeKakaoSDK`), Expo config plugin(URL Scheme, Info.plist, AndroidManifest 자동 설정)
+>   - `@react-native-kakao/user` — 카카오 로그인(`login()`) → `accessToken` 획득
+>   - `expo-build-properties` — Android Kakao Maven repository 주입 (`app.config.ts`)
+> - **환경변수:** `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` (`.env`, `src/constants/config.ts`에서 접근)
+> - **설정 파일:** `app.config.ts` — `@react-native-kakao/core` plugin, `ios.handleKakaoOpenUrl: true`
+> - **FE 구현:** `src/features/auth/utils/kakaoLogin.ts` → accessToken → `POST /v1/auth/login`
+> - **빌드:** 네이티브 빌드 필수 (Expo Go 미지원) — `npx expo prebuild` 후 `npx expo run:ios` / `run:android`
+> - 코드 작성·설정 전 [React Native Kakao 공식 문서](https://rnkakao.mjstudio.net) 확인 필요
+
 ---
 
 ## 기타
@@ -42,6 +55,9 @@
 | 아이콘       | `@expo/vector-icons` (Ionicons)     | Expo에 포함 | `expo-symbols`도 설치됨                                                      |
 | 날짜         | `date-fns`                          | 미설치      | `src/utils/date.ts`에서 래핑해서 사용                                        |
 | 환경변수     | `expo-constants` + `.env`           | 설치됨      |                                                                              |
+| Kakao 빌드   | `expo-build-properties`             | 설치됨      | Android Kakao Maven repo — `app.config.ts` plugin                            |
+| 보안 저장소  | `expo-secure-store`                 | 설치됨      | refresh_token 영속 저장                                                      |
+| 디바이스 ID  | `expo-crypto`                       | 설치됨      | UUID v4 `deviceId` 생성 (`src/utils/deviceId.ts`)                            |
 | 푸시 알림    | `expo-notifications` + Firebase FCM | 미설치      | FCM 디바이스 토큰 등록·갱신                                                  |
 | SSE 스트리밍 | `@microsoft/fetch-event-source`     | 미설치      | React Native 환경에서 EventSource 대체 — fetch 기반, Authorization 헤더 지원 |
 
