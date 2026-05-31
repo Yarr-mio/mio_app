@@ -59,9 +59,11 @@ export default function LoginScreen() {
               {kakaoLogin.error}
             </ThemedText>
           ) : null}
-          <Button onPress={handleGoHome} disabled={kakaoLogin.isPending}>
-            홈화면 이동
-          </Button>
+          {__DEV__ ? (
+            <Button onPress={handleGoHome} disabled={kakaoLogin.isPending}>
+              홈화면 이동
+            </Button>
+          ) : null}
         </View>
       </ScreenContainer>
     </View>
