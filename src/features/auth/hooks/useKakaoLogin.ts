@@ -30,6 +30,10 @@ export function useKakaoLogin() {
   const [isSdkPending, setIsSdkPending] = useState(false);
 
   const login = async () => {
+    if (isSdkPending || socialLogin.isPending || signupStatus.isPending) {
+      return;
+    }
+
     setError(null);
 
     try {
