@@ -8,25 +8,15 @@ import type { AuthRefreshResponse } from '@/types/auth';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
 import { storage } from '@/utils/storage';
 
-/**
- * Axios 클라이언트(단일 인스턴스) + 인터셉터.
- *
- * 요구사항 충족:
- * - 공통 헤더 자동 주입: X-Device-Id, X-App-Version, X-Platform, Authorization
- * - 401 AUTH_TOKEN_EXPIRED: refresh 후 원 요청 1회 재시도
- * - 401 REFRESH_TOKEN_INVALID: 로컬 토큰 전부 삭제 후 로그인 화면 이동
- *
- * 레이어 책임(CODING_RULES.md #11):
- * - `api/client.ts`는 "공통 정책(헤더/재시도/강제 로그아웃)"을 담당한다.
- * - `api/endpoints/*`는 try/catch로 삼키지 않고 에러를 그대로 throw한다.
- */
 declare module 'axios' {
   export interface InternalAxiosRequestConfig {
     _retry?: boolean;
     _skipAuthRefresh?: boolean;
+    _skipAuthInjection?: boolean;
   }
   export interface AxiosRequestConfig {
     _skipAuthRefresh?: boolean;
+    _skipAuthInjection?: boolean;
   }
 }
 
@@ -91,6 +81,7 @@ function injectAuthAndCommonHeaders(
   config: InternalAxiosRequestConfig,
   accessToken: string | null
 ) {
+  if (config._skipAuthInjection) return config;
   if (accessToken && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -115,6 +106,7 @@ apiClient.interceptors.request.use(async (config) => {
 });
 
 let refreshPromise: Promise<string> | null = null;
+let authInvalidationPromise: Promise<void> | null = null;
 
 /**
  * Access Token 갱신.
@@ -140,6 +132,7 @@ async function refreshAccessToken(): Promise<string> {
         'X-App-Version': getAppVersion(),
         'X-Platform': Platform.OS,
       },
+      timeout: 10000,
     }
   );
 
@@ -213,7 +206,12 @@ apiClient.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`;
       return await apiClient(originalRequest);
     } catch (refreshError) {
-      await clearLocalAuthAndRedirect();
+      if (!authInvalidationPromise) {
+        authInvalidationPromise = clearLocalAuthAndRedirect().finally(() => {
+          authInvalidationPromise = null;
+        });
+      }
+      await authInvalidationPromise;
       throw refreshError;
     }
   }
