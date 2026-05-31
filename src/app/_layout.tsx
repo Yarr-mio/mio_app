@@ -22,7 +22,7 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({ ...NOTO_SANS_KR_FONTS, ...NANUM_MYEONGJO_FONTS });
 
   useEffect(() => {
-    setOnAuthInvalid(() => () => router.replace(AUTH_ROUTES.login));
+    setOnAuthInvalid(() => router.replace(AUTH_ROUTES.login));
     return () => setOnAuthInvalid(null);
   }, [router, setOnAuthInvalid]);
 
