@@ -1,6 +1,3 @@
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || 'https://api-dev.mio.app';
-
 /**
  * mock 모드 플래그
  *
@@ -8,6 +5,19 @@ export const API_BASE_URL =
  * - false: `API_BASE_URL`로 실제 네트워크 요청 수행
  */
 export const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK === 'true';
+
+function resolveApiBaseUrl(): string {
+  const url = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+  if (url) {
+    return url;
+  }
+  if (USE_MOCK) {
+    return '';
+  }
+  throw new Error('EXPO_PUBLIC_API_BASE_URL is required when EXPO_PUBLIC_USE_MOCK is not "true"');
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 /** 약관 동의 API 요청 시 사용하는 약관 버전 */
 export const AUTH_CONSENT_VERSION = '1.0';
