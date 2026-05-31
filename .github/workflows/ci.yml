@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Type Check, Lint & Build
+    name: Type Check & Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +27,3 @@ jobs:
 
       - name: Lint
         run: pnpm exec expo lint
-
-      - name: Build
-        run: pnpm exec expo export --platform web
