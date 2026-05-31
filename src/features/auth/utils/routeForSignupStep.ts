@@ -12,5 +12,9 @@ export function routeForSignupStep(step: SignupStep): AuthRoute {
     case 'ONBOARDING_COMPLETED':
     case 'COMPLETED':
       return AUTH_ROUTES.home;
+    default: {
+      const _exhaustive: never = step;
+      return AUTH_ROUTES.login;
+    }
   }
 }
