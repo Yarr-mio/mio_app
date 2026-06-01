@@ -450,6 +450,112 @@ const useAuthStore = create(() => ({
 
 ---
 
+## 15. 공통 컴포넌트 의무 사용
+
+`src/components/layout`, `src/components/themed`, `src/components/ui` 안의 공통 컴포넌트를 우선 사용한다.
+동일한 기능을 직접 구현하거나 raw 프리미티브(`Pressable`, `Text`, `View`)로 대체하는 것을 금지한다.
+
+### 15-1. ScreenContainer — Safe Area 처리
+
+Safe Area 처리가 필요한 화면·모달 최상위에서는 `useSafeAreaInsets`를 직접 쓰지 않고
+`src/components/layout/ScreenContainer.tsx`를 사용한다.
+
+| Prop              | 기본값 | 설명                                       |
+| ----------------- | ------ | ------------------------------------------ |
+| `withTopInset`    | `true` | 노치·다이나믹 아일랜드 상단 패딩 자동 처리 |
+| `withBottomInset` | `true` | 홈바 하단 패딩 자동 처리                   |
+| `bottomInsetMin`  | `24`   | 홈바가 없는 기기에서의 최소 하단 여백 (dp) |
+| `className`       | —      | 배경색·flex 등 추가 스타일                 |
+
+```tsx
+// BAD: useSafeAreaInsets 직접 사용
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const { top } = useSafeAreaInsets();
+<View style={{ paddingTop: top }} className="flex-1 bg-midnight">...</View>
+
+// GOOD: ScreenContainer 사용
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
+<ScreenContainer className="bg-midnight">...</ScreenContainer>
+
+// 모달처럼 KeyboardAvoidingView와 함께 쓸 때 (하단 inset은 KAV에 위임)
+<KeyboardAvoidingView className="flex-1" behavior={...}>
+  <ScreenContainer className="bg-midnight" withBottomInset={false}>
+    ...
+  </ScreenContainer>
+</KeyboardAvoidingView>
+```
+
+### 15-2. Button — 액션 버튼
+
+클릭 가능한 주요 액션 버튼은 raw `Pressable` 대신 `src/components/ui/Button.tsx`를 사용한다.
+로딩 스피너·비활성화·variant별 스타일이 내장되어 있다.
+
+| Prop      | 타입                              | 기본값      | 설명                                            |
+| --------- | --------------------------------- | ----------- | ----------------------------------------------- |
+| `variant` | `'primary' \| 'ghost' \| 'white'` | `'primary'` | 버튼 색상 스타일                                |
+| `size`    | `'md' \| 'lg'`                    | `'lg'`      | `md` = h-12 rounded-xl, `lg` = h-16 rounded-2xl |
+| `loading` | `boolean`                         | `false`     | 로딩 중 스피너 표시 + 비활성화                  |
+
+```tsx
+// BAD: Pressable + ActivityIndicator + Text 직접 조합
+<Pressable
+  disabled={isLoading}
+  className="w-full h-16 rounded-2xl bg-white items-center justify-center"
+>
+  {isLoading ? <ActivityIndicator color="#0D0D1A" /> : <Text className="text-midnight font-bold">저장</Text>}
+</Pressable>
+
+// GOOD: Button 컴포넌트 사용
+import { Button } from '@/components/ui/Button';
+<Button variant="white" loading={isLoading} onPress={onSave}>저장</Button>
+<Button variant="ghost" size="md" onPress={onCancel}>취소</Button>
+```
+
+### 15-3. Chip / Label — 뱃지
+
+카테고리·감정 라벨 표시에 raw `View + Text` 조합 대신 공통 컴포넌트를 사용한다.
+
+| 컴포넌트 | 위치                      | 용도                                      |
+| -------- | ------------------------- | ----------------------------------------- |
+| `Chip`   | `src/components/ui/Chip`  | 기록 카드 메타 정보 (카테고리 등)         |
+| `Label`  | `src/components/ui/Label` | 감정 강도·캐릭터 전문 분야 등 보라색 라벨 |
+
+```tsx
+// BAD
+<View className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5">
+  <Text className="text-fg-sub text-xs">{label}</Text>
+</View>;
+
+// GOOD
+import { Chip } from '@/components/ui/Chip';
+<Chip label={record.category_label} />;
+```
+
+### 15-4. ThemedText — 타입별 텍스트
+
+반복되는 텍스트 스타일 조합은 `src/components/themed/ThemedText.tsx`의 `type` 프리셋을 활용한다.
+
+| type          | 클래스                               |
+| ------------- | ------------------------------------ |
+| `title`       | `text-3xl font-bold leading-[37px]`  |
+| `subtitle`    | `text-lg font-medium leading-[20px]` |
+| `small`       | `text-sm leading-5 font-medium`      |
+| `smallBold`   | `text-sm leading-5 font-semibold`    |
+| `smallMedium` | `text-xs leading-4 font-medium`      |
+
+```tsx
+// BAD
+<Text className="text-3xl font-bold">나의 기억</Text>
+<Text className="text-sm font-medium text-fg-dim">설명 텍스트</Text>
+
+// GOOD
+import { ThemedText } from '@/components/themed/ThemedText';
+<ThemedText type="title">나의 기억</ThemedText>
+<ThemedText type="small" className="text-fg-dim">설명 텍스트</ThemedText>
+```
+
+---
+
 ## 14. SVG 아이콘
 
 SVG 파일은 `react-native-svg` + `react-native-svg-transformer`를 통해 React 컴포넌트로 import한다.
