@@ -23,3 +23,7 @@ export function formatCheckinShortDate(isoString: string): string {
 export function formatCheckinTime(isoString: string): string {
   return format(kst(isoString), 'a h:mm', { locale: ko });
 }
+
+export function formatMemoryDate(isoString: string): string {
+  return format(kst(isoString), 'yyyy.MM.dd (HH:mm)');
+}
