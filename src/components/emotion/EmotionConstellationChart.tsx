@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed/ThemedText';
 import {
+  EmotionConstellationClasses,
   EmotionConstellationLayout,
   EmotionConstellationTextClasses,
   FgColors,
@@ -49,7 +50,7 @@ export function EmotionConstellationChart({
 
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} className="w-full">
-      <View style={{ height }}>
+      <View className={EmotionConstellationClasses.chartContainer}>
         {width > 0 ? (
           <Svg width={width} height={height}>
             <Polyline
@@ -77,10 +78,7 @@ export function EmotionConstellationChart({
         ) : null}
       </View>
 
-      <View
-        className="flex-row justify-between"
-        style={{ marginTop: EmotionConstellationLayout.weekLabelTopGap }}
-      >
+      <View className={EmotionConstellationClasses.weekLabelsRow}>
         {labels.map((label, idx) => (
           <ThemedText
             key={`${label}-${idx}`}

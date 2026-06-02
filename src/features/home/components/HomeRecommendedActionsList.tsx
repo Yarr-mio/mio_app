@@ -1,6 +1,6 @@
 import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { FgColors, HomeLayout } from '@/constants/theme';
+import { FgColors, HomeActionClasses, HomeLayout } from '@/constants/theme';
 import type { HomeRecommendedAction } from '@/features/home/hooks/useHomeMock';
 import { cn } from '@/utils/cn';
 import { Pressable, View } from 'react-native';
@@ -20,10 +20,10 @@ function TodoCheckbox({ completed, onToggle }: TodoCheckboxProps) {
     <Pressable
       onPress={onToggle}
       className={cn(
+        HomeActionClasses.recommendedCheckbox,
         'items-center justify-center rounded-full',
         completed ? 'bg-accent' : 'border border-fg-default/30 bg-transparent'
       )}
-      style={{ width: HomeLayout.checkboxSize, height: HomeLayout.checkboxSize }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: completed }}
     >
