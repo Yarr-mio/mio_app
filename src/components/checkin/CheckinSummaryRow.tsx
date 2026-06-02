@@ -29,6 +29,7 @@ export function CheckinSummaryRow({
         source={emotionIcon}
         style={{ width: HomeLayout.emotionIconSize, height: HomeLayout.emotionIconSize }}
         contentFit="contain"
+        accessibilityLabel={emotionName}
       />
       <View className="flex-1 gap-2">
         <View className="flex-row items-center gap-2">
