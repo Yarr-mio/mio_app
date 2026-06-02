@@ -9,7 +9,13 @@ import {
   ONBOARDING_DEFAULT_CHARACTER_ID,
 } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
-import { HomeCardClasses, HomeLayout, HomeTextClasses } from '@/constants/theme';
+import {
+  HomeActionClasses,
+  HomeCardClasses,
+  HomeLayout,
+  HomeSpeechBubbleClasses,
+  HomeTextClasses,
+} from '@/constants/theme';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeMock } from '@/features/home/hooks/useHomeMock';
 import { useUserStore } from '@/store/userStore';
@@ -65,8 +71,8 @@ export function HomeScreen() {
 
           <View className="mt-6 flex-row items-start gap-3">
             <View className="flex-1">
-              <View className="overflow-hidden rounded-tl-[15px] rounded-tr-[15px] rounded-bl-[15px] rounded-br-[3px] border-2 border-speech-bubble-border bg-surface px-5 py-4">
-                <ThemedText type="small" className="text-fg-default text-[13px]">
+              <View className={HomeSpeechBubbleClasses.shell}>
+                <ThemedText type="small" className="text-fg-default">
                   {'요즘 조금 힘들어 보여요.\n오늘 하루, 천천히 이야기해 볼까요? 🌿'}
                 </ThemedText>
               </View>
@@ -146,7 +152,7 @@ export function HomeScreen() {
                     새로운 테스트로 나를 더 알아가요
                   </ThemedText>
                 </View>
-                <View className="bg-mind-explore-btn rounded-[10px] px-4 py-2">
+                <View className={HomeActionClasses.mindExploreCta}>
                   <ThemedText type="smallBold" className="text-fg-default">
                     테스트 시작
                   </ThemedText>
