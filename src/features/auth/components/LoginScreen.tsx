@@ -27,11 +27,7 @@ export default function LoginScreen() {
       <AuthBackground variant="login" />
       <ScreenContainer className="flex-1 px-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="flex-1 items-center justify-center gap-6">
-          <Text
-            className="tracking-[0.22em] text-ink-night"
-            // Custom font exception: ThemedText(type="title")의 기본 font-bold 처리로 fontFamily override가 불안정해 RN Text + style로 직접 지정
-            style={{ fontFamily: 'NanumMyeongjoExtraBold', fontSize: 45 }}
-          >
+          <Text className="font-NanumMyeongjoExtraBold text-[45px] tracking-[0.22em] text-ink-night">
             MIO
           </Text>
           <ThemedText
