@@ -9,6 +9,8 @@ import {
   ONBOARDING_DEFAULT_CHARACTER_ID,
 } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
+import { HOME_TITLES } from '@/constants/home';
+import { HOME_ROUTES } from '@/constants/routes';
 import {
   HomeActionClasses,
   HomeCardClasses,
@@ -49,9 +51,9 @@ export function HomeScreen() {
   const todayCheckin = getLatestTodayCheckin(todayCheckinData?.checkins ?? []);
   const todayCheckinMeta = todayCheckin ? EMOTION_META[todayCheckin.emotion_type] : undefined;
   const hasCheckIn = Boolean(todayCheckin);
+  const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
-  const { homeTitle, hasActions, actions, toggleAction, weekLabels, weekIntensities } =
-    useHomeMock();
+  const { hasActions, actions, toggleAction, weekLabels, weekIntensities } = useHomeMock();
 
   return (
     <View className="flex-1 bg-midnight">
@@ -101,7 +103,7 @@ export function HomeScreen() {
             <HomeCardShell
               title="오늘의 체크인"
               headerActionLabel="기록하기"
-              onHeaderActionPress={() => router.push('/(main)/home/checkin')}
+              onHeaderActionPress={() => router.push(HOME_ROUTES.checkin)}
               contentClassName={!hasCheckIn ? 'flex-1' : undefined}
             >
               {hasCheckIn && todayCheckin && todayCheckinMeta ? (
@@ -124,7 +126,7 @@ export function HomeScreen() {
             <HomeCardShell
               title="오늘의 추천 행동"
               headerActionLabel="전체보기"
-              onHeaderActionPress={() => router.push('/(main)/home/todo')}
+              onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
             >
               {hasActions ? (
@@ -141,7 +143,7 @@ export function HomeScreen() {
             <HomeCardShell
               title="감정 별자리"
               headerActionLabel="자세히"
-              onHeaderActionPress={() => router.push('/(main)/report')}
+              onHeaderActionPress={() => router.push(HOME_ROUTES.report)}
             >
               <EmotionConstellationChart
                 values={weekIntensities}
