@@ -62,7 +62,7 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
             accessibilityLabel={options.tabBarAccessibilityLabel}
             onPress={onPress}
             onLongPress={onLongPress}
-            className="flex-1 items-center justify-center py-3"
+            className="flex-1 items-center justify-center py-5 gap-1"
           >
             <IconComponent
               width={24}
@@ -70,7 +70,7 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
               color={isFocused ? TabBarColors.iconActive : TabBarColors.iconInactive}
             />
             <ThemedText
-              type="small"
+              type="smallMedium"
               className={cn('mt-1', isFocused ? 'text-primary' : 'text-label/70')}
             >
               {typeof options.tabBarLabel === 'string'
