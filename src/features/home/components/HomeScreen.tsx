@@ -16,13 +16,26 @@ import {
   HomeSpeechBubbleClasses,
   HomeTextClasses,
 } from '@/constants/theme';
+import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeMock } from '@/features/home/hooks/useHomeMock';
 import { useUserStore } from '@/store/userStore';
+import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
+import { formatCheckinTime } from '@/utils/date';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { ScrollView, View } from 'react-native';
+
+function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
+  if (checkins.length === 0) {
+    return undefined;
+  }
+
+  return checkins.reduce((latest, current) =>
+    current.created_at > latest.created_at ? current : latest
+  );
+}
 
 export function HomeScreen() {
   const signupInfo = useUserStore((state) => state.signupInfo);
@@ -32,18 +45,13 @@ export function HomeScreen() {
   const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
   const character = getOnboardingCharacterById(characterId);
 
-  const {
-    homeTitle,
-    hasCheckIn,
-    checkin,
-    hasActions,
-    actions,
-    toggleAction,
-    weekLabels,
-    weekIntensities,
-  } = useHomeMock();
+  const { data: todayCheckinData } = useCheckinToday();
+  const todayCheckin = getLatestTodayCheckin(todayCheckinData?.checkins ?? []);
+  const todayCheckinMeta = todayCheckin ? EMOTION_META[todayCheckin.emotion_type] : undefined;
+  const hasCheckIn = Boolean(todayCheckin);
 
-  const checkInEmotionMeta = EMOTION_META[checkin.emotionType];
+  const { homeTitle, hasActions, actions, toggleAction, weekLabels, weekIntensities } =
+    useHomeMock();
 
   return (
     <View className="flex-1 bg-midnight">
@@ -96,13 +104,13 @@ export function HomeScreen() {
               onHeaderActionPress={() => router.push('/(main)/home/checkin')}
               contentClassName={!hasCheckIn ? 'flex-1' : undefined}
             >
-              {hasCheckIn ? (
+              {hasCheckIn && todayCheckin && todayCheckinMeta ? (
                 <CheckinSummaryRow
-                  emotionIcon={checkInEmotionMeta.image}
-                  emotionName={checkInEmotionMeta.label}
-                  intensity={checkin.intensity}
-                  memo={checkin.memo}
-                  time={checkin.time}
+                  emotionIcon={todayCheckinMeta.image}
+                  emotionName={todayCheckinMeta.label}
+                  intensity={todayCheckin.condition_score}
+                  memo={todayCheckin.memo}
+                  time={formatCheckinTime(todayCheckin.created_at)}
                 />
               ) : (
                 <View className={HomeCardClasses.emptyState}>
