@@ -25,7 +25,7 @@ export default function SplashScreen({
   }, [onFinish, durationMs]);
 
   return (
-    <View className="flex-1 items-center justify-center bg-background-dark">
+    <View className="flex-1 items-center justify-center bg-midnight">
       <View className="items-center gap-6">
         <Text className={AuthTextClasses.appTitle}>MIO</Text>
         <ThemedText type="smallTitle" className="text-sm tracking-[0.25em]  text-fg-muted">
