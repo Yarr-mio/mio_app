@@ -64,7 +64,7 @@ module.exports = {
         midnight: '#0D0D1A', // bg-midnight / text-midnight
         'tab-bar': '#04030A', // bg-tab-bar — 하단 탭바 (constants/theme TabBarColors.background와 동일 유지)
 
-        // 유리 질감 서피스 (어두운 배경 위의 반투명 흰색 레이어)
+        // 기본 카드 배경 (말풍선 및 페이지별 카드/박스 배경)
         surface: '#FFFFFF0D', // bg-surface      (white/5)
         'surface-md': '#FFFFFF1A', // bg-surface-md  (white/10)
         'surface-lg': '#FFFFFF26', // bg-surface-lg  (white/15)
@@ -104,9 +104,14 @@ module.exports = {
         // 주요 액션 색상
         primary: '#7060E0', // bg-primary / text-primary
 
-        // 회원가입 페이지
         subtitle: '#959595', // text-subtitle — 페이지 서브 텍스트
         accent: '#9D7FEE', // 강조색 (서브 탭 선택 시 base)
+
+        // 홈화면: 감정 별자리 요일 라벨
+        weekday: '#969696', // text-weekday
+
+        // 홈화면: 마음 탐색 CTA 버튼
+        'mind-explore-btn': '#3D2875', // bg-mind-explore-btn
 
         // ── 서브 버튼 탭 (선택형 칩) ─────────────────
         // 선택됨: #9D7FEE 10% 배경 + 50% stroke = bg-sub-tab-selected-bg, border-sub-tab-selected-border

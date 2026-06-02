@@ -183,7 +183,7 @@ export const MaxContentWidth = 800;
 
 /** (HomeScreen.tsx) */
 export const HomeLayout = {
-  characterImageSize: 112,
+  characterImageSize: 125,
   emotionIconSize: 72,
   chevronIconWidth: 8,
   chevronIconHeight: 11,
@@ -199,35 +199,23 @@ export const HomeTextClasses = {
   supportSubtitle: 'text-label-muted',
 } as const;
 
-/** 말풍선 — GlassView/BlurView fallback 공통 */
-export const HomeBubbleClasses = {
-  shell:
-    'flex-1 overflow-hidden rounded-tl-[15px] rounded-tr-[15px] rounded-bl-[15px] rounded-br-[3px] border-2 border-speech-bubble-border',
-  /** BlurView 위 6% 흰색 틴트 */
-  blurTintOverlay: 'absolute inset-0 bg-speech-bubble-bg',
-  frostHighlight: 'absolute inset-x-3 top-0 h-px bg-line-md opacity-80',
-  padding: 'px-5 py-4',
-} as const;
-
-/** GlassView/BlurView 등 className 미지원 네이티브 뷰 레이아웃 */
-export const HomeBubbleLayout = {
-  glassAbsoluteFill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-} as const;
-
-/** 말풍선 BlurView fallback: expo-blur 사용! */
-export const HomeBubbleBlurConfig = {
-  intensity: 50,
-  tint: 'dark',
-  androidExperimentalBlurMethod: 'dimezisBlurView',
-  androidBlurReductionFactor: 4,
-} as const;
-
 export const HomeCardClasses = {
   container: 'rounded-card border border-line bg-surface p-6',
+  emptyState: 'min-h-[120px] items-center justify-center',
+} as const;
+
+/** 감정 별자리 (Home/Report 공용 차트) */
+export const EmotionConstellationLayout = {
+  chartHeight: 72,
+  chartPaddingX: 10,
+  chartPaddingY: 10,
+  strokeWidth: 2,
+  dotRadius: 4,
+  activeDotRadius: 6,
+  weekLabelTopGap: 10,
+} as const;
+
+/** NativeWind className — EmotionConstellationLayout과 함께 유지 */
+export const EmotionConstellationTextClasses = {
+  weekday: 'text-weekday text-[12px] font-medium',
 } as const;
