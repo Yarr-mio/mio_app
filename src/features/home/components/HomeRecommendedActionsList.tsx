@@ -10,22 +10,18 @@ interface HomeRecommendedActionsListProps {
   onToggleAction: (id: string) => void;
 }
 
-interface TodoCheckboxProps {
+interface RecommendedActionCheckboxProps {
   completed: boolean;
-  onToggle: () => void;
 }
 
-function TodoCheckbox({ completed, onToggle }: TodoCheckboxProps) {
+function RecommendedActionCheckbox({ completed }: RecommendedActionCheckboxProps) {
   return (
-    <Pressable
-      onPress={onToggle}
+    <View
       className={cn(
         HomeActionClasses.recommendedCheckbox,
         'items-center justify-center rounded-full',
         completed ? 'bg-accent' : 'border border-fg-default/30 bg-transparent'
       )}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: completed }}
     >
       {completed ? (
         <CheckboxCheckIcon
@@ -34,7 +30,7 @@ function TodoCheckbox({ completed, onToggle }: TodoCheckboxProps) {
           color={FgColors.default}
         />
       ) : null}
-    </Pressable>
+    </View>
   );
 }
 
@@ -46,15 +42,20 @@ interface RecommendedActionItemProps {
 
 function RecommendedActionItem({ text, completed, onToggle }: RecommendedActionItemProps) {
   return (
-    <View className="flex-row items-center gap-3">
-      <TodoCheckbox completed={completed} onToggle={onToggle} />
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: completed }}
+      className="flex-row items-center gap-3"
+    >
+      <RecommendedActionCheckbox completed={completed} />
       <ThemedText
         type="small"
         className={cn('flex-1', completed ? 'text-label line-through' : 'text-fg-default')}
       >
         {text}
       </ThemedText>
-    </View>
+    </Pressable>
   );
 }
 
