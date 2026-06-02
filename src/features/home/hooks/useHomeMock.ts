@@ -7,9 +7,6 @@ export interface HomeRecommendedAction {
 }
 
 const MOCK_HAS_ACTIONS = true;
-
-const MOCK_HOME_TITLE = '오늘도 잘 찾아왔어요';
-
 const MOCK_ACTIONS_INITIAL: HomeRecommendedAction[] = [
   { id: '1', text: '5분-호흡 연습하기', completed: true },
   { id: '2', text: '생각의 흐름을 있는 그대로 적어 보기', completed: true },
@@ -34,7 +31,6 @@ export function useHomeMock() {
 
   return {
     hasActions: MOCK_HAS_ACTIONS,
-    homeTitle: MOCK_HOME_TITLE,
     weekLabels: [...MOCK_WEEK_LABELS] as string[],
     weekIntensities: [...MOCK_WEEK_INTENSITIES] as number[],
     actions,
