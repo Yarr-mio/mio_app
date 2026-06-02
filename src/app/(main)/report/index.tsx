@@ -1,5 +1,5 @@
-import { View } from 'react-native';
+import { ReportScreen } from '@/features/report/components/ReportScreen';
 
-export default function ReportScreen() {
-  return <View className="flex-1" />;
+export default function ReportRoute() {
+  return <ReportScreen />;
 }
