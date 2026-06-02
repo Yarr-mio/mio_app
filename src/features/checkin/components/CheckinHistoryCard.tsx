@@ -1,5 +1,5 @@
-import { HomeCardShell } from '@/components/ui/HomeCardShell';
 import { CheckinSummaryRow } from '@/components/checkin/CheckinSummaryRow';
+import { HomeCardShell } from '@/components/ui/HomeCardShell';
 import { EMOTION_META } from '@/constants/emotions';
 import type { CheckinRecord } from '@/types/checkin';
 import { formatCheckinFullDate, formatCheckinTime } from '@/utils/date';
