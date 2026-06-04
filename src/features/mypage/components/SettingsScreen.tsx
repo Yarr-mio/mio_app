@@ -1,16 +1,14 @@
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
-import {
-  getOnboardingCharacterById,
-  ONBOARDING_DEFAULT_CHARACTER_ID,
-} from '@/constants/characters';
+import { DefaultBackground } from '@/components/ui/DefaultBackground';
+import { getPartnerByKey } from '@/constants/characters';
 import { MAIN_ROUTES } from '@/constants/routes';
 import { AccountSection } from '@/features/mypage/components/AccountSection';
 import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
-import { SettingsGradientBackground } from '@/features/mypage/components/SettingsGradientBackground';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
+import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useUserStore } from '@/store/userStore';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
@@ -23,11 +21,11 @@ const FALLBACK_JOINED_AT = '2026-01-01';
 
 export function SettingsScreen() {
   const router = useRouter();
-  const { signupInfo, onboardingResult } = useUserStore();
+  const signupInfo = useUserStore((state) => state.signupInfo);
   const [pushEnabled, setPushEnabled] = useState(true);
 
-  const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
-  const character = getOnboardingCharacterById(characterId);
+  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
+  const partner = getPartnerByKey(selectedPartner);
   const nickname = signupInfo?.nickname ?? FALLBACK_NICKNAME;
 
   // TODO: userStore에 joinedAt 추가 필요
@@ -36,7 +34,7 @@ export function SettingsScreen() {
 
   return (
     <View className="flex-1">
-      <SettingsGradientBackground />
+      <DefaultBackground />
 
       <ScreenContainer className="bg-transparent">
         <ScrollView
@@ -50,7 +48,7 @@ export function SettingsScreen() {
 
           <UserProfileCard
             nickname={nickname}
-            characterLabel={`${character.name}와 함께`}
+            characterLabel={`${partner.name}와 함께`}
             joinedAtLabel={joinedAtLabel}
             onEditPress={() => router.push(MAIN_ROUTES.profileEdit)}
           />
@@ -60,10 +58,10 @@ export function SettingsScreen() {
               내 AI 파트너
             </ThemedText>
             <AiPartnerCard
-              characterName={character.name}
-              characterIntro={character.chipLabel}
-              characterImage={character.iconImage}
-              onPress={() => router.push(MAIN_ROUTES.partner)}
+              characterName={partner.name}
+              characterIntro={partner.tag}
+              characterImage={partner.image}
+              onChevronPress={() => router.push(MAIN_ROUTES.partner)}
             />
           </View>
 

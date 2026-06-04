@@ -10,35 +10,40 @@ interface AiPartnerCardProps {
   characterName: string;
   characterIntro: string;
   characterImage: ImageSource;
-  onPress: () => void;
+  onChevronPress: () => void;
 }
 
 export function AiPartnerCard({
   characterName,
   characterIntro,
   characterImage,
-  onPress,
+  onChevronPress,
 }: AiPartnerCardProps) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="AI 파트너 상세">
-      <BaseCard className="flex-row items-center px-6 py-6">
-        <ProfileAvatarCircle imageSource={characterImage} />
+    <BaseCard className="flex-row items-center px-6 py-6">
+      <ProfileAvatarCircle imageSource={characterImage} />
 
-        <View className="ml-3 flex-1 gap-1">
-          <ThemedText type="defaultBold" className="text-fg-default text-base">
-            {characterName}
-          </ThemedText>
-          <ThemedText type="smallBold" className="text-badge">
-            {characterIntro}
-          </ThemedText>
-        </View>
+      <View className="ml-3 flex-1 gap-1">
+        <ThemedText type="defaultBold" className="text-fg-default text-base">
+          {characterName}
+        </ThemedText>
+        <ThemedText type="smallBold" className="text-badge">
+          {characterIntro}
+        </ThemedText>
+      </View>
 
+      <Pressable
+        onPress={onChevronPress}
+        accessibilityRole="button"
+        accessibilityLabel="파트너 변경"
+        hitSlop={8}
+      >
         <ChevronRightIcon
           width={SettingsLayout.chevronWidth}
           height={SettingsLayout.chevronHeight}
           color={SubtitleColors.DEFAULT}
         />
-      </BaseCard>
-    </Pressable>
+      </Pressable>
+    </BaseCard>
   );
 }
