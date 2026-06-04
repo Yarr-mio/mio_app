@@ -29,12 +29,12 @@ export function EmotionScorePanel({ initialScore, onConfirm }: EmotionScorePanel
   const sliderAreaHeight = thumbRingSize + sliderAreaPaddingY;
 
   return (
-    <View className="border-t border-white/10 bg-midnight px-5 pt-5 pb-6 gap-5">
+    <View className="border-t border-line bg-midnight px-5 pt-5 pb-6 gap-5">
       <View className="gap-1">
-        <ThemedText type="smallTitle" className="text-white text-center">
+        <ThemedText type="smallTitle" className="text-fg text-center">
           지금 내 감정 점수는?
         </ThemedText>
-        <ThemedText type="small" className="text-white/50 text-center">
+        <ThemedText type="small" className="text-fg-muted text-center">
           슬라이더를 움직여 현재 감정 강도를 표시해 주세요
         </ThemedText>
       </View>
@@ -62,10 +62,10 @@ export function EmotionScorePanel({ initialScore, onConfirm }: EmotionScorePanel
         />
 
         <View className="flex-row justify-between">
-          <ThemedText type="small" className="text-white/50">
+          <ThemedText type="small" className="text-fg-muted">
             최저 (0)
           </ThemedText>
-          <ThemedText type="small" className="text-white/50">
+          <ThemedText type="small" className="text-fg-muted">
             최고 (100)
           </ThemedText>
         </View>

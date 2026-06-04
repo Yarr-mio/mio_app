@@ -16,10 +16,10 @@ export function ChatHeader({ characterId, onEnd }: ChatHeaderProps) {
       <View className="flex-row items-center gap-3 flex-1">
         <View className="w-2 h-2 rounded-full bg-success" />
         <View>
-          <ThemedText type="smallTitle" className="text-white">
+          <ThemedText type="smallTitle" className="text-fg">
             {character.name}
           </ThemedText>
-          <ThemedText type="small" className="text-white/60">
+          <ThemedText type="small" className="text-fg-dim">
             함께 있어요
           </ThemedText>
         </View>
@@ -29,9 +29,9 @@ export function ChatHeader({ characterId, onEnd }: ChatHeaderProps) {
           onPress={onEnd}
           accessibilityRole="button"
           accessibilityLabel="대화 종료"
-          className="px-3 py-1.5 rounded-xl border border-white/20"
+          className="px-3 py-1.5 rounded-xl border border-line-md"
         >
-          <ThemedText type="small" className="text-white/60">
+          <ThemedText type="small" className="text-fg-dim">
             종료
           </ThemedText>
         </Pressable>

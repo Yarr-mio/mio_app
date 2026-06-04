@@ -127,6 +127,12 @@ export const SubtitleColors = {
   DEFAULT: '#959595',
 } as const;
 
+// 주요 액션 색상 — className 미지원 prop(ActivityIndicator color 등)에 사용
+export const PrimaryColors = {
+  DEFAULT: '#7060E0', // bg-primary / text-primary
+  inactive: '#7060E060', // bg-primary-inactive — 비활성 상태 (~38% opacity)
+} as const;
+
 // 버튼 로딩 스피너 색상 — ActivityIndicator color prop에 사용
 export const ButtonColors = {
   spinnerLight: '#FFFFFF',

@@ -21,10 +21,10 @@ export function SessionStart() {
         <View className="flex-1 items-center justify-center gap-6 px-8">
           <CharacterAvatar characterId={characterId} size="lg" />
           <View className="items-center gap-2">
-            <ThemedText type="title" className="text-center text-white">
+            <ThemedText type="title" className="text-center text-fg">
               {character.name}와 대화하기
             </ThemedText>
-            <ThemedText type="default" className="text-center text-white/70">
+            <ThemedText type="default" className="text-center text-fg-soft">
               {character.greeting}
             </ThemedText>
           </View>
@@ -38,7 +38,7 @@ export function SessionStart() {
           >
             대화 시작하기
           </Button>
-          <ThemedText type="small" className="text-center text-white/50">
+          <ThemedText type="small" className="text-center text-fg-muted">
             감정 체크는 홈에서 언제든 다시 할 수 있어요
           </ThemedText>
         </View>

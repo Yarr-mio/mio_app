@@ -14,7 +14,7 @@ interface MessageBubbleProps {
 
 function Timestamp({ timestamp }: { timestamp: string }) {
   return (
-    <ThemedText type="smallMedium" className="text-white/40 mt-1">
+    <ThemedText type="smallMedium" className="text-fg-faint mt-1">
       {formatCheckinTime(timestamp)}
     </ThemedText>
   );
@@ -26,7 +26,7 @@ function AiBubble({ message, characterId }: Pick<MessageBubbleProps, 'message' |
       <CharacterAvatar characterId={characterId} size="sm" />
       <View className="shrink">
         <View className="bg-surface-md rounded-2xl px-4 py-3">
-          <ThemedText type="default" className="text-white">
+          <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
@@ -41,7 +41,7 @@ function UserBubble({ message }: Pick<MessageBubbleProps, 'message'>) {
     <View className="flex-row-reverse gap-2 pl-12">
       <View className="shrink">
         <View className="bg-primary rounded-2xl px-4 py-3">
-          <ThemedText type="default" className="text-white">
+          <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
@@ -59,7 +59,7 @@ function SocraticBubble({ message, characterId, characterName }: MessageBubblePr
       <View className="shrink">
         <Label label={`${characterName}의 질문`} />
         <View className="mt-1 border border-primary/30 bg-primary/10 rounded-2xl px-4 py-3">
-          <ThemedText type="default" className="text-white">
+          <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
@@ -78,7 +78,7 @@ function CrisisBubble({
       <CharacterAvatar characterId={characterId} size="sm" />
       <View className="shrink gap-2">
         <View className="bg-surface-md rounded-2xl px-4 py-3">
-          <ThemedText type="default" className="text-white">
+          <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
@@ -87,10 +87,10 @@ function CrisisBubble({
             {message.crisisResources.map((resource) => (
               <View key={resource.number} className="flex-row items-center justify-between">
                 <View>
-                  <ThemedText type="smallTitle" className="text-white">
+                  <ThemedText type="smallTitle" className="text-fg">
                     {resource.name}
                   </ThemedText>
-                  <ThemedText type="small" className="text-white/60">
+                  <ThemedText type="small" className="text-fg-dim">
                     {resource.hours}
                   </ThemedText>
                 </View>
@@ -98,7 +98,7 @@ function CrisisBubble({
                   onPress={() => Linking.openURL(`tel:${resource.number}`)}
                   className="bg-primary rounded-xl px-4 py-2"
                 >
-                  <ThemedText type="smallBold" className="text-white">
+                  <ThemedText type="smallBold" className="text-fg">
                     {resource.number}
                   </ThemedText>
                 </Pressable>
