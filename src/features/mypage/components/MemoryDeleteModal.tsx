@@ -27,7 +27,7 @@ export function MemoryDeleteModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <View className="flex-1 justify-center items-center px-6 bg-black/70">
+      <View className="flex-1 justify-center items-center px-6 bg-canvas-night/70">
         <View className="w-full bg-midnight rounded-3xl p-6">
           <ThemedText type="defaultBold" className="text-xl text-center mb-2">
             선택한 기억을 삭제할까요?

@@ -9,6 +9,7 @@ import {
   useMemoryList,
   useUpdateMemoryRecord,
 } from '@/features/mypage/hooks/useMemory';
+import { FgColors } from '@/constants/theme';
 import type { MemoryRecord } from '@/types/memory';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
@@ -81,7 +82,7 @@ export default function MyScreen() {
         }
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator color="white" className="mt-8" />
+            <ActivityIndicator color={FgColors.default} className="mt-8" />
           ) : (
             <ThemedText type="captionCenter" className="text-fg-ghost mt-8">
               아직 저장된 기억이 없어요
