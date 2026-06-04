@@ -15,3 +15,11 @@ export const MAIN_ROUTES = {
 
 export type AuthRoute = (typeof AUTH_ROUTES)[keyof typeof AUTH_ROUTES];
 export type MainRoute = (typeof MAIN_ROUTES)[keyof typeof MAIN_ROUTES];
+
+export const HOME_ROUTES = {
+  checkin: '/(main)/home/checkin',
+  todo: '/(main)/home/todo',
+  report: '/(main)/report',
+} as const;
+
+export type HomeRoute = (typeof HOME_ROUTES)[keyof typeof HOME_ROUTES];
