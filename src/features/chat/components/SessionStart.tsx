@@ -1,0 +1,48 @@
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
+import { AuthBackground } from '@/components/themed/AuthBackground';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { Button } from '@/components/ui/Button';
+import { CharacterAvatar } from '@/components/character/CharacterAvatar';
+import { getOnboardingCharacterById } from '@/constants/characters';
+import { useStartChatSession } from '@/features/chat/hooks/useChat';
+import { useChatStore } from '@/features/chat/store/chatStore';
+import { View } from 'react-native';
+
+export function SessionStart() {
+  // TODO: useCharacter() 훅으로 서버에서 수신 후 대체 (현재 store 기본값 'mio' 사용)
+  const characterId = useChatStore((s) => s.characterId);
+  const character = getOnboardingCharacterById(characterId);
+  const { mutate: startSession, isPending } = useStartChatSession();
+
+  return (
+    <View className="flex-1 bg-midnight">
+      <AuthBackground />
+      <ScreenContainer className="flex-1 bg-transparent">
+        <View className="flex-1 items-center justify-center gap-6 px-8">
+          <CharacterAvatar characterId={characterId} size="lg" />
+          <View className="items-center gap-2">
+            <ThemedText type="title" className="text-center text-white">
+              {character.name}와 대화하기
+            </ThemedText>
+            <ThemedText type="default" className="text-center text-white/70">
+              {character.greeting}
+            </ThemedText>
+          </View>
+        </View>
+        <View className="px-8 pb-6 gap-3">
+          <Button
+            variant="primary"
+            size="lg"
+            loading={isPending}
+            onPress={() => startSession(characterId)}
+          >
+            대화 시작하기
+          </Button>
+          <ThemedText type="small" className="text-center text-white/50">
+            감정 체크는 홈에서 언제든 다시 할 수 있어요
+          </ThemedText>
+        </View>
+      </ScreenContainer>
+    </View>
+  );
+}
