@@ -51,13 +51,16 @@ export function useChatSse(sessionId: string | null) {
 
   function handleSessionMeta(data: SseSessionMetaData) {
     const aiMsgId = data.message_id;
-    useChatStore.getState().addMessage({
+    const store = useChatStore.getState();
+    store.addMessage({
       id: aiMsgId,
       role: 'ai',
       type: 'normal',
       content: '',
       timestamp: data.received_at,
     });
+    // 빈 AI 메시지가 추가되는 순간 TypingIndicator 숨김 — delta가 이어받음
+    store.setAiTyping(false);
     useChatStore.setState({ streamingMessageId: aiMsgId });
   }
 

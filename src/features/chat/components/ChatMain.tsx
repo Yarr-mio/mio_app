@@ -45,7 +45,7 @@ export function ChatMain() {
                 characterName={character.name}
               />
             )}
-            ListFooterComponent={isAiTyping ? <TypingIndicator /> : null}
+            ListHeaderComponent={isAiTyping ? <TypingIndicator /> : null}
             contentContainerClassName="gap-4 px-4 py-4"
           />
           {emotionScoringActive ? (
