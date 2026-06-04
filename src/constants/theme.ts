@@ -180,3 +180,63 @@ export const OnboardingColors = {
 } as const;
 
 export const MaxContentWidth = 800;
+
+/** 인증 화면 */
+export const AuthTextClasses = {
+  appTitle: 'font-NanumMyeongjoExtraBold text-[45px] tracking-[0.22em] text-ink-night',
+} as const;
+
+/** (HomeScreen.tsx) */
+export const HomeLayout = {
+  characterImageSize: 125,
+  emotionIconSize: 72,
+  chevronIconWidth: 8,
+  chevronIconHeight: 11,
+  checkboxSize: 20,
+  checkboxCheckWidth: 12,
+  checkboxCheckHeight: 9,
+  cardMinHeightEmpty: 120,
+} as const;
+
+/** NativeWind className — HomeLayout과 함께 유지 */
+export const HomeTextClasses = {
+  homeTitle: 'text-[25px] leading-8',
+  supportSubtitle: 'text-label-muted',
+} as const;
+
+export const HomeSpeechBubbleClasses = {
+  shell:
+    'overflow-hidden rounded-tl-[15px] rounded-tr-[15px] rounded-bl-[15px] rounded-br-[3px] border-2 border-speech-bubble-border bg-surface px-5 py-4',
+} as const;
+
+export const HomeCardClasses = {
+  container: 'rounded-card border border-line bg-surface p-6',
+  emptyState: 'min-h-[120px] items-center justify-center',
+} as const;
+
+/** NativeWind className — HomeLayout.checkboxSize(20) 등과 함께 유지 */
+export const HomeActionClasses = {
+  recommendedCheckbox: 'h-5 w-5',
+  mindExploreCta: 'rounded-[10px] bg-mind-explore-btn px-4 py-2',
+} as const;
+
+/** 감정 별자리 (Home/Report 공용 차트) */
+export const EmotionConstellationLayout = {
+  chartHeight: 72,
+  chartPaddingX: 10,
+  chartPaddingY: 10,
+  strokeWidth: 2,
+  dotRadius: 4,
+  activeDotRadius: 6,
+  weekLabelTopGap: 10,
+} as const;
+
+/** NativeWind className — EmotionConstellationLayout과 함께 유지 */
+export const EmotionConstellationClasses = {
+  chartContainer: 'h-[72px]',
+  weekLabelsRow: 'mt-[10px] flex-row justify-between',
+} as const;
+
+export const EmotionConstellationTextClasses = {
+  weekday: 'text-weekday text-[12px] font-medium',
+} as const;
