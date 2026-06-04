@@ -2,7 +2,7 @@ import UserIcon from '@/assets/icons/user.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { Label } from '@/components/ui/Label';
-import { FgColors, SettingsLayout } from '@/constants/theme';
+import { SettingsLayout } from '@/constants/theme';
 import { ProfileAvatarCircle } from '@/features/mypage/components/ProfileAvatarCircle';
 import { Pressable, View } from 'react-native';
 
@@ -22,11 +22,7 @@ export function UserProfileCard({
   return (
     <BaseCard className="flex-row items-center px-6 py-6 mt-6">
       <ProfileAvatarCircle>
-        <UserIcon
-          width={SettingsLayout.userIconSize}
-          height={SettingsLayout.userIconSize}
-          color={FgColors.onDefault}
-        />
+        <UserIcon width={SettingsLayout.userIconSize} height={SettingsLayout.userIconSize} />
       </ProfileAvatarCircle>
 
       <View className="ml-3 flex-1 gap-2">

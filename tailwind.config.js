@@ -147,6 +147,7 @@ module.exports = {
         'avatar-gradient-start': '#2A1F5A', // ProfileAvatarCircle 그라데이션 시작
         'avatar-gradient-end': '#1A1535', // ProfileAvatarCircle 그라데이션 끝
         'avatar-stroke': '#9D7FEE59', // border-avatar-stroke — #9D7FEE 35%
+        'avatar-icon': '#6E4B97', // ProfileAvatarCircle 내부 SVG 아이콘
 
         // AppModal
         'modal-surface': '#1E2140', // bg-modal-surface

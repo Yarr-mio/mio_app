@@ -1,6 +1,53 @@
 import type { OnboardingStyleType } from '@/constants/onboarding';
+import type { ImageSource } from 'expo-image';
 
 export type OnboardingCharacterId = 'mio' | 'bau' | 'rumi' | 'momo' | 'chichi';
+
+export interface PartnerMeta {
+  key: OnboardingCharacterId;
+  name: string;
+  tag: string;
+  intro: string;
+  image: ImageSource;
+}
+
+export const PARTNER_LIST: PartnerMeta[] = [
+  {
+    key: 'mio',
+    name: '미오',
+    tag: '공감·감정 정리 전문가',
+    intro: '지금 느끼는 감정, 함께 천천히 들여다봐요',
+    image: require('../../assets/images/characters/mio.png'),
+  },
+  {
+    key: 'bau',
+    name: '바우',
+    tag: '행동 파트너',
+    intro: '작은 실천이 큰 변화를 만들어요. 같이 해 봐요',
+    image: require('../../assets/images/characters/bau.png'),
+  },
+  {
+    key: 'rumi',
+    name: '루미',
+    tag: '생각 패턴 전문가',
+    intro: '차분하게 생각을 정리하는 걸 도와드릴게요',
+    image: require('../../assets/images/characters/rumi.png'),
+  },
+  {
+    key: 'momo',
+    name: '모모',
+    tag: '감정 수용 전문가',
+    intro: '자책하지 않아도 괜찮아요. 있는 그대로 받아들여 봐요',
+    image: require('../../assets/images/characters/momo.png'),
+  },
+  {
+    key: 'chichi',
+    name: '치치',
+    tag: '생각 패턴 전문가',
+    intro: '현실적인 시선으로 함께 답을 찾아드릴게요',
+    image: require('../../assets/images/characters/chichi.png'),
+  },
+];
 
 export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
 
@@ -103,4 +150,12 @@ const CHARACTER_BY_ID = Object.fromEntries(
 
 export function getOnboardingCharacterById(id: OnboardingCharacterId) {
   return CHARACTER_BY_ID[id];
+}
+
+const PARTNER_BY_KEY = Object.fromEntries(
+  PARTNER_LIST.map((partner) => [partner.key, partner])
+) as Record<OnboardingCharacterId, PartnerMeta>;
+
+export function getPartnerByKey(key: OnboardingCharacterId): PartnerMeta {
+  return PARTNER_BY_KEY[key];
 }

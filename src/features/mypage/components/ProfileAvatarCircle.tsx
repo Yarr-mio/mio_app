@@ -1,14 +1,23 @@
 import { AvatarCircleColors, SettingsLayout } from '@/constants/theme';
 import type { ImageSource } from 'expo-image';
 import { Image } from 'expo-image';
-import type { ReactNode } from 'react';
+import { cloneElement, isValidElement, type ReactNode } from 'react';
 import { View } from 'react-native';
+import type { SvgProps } from 'react-native-svg';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 interface ProfileAvatarCircleProps {
   imageSource?: ImageSource;
   imageSize?: number;
   children?: ReactNode;
+}
+
+function renderIconChildren(children: ReactNode) {
+  if (!isValidElement<SvgProps>(children)) {
+    return children;
+  }
+
+  return cloneElement(children, { color: AvatarCircleColors.icon });
 }
 
 export function ProfileAvatarCircle({
@@ -45,7 +54,7 @@ export function ProfileAvatarCircle({
             contentFit="contain"
           />
         ) : (
-          children
+          renderIconChildren(children)
         )}
       </View>
     </View>

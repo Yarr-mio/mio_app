@@ -7,10 +7,7 @@ interface BaseCardProps extends PropsWithChildren {
 }
 
 /**
- * 배경·테두리·border-radius만 담당하는 순수 카드 컨테이너.
- * - bg-surface (#FFFFFF 5%)
- * - border-line (#FFFFFF 10%)
- * - rounded-base-card (15px)
+ * 배경/테두리/border-radius만 담당하는 순수 카드 컨테이너
  */
 export function BaseCard({ children, className }: BaseCardProps) {
   return (

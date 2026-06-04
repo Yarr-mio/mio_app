@@ -191,8 +191,8 @@ export const SettingsLayout = {
   avatarSize: 48,
   characterImageSize: 28,
   userIconSize: 21,
-  chevronWidth: 4,
-  chevronHeight: 7,
+  chevronWidth: 27,
+  chevronHeight: 14,
 } as const;
 
 /** 설정 화면 배경 선형 그라데이션  — SVG LinearGradient stopColor prop용 */
@@ -208,6 +208,7 @@ export const AvatarCircleColors = {
   gradientStart: '#2A1F5A',
   gradientEnd: '#1A1535',
   stroke: '#9D7FEE59',
+  icon: '#6E4B97',
 } as const;
 
 /** React Native Switch 네이티브 prop용 */
