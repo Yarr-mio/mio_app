@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useActiveSession } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { SessionStart } from '@/features/chat/components/SessionStart';
+import { ChatMain } from '@/features/chat/components/ChatMain';
 
 export default function ChatScreen() {
   const { data: activeSession, isLoading } = useActiveSession();
@@ -20,8 +21,7 @@ export default function ChatScreen() {
   }
 
   if (sessionPhase === 'active') {
-    // TODO: Phase 04에서 ChatMain으로 교체
-    return <View className="flex-1 bg-midnight" />;
+    return <ChatMain />;
   }
 
   return <SessionStart />;
