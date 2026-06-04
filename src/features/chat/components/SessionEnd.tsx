@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -12,8 +13,23 @@ export function SessionEnd() {
   const characterId = useChatStore((s) => s.characterId);
   const character = getOnboardingCharacterById(characterId);
 
+  useFocusEffect(
+    useCallback(() => {
+      // 이 화면에 포커스될 때 sessionPhase가 'ended'가 아니면 (reset 후 재진입)
+      // chat 스택을 루트(index)로 되돌린다
+      if (useChatStore.getState().sessionPhase !== 'ended') {
+        router.dismissAll();
+      }
+
+      return () => {
+        // 어떤 방식으로 이 화면을 나가든 (버튼, 하단 탭 등) 세션 상태 초기화
+        useChatStore.getState().reset();
+      };
+    }, [])
+  );
+
   function handleGoHome() {
-    useChatStore.getState().reset();
+    // reset은 useFocusEffect cleanup에서 처리되므로 navigation만 호출
     router.replace('/(main)/home');
   }
 
