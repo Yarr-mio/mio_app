@@ -1,5 +1,5 @@
-import { View } from 'react-native';
+import { SettingsScreen } from '@/features/mypage/components/SettingsScreen';
 
 export default function ExploreScreen() {
-  return <View className="flex-1" />;
+  return <SettingsScreen />;
 }
