@@ -5,6 +5,7 @@ import { useChatStore } from '@/features/chat/store/chatStore';
 import { useChatSse } from '@/features/chat/hooks/useChatSse';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
 import { ChatInputBar } from '@/features/chat/components/ChatInputBar';
+import { EmotionScorePanel } from '@/features/chat/components/EmotionScorePanel';
 import { MessageBubble } from '@/features/chat/components/MessageBubble';
 import { TypingIndicator } from '@/features/chat/components/TypingIndicator';
 import type { ChatMessage } from '@/types/chat';
@@ -15,6 +16,7 @@ export function ChatMain() {
   const messages = useChatStore((s) => s.messages);
   const isAiTyping = useChatStore((s) => s.isAiTyping);
   const emotionScoringActive = useChatStore((s) => s.emotionScoringActive);
+  const pendingEmotionScore = useChatStore((s) => s.pendingEmotionScore);
   const character = getOnboardingCharacterById(characterId);
 
   const { sendMessage, isStreaming } = useChatSse(sessionId);
@@ -41,8 +43,17 @@ export function ChatMain() {
             ListFooterComponent={isAiTyping ? <TypingIndicator /> : null}
             contentContainerClassName="gap-4 px-4 py-4"
           />
-          {/* Phase 07: emotionScoringActive일 때 EmotionScorePanel로 교체 */}
-          {!emotionScoringActive && <ChatInputBar onSend={sendMessage} disabled={isStreaming} />}
+          {emotionScoringActive ? (
+            <EmotionScorePanel
+              initialScore={pendingEmotionScore}
+              onConfirm={(_score) => {
+                // TODO: 점수 제출 엔드포인트 미명세 — 백엔드 확인 필요
+                useChatStore.getState().deactivateEmotionScoring();
+              }}
+            />
+          ) : (
+            <ChatInputBar onSend={sendMessage} disabled={isStreaming} />
+          )}
         </KeyboardAvoidingView>
       </ScreenContainer>
     </View>
