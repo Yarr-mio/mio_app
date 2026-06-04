@@ -180,3 +180,77 @@ export const OnboardingColors = {
 } as const;
 
 export const MaxContentWidth = 800;
+
+/** BaseCard — bg-surface + border-line + rounded-base-card */
+export const BaseCardLayout = {
+  borderRadius: 15,
+} as const;
+
+/** 설정(더보기) 화면 레이아웃 */
+export const SettingsLayout = {
+  avatarSize: 48,
+  characterImageSize: 28,
+  userIconSize: 21,
+  chevronWidth: 4,
+  chevronHeight: 7,
+} as const;
+
+/** 설정 화면 배경 선형 그라데이션  — SVG LinearGradient stopColor prop용 */
+export const SettingsGradientColors = {
+  top: '#0A0A1A',
+  midUpper: '#060A1A',
+  midLower: '#0D0D2B',
+  bottom: '#08091F',
+} as const;
+
+/** 프로필/캐릭터 원형 아바타 — SVG prop용 */
+export const AvatarCircleColors = {
+  gradientStart: '#2A1F5A',
+  gradientEnd: '#1A1535',
+  stroke: '#9D7FEE59',
+} as const;
+
+/** React Native Switch 네이티브 prop용 */
+export const SwitchColors = {
+  trackFalse: 'rgba(255,255,255,0.2)',
+  trackTrue: '#7060E0',
+  thumb: '#FFFFFF',
+  iosBackgroundColor: 'rgba(255,255,255,0.2)',
+} as const;
+
+/** AppModal */
+export const AppModalLayout = {
+  iconCircleSize: 56,
+  iconSize: 23,
+  buttonHeight: 56,
+} as const;
+
+export const AppModalDefaults = {
+  cancelLabel: '취소',
+} as const;
+
+/** AppModal drop shadow — className 미지원, style prop용 (#0A0B16 75%) */
+export const AppModalShadowStyle = Platform.select<ViewStyle>({
+  ios: {
+    shadowColor: '#0A0B16',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.75,
+    shadowRadius: 24,
+    elevation: 0,
+  },
+  android: {
+    elevation: 12,
+    shadowColor: '#0A0B16',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.75,
+    shadowRadius: 24,
+  },
+  default: {},
+});
+
+/** 계정 모달(로그아웃/회원탈퇴) 아이콘 원 — SVG color / 동적 style prop용 */
+export const AccountModalColors = {
+  icon: '#F07878',
+  iconBg: '#F078781A',
+  iconBorder: '#F0787833',
+} as const;

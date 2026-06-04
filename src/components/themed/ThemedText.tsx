@@ -13,6 +13,7 @@ export type ThemedTextType =
   | 'defaultBold'
   | 'defaultRegular'
   | 'subtitle'
+  | 'pageTitle'
   | 'link'
   | 'linkPrimary'
   | 'code';
@@ -29,6 +30,7 @@ const typeClasses: Record<ThemedTextType, string> = {
   smallTitle: 'text-base font-semibold leading-6',
   defaultBold: 'text-base font-bold',
   defaultRegular: 'text-base leading-6 font-normal',
+  pageTitle: 'text-2xl font-bold leading-[30px]',
   link: 'text-sm font-sans leading-[30px]',
   linkPrimary: 'text-sm font-sans leading-[30px] text-link',
   code: `text-xs font-mono ${Platform.OS === 'android' ? 'font-bold' : 'font-medium'}`,

@@ -8,4 +8,10 @@ export const AUTH_ROUTES = {
   home: '/(main)/home',
 } as const;
 
+export const MAIN_ROUTES = {
+  profileEdit: '/(main)/explore/edit',
+  partner: '/(main)/my/partner',
+} as const;
+
 export type AuthRoute = (typeof AUTH_ROUTES)[keyof typeof AUTH_ROUTES];
+export type MainRoute = (typeof MAIN_ROUTES)[keyof typeof MAIN_ROUTES];
