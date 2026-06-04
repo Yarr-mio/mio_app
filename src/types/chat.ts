@@ -10,6 +10,7 @@ export interface ChatMessage {
   type: ChatMessageType;
   content: string;
   timestamp: string;
+  crisisResources?: SseCrisisResource[];
 }
 
 export interface SseSessionMetaData {
