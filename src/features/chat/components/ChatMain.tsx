@@ -2,16 +2,22 @@ import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { useChatSse } from '@/features/chat/hooks/useChatSse';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
+import { ChatInputBar } from '@/features/chat/components/ChatInputBar';
 import { MessageBubble } from '@/features/chat/components/MessageBubble';
 import { TypingIndicator } from '@/features/chat/components/TypingIndicator';
 import type { ChatMessage } from '@/types/chat';
 
 export function ChatMain() {
   const characterId = useChatStore((s) => s.characterId);
+  const sessionId = useChatStore((s) => s.sessionId);
   const messages = useChatStore((s) => s.messages);
   const isAiTyping = useChatStore((s) => s.isAiTyping);
+  const emotionScoringActive = useChatStore((s) => s.emotionScoringActive);
   const character = getOnboardingCharacterById(characterId);
+
+  const { sendMessage, isStreaming } = useChatSse(sessionId);
 
   return (
     <View className="flex-1 bg-midnight">
@@ -35,8 +41,8 @@ export function ChatMain() {
             ListFooterComponent={isAiTyping ? <TypingIndicator /> : null}
             contentContainerClassName="gap-4 px-4 py-4"
           />
-          {/* Phase 06: ChatInputBar / Phase 07: EmotionScorePanel로 교체 */}
-          <View />
+          {/* Phase 07: emotionScoringActive일 때 EmotionScorePanel로 교체 */}
+          {!emotionScoringActive && <ChatInputBar onSend={sendMessage} disabled={isStreaming} />}
         </KeyboardAvoidingView>
       </ScreenContainer>
     </View>
