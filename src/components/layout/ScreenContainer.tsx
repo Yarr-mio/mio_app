@@ -6,6 +6,7 @@
  */
 import { ScreenSpacing } from '@/constants/theme';
 import { cn } from '@/utils/cn';
+import { useSegments } from 'expo-router';
 import type { PropsWithChildren } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,17 +22,20 @@ export function ScreenContainer({
   children,
   className,
   withTopInset = true,
-  withBottomInset = true,
+  withBottomInset,
   bottomInsetMin = ScreenSpacing.bottomInsetMin,
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
+  const segments = useSegments();
+  const isTabLayout = segments[0] === '(main)';
+  const shouldApplyBottomInset = withBottomInset ?? !isTabLayout;
 
   return (
     <View
       className={cn('flex-1', className)}
       style={{
         paddingTop: withTopInset ? insets.top : 0,
-        paddingBottom: withBottomInset ? Math.max(insets.bottom, bottomInsetMin) : 0,
+        paddingBottom: shouldApplyBottomInset ? Math.max(insets.bottom, bottomInsetMin) : 0,
       }}
     >
       {children}

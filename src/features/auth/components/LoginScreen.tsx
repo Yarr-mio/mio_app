@@ -6,7 +6,7 @@ import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { AUTH_ROUTES } from '@/constants/routes';
-import { ScreenSpacing } from '@/constants/theme';
+import { AuthTextClasses, ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 import { useKakaoLogin } from '@/features/auth/hooks/useKakaoLogin';
 
@@ -27,13 +27,7 @@ export default function LoginScreen() {
       <AuthBackground variant="login" />
       <ScreenContainer className="flex-1 px-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="flex-1 items-center justify-center gap-6">
-          <Text
-            className="tracking-[0.22em] text-ink-night"
-            // Custom font exception: ThemedText(type="title")의 기본 font-bold 처리로 fontFamily override가 불안정해 RN Text + style로 직접 지정
-            style={{ fontFamily: 'NanumMyeongjoExtraBold', fontSize: 45 }}
-          >
-            MIO
-          </Text>
+          <Text className={AuthTextClasses.appTitle}>MIO</Text>
           <ThemedText
             type="smallTitle"
             className="text-center text-sm tracking-[0.25em] text-fg-muted"
