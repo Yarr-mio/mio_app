@@ -3,6 +3,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useChatSse } from '@/features/chat/hooks/useChatSse';
+import { useEndChatSession } from '@/features/chat/hooks/useChat';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
 import { ChatInputBar } from '@/features/chat/components/ChatInputBar';
 import { EmotionScorePanel } from '@/features/chat/components/EmotionScorePanel';
@@ -20,11 +21,15 @@ export function ChatMain() {
   const character = getOnboardingCharacterById(characterId);
 
   const { sendMessage, isStreaming } = useChatSse(sessionId);
+  const { mutate: endChatSession } = useEndChatSession();
 
   return (
     <View className="flex-1 bg-midnight">
       <ScreenContainer className="flex-1 bg-transparent">
-        <ChatHeader characterId={characterId} />
+        <ChatHeader
+          characterId={characterId}
+          onEnd={() => sessionId && endChatSession(sessionId)}
+        />
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
