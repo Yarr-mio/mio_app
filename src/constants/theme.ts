@@ -89,6 +89,7 @@ export const HeaderLayout = {
   backIconSize: 22,
   backHeaderIconSize: 20,
   backButtonSize: 35,
+  topInsetExtra: 12,
 } as const;
 
 /** NativeWind className — HeaderLayout.backButtonSize(35)와 함께 유지 */
@@ -97,6 +98,7 @@ export const HeaderClasses = {
     'h-[35px] w-[35px] items-center justify-center rounded-full border border-line bg-surface',
   row: 'relative min-h-[35px] flex-row items-center justify-between',
   wrapper: 'px-5 pb-6',
+  titleOverlay: 'pointer-events-none absolute inset-0 items-center justify-center px-12',
 } as const;
 
 export const EmotionSelectBoxLayout = {
@@ -226,6 +228,12 @@ export const AvatarCircleColors = {
   gradientEnd: '#1A1535',
   stroke: '#9D7FEE59',
   icon: '#6E4B97',
+} as const;
+
+/** ProfileAvatarCircle SVG Circle 레이아웃 */
+export const AvatarCircleLayout = {
+  radiusInset: 1,
+  strokeWidth: 1,
 } as const;
 
 /** React Native Switch 네이티브 prop용 */
