@@ -10,7 +10,7 @@ import { NotificationCard } from '@/features/mypage/components/NotificationCard'
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
 import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useUserStore } from '@/store/userStore';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -30,7 +30,7 @@ export function SettingsScreen() {
 
   // TODO: userStore에 joinedAt 추가 필요
   const joinedAt = FALLBACK_JOINED_AT;
-  const joinedAtLabel = `${format(new Date(joinedAt), 'yyyy-MM-dd')} 시작`;
+  const joinedAtLabel = `${format(parseISO(joinedAt), 'yyyy-MM-dd')} 시작`;
 
   return (
     <View className="flex-1">

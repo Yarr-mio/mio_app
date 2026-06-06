@@ -11,58 +11,6 @@ export interface PartnerMeta {
   image: ImageSource;
 }
 
-export const PARTNER_LIST: PartnerMeta[] = [
-  {
-    key: 'mio',
-    name: '미오',
-    tag: '공감·감정 정리 전문가',
-    intro: '지금 느끼는 감정, 함께 천천히 들여다봐요',
-    image: require('../../assets/images/characters/mio.png'),
-  },
-  {
-    key: 'bau',
-    name: '바우',
-    tag: '행동 파트너',
-    intro: '작은 실천이 큰 변화를 만들어요. 같이 해 봐요',
-    image: require('../../assets/images/characters/bau.png'),
-  },
-  {
-    key: 'rumi',
-    name: '루미',
-    tag: '생각 패턴 전문가',
-    intro: '차분하게 생각을 정리하는 걸 도와드릴게요',
-    image: require('../../assets/images/characters/rumi.png'),
-  },
-  {
-    key: 'momo',
-    name: '모모',
-    tag: '감정 수용 전문가',
-    intro: '자책하지 않아도 괜찮아요. 있는 그대로 받아들여 봐요',
-    image: require('../../assets/images/characters/momo.png'),
-  },
-  {
-    key: 'chichi',
-    name: '치치',
-    tag: '생각 패턴 전문가',
-    intro: '현실적인 시선으로 함께 답을 찾아드릴게요',
-    image: require('../../assets/images/characters/chichi.png'),
-  },
-];
-
-export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
-
-export type ApiPreferredStyle = 'empathetic' | 'analytical' | 'solution' | 'balanced';
-
-export const ONBOARDING_STYLE_TO_API_PREFERRED_STYLE: Record<
-  OnboardingStyleType,
-  ApiPreferredStyle
-> = {
-  empathy: 'empathetic',
-  realistic: 'analytical',
-  action: 'solution',
-  reflective: 'balanced',
-} as const;
-
 export const ONBOARDING_CHARACTERS = [
   {
     id: 'mio',
@@ -115,6 +63,31 @@ export const ONBOARDING_CHARACTERS = [
       '안녕! 나는 치치예요.\n현실적인 시선으로 상황을 정리하고, 선택지를 함께 찾아볼게요. ✨',
   },
 ] as const;
+
+// TODO: ONBOARDING_CHARACTERS.quote는 curly quote(“ ”)를 사용해 replace(/^"|"$/g, '')로는 따옴표가 제거되지 않음.
+// PARTNER_LIST intro는 따옴표 없는 문구(예: mio → '지금 느끼는 감정, 함께 천천히 들여다봐요')가 올바른 값인지,
+// quote에서 파생한 값(따옴표 포함)이 올바른 값인지 디자인/기획 확인 필요.
+export const PARTNER_LIST: PartnerMeta[] = ONBOARDING_CHARACTERS.map((char) => ({
+  key: char.id,
+  name: char.name,
+  tag: char.chipLabel,
+  intro: char.quote.replace(/^"|"$/g, ''),
+  image: char.image,
+}));
+
+export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
+
+export type ApiPreferredStyle = 'empathetic' | 'analytical' | 'solution' | 'balanced';
+
+export const ONBOARDING_STYLE_TO_API_PREFERRED_STYLE: Record<
+  OnboardingStyleType,
+  ApiPreferredStyle
+> = {
+  empathy: 'empathetic',
+  realistic: 'analytical',
+  action: 'solution',
+  reflective: 'balanced',
+} as const;
 
 /** 전체 캐릭터 목록 표시 순서 */
 export const ONBOARDING_ALL_CHARACTER_IDS: OnboardingCharacterId[] = [

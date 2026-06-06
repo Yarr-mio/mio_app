@@ -1,4 +1,5 @@
 import { ONBOARDING_CONCERN_OPTIONS, type OnboardingConcernType } from '@/constants/onboarding';
+import { EditNicknameLayout } from '@/constants/theme';
 import type { UserOnboardingSelectionResult, UserSignupInfo } from '@/types/user';
 import { create } from 'zustand';
 
@@ -31,12 +32,18 @@ export const useUserStore = create<UserState>((set) => ({
   ...INITIAL_STATE,
   setSignupInfo: (info) => set({ signupInfo: info }),
   // todo: 닉네임 수정 API 연동 후 updateNickname에서 서버 요청 추가
-  updateNickname: (nickname) =>
+  updateNickname: (nickname) => {
+    const normalized = nickname.trim().slice(0, EditNicknameLayout.maxLength);
+    if (normalized.length === 0) {
+      return;
+    }
+
     set((state) => ({
       signupInfo: state.signupInfo
-        ? { ...state.signupInfo, nickname }
-        : { nickname, gender: null, ageRange: null },
-    })),
+        ? { ...state.signupInfo, nickname: normalized }
+        : { nickname: normalized, gender: null, ageRange: null },
+    }));
+  },
   setOnboardingResult: (result) => set({ onboardingResult: result }),
   reset: () => set({ ...INITIAL_STATE }),
 }));
