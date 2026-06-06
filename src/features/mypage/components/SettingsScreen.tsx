@@ -50,7 +50,7 @@ export function SettingsScreen() {
             nickname={nickname}
             characterLabel={`${partner.name}와 함께`}
             joinedAtLabel={joinedAtLabel}
-            onEditPress={() => router.push(MAIN_ROUTES.profileEdit)}
+            onEditPress={() => router.push(MAIN_ROUTES.editNickname)}
           />
 
           <View className="mt-6">

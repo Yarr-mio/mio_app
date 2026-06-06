@@ -10,8 +10,11 @@ export const AUTH_ROUTES = {
 
 export const MAIN_ROUTES = {
   settings: '/(main)/explore',
-  profileEdit: '/(main)/explore/edit',
+  editNickname: '/(main)/explore/edit-nickname',
   partner: '/(main)/explore/partner',
+  legalTerms: '/(main)/explore/legal/terms',
+  legalPrivacy: '/(main)/explore/legal/privacy',
+  legalSensitive: '/(main)/explore/legal/sensitive',
 } as const;
 
 export type AuthRoute = (typeof AUTH_ROUTES)[keyof typeof AUTH_ROUTES];

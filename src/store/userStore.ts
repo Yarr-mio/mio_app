@@ -7,6 +7,7 @@ interface UserState {
   onboardingResult: UserOnboardingSelectionResult | null;
 
   setSignupInfo: (info: UserSignupInfo) => void;
+  updateNickname: (nickname: string) => void;
   setOnboardingResult: (result: UserOnboardingSelectionResult) => void;
   reset: () => void;
 }
@@ -29,6 +30,13 @@ function normalizeConcernTypes(types: string[] | null): OnboardingConcernType[] 
 export const useUserStore = create<UserState>((set) => ({
   ...INITIAL_STATE,
   setSignupInfo: (info) => set({ signupInfo: info }),
+  // todo: 닉네임 수정 API 연동 후 updateNickname에서 서버 요청 추가
+  updateNickname: (nickname) =>
+    set((state) => ({
+      signupInfo: state.signupInfo
+        ? { ...state.signupInfo, nickname }
+        : { nickname, gender: null, ageRange: null },
+    })),
   setOnboardingResult: (result) => set({ onboardingResult: result }),
   reset: () => set({ ...INITIAL_STATE }),
 }));

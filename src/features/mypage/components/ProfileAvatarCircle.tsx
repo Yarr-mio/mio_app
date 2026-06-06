@@ -8,6 +8,7 @@ import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 interface ProfileAvatarCircleProps {
   imageSource?: ImageSource;
+  size?: number;
   imageSize?: number;
   children?: ReactNode;
 }
@@ -22,10 +23,10 @@ function renderIconChildren(children: ReactNode) {
 
 export function ProfileAvatarCircle({
   imageSource,
+  size = SettingsLayout.avatarSize,
   imageSize = SettingsLayout.characterImageSize,
   children,
 }: ProfileAvatarCircleProps) {
-  const size = SettingsLayout.avatarSize;
   const radius = size / 2;
 
   return (
