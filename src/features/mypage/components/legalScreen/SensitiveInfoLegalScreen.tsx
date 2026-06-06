@@ -1,7 +1,6 @@
 import { LegalPlaceholderScreen } from '@/features/mypage/components/legalScreen/LegalPlaceholderScreen';
-
-const SENSITIVE_TITLE = '민감정보 수집 및 이용';
+import { getLegalInfoLabel } from '@/features/mypage/constants/legalInfo';
 
 export function SensitiveInfoLegalScreen() {
-  return <LegalPlaceholderScreen title={SENSITIVE_TITLE} />;
+  return <LegalPlaceholderScreen title={getLegalInfoLabel('sensitive')} />;
 }

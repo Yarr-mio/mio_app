@@ -1,7 +1,6 @@
 import { LegalPlaceholderScreen } from '@/features/mypage/components/legalScreen/LegalPlaceholderScreen';
-
-const TERMS_TITLE = '서비스 이용 약관';
+import { getLegalInfoLabel } from '@/features/mypage/constants/legalInfo';
 
 export function TermsOfServiceLegalScreen() {
-  return <LegalPlaceholderScreen title={TERMS_TITLE} />;
+  return <LegalPlaceholderScreen title={getLegalInfoLabel('terms')} />;
 }

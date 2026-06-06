@@ -4,7 +4,12 @@ import { Button } from '@/components/ui/Button';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import { Label } from '@/components/ui/Label';
 import { PARTNER_LIST } from '@/constants/characters';
-import { OnboardingStyleCardLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
+import {
+  OnboardingStyleCardClasses,
+  OnboardingStyleCardLayout,
+  PressableConfig,
+  ScreenSpacing,
+} from '@/constants/theme';
 import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
@@ -40,15 +45,7 @@ function PartnerOptionCard({ name, tag, intro, image, selected, onPress }: Partn
       )}
       hitSlop={PressableConfig.hitSlop}
     >
-      <View
-        style={{
-          width: iconSlotSize,
-          height: iconSlotSize,
-          overflow: 'hidden',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <View className={OnboardingStyleCardClasses.iconSlot}>
         <Image
           source={image}
           style={{ width: iconRenderSize, height: iconRenderSize }}
@@ -103,6 +100,7 @@ export function PartnerSelectScreen() {
           />
         ))}
       </ScrollView>
+      {/* safe area 대응 — 인라인 style 불가피 */}
       <View className="px-6 pt-2" style={{ paddingBottom: bottomPadding }}>
         <Button onPress={handleApply}>수정하기</Button>
       </View>

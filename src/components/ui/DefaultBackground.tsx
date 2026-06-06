@@ -6,6 +6,7 @@ export function DefaultBackground() {
   const { width, height } = useWindowDimensions();
 
   return (
+    // SVG 배경 절대 위치 — 인라인 style 불가피
     <Svg
       width={width}
       height={height}

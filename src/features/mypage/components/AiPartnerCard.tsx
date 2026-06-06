@@ -1,7 +1,7 @@
 import ChevronRightIcon from '@/assets/icons/chevron-right.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
-import { SettingsLayout, SubtitleColors } from '@/constants/theme';
+import { PressableConfig, SettingsLayout, SubtitleColors } from '@/constants/theme';
 import { ProfileAvatarCircle } from '@/features/mypage/components/ProfileAvatarCircle';
 import type { ImageSource } from 'expo-image';
 import { Pressable, View } from 'react-native';
@@ -36,7 +36,7 @@ export function AiPartnerCard({
         onPress={onChevronPress}
         accessibilityRole="button"
         accessibilityLabel="파트너 변경"
-        hitSlop={8}
+        hitSlop={PressableConfig.hitSlop}
       >
         <ChevronRightIcon
           width={SettingsLayout.chevronWidth}

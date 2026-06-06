@@ -2,7 +2,7 @@ import UserIcon from '@/assets/icons/user.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { Label } from '@/components/ui/Label';
-import { SettingsLayout } from '@/constants/theme';
+import { PressableConfig, SettingsLayout } from '@/constants/theme';
 import { ProfileAvatarCircle } from '@/features/mypage/components/ProfileAvatarCircle';
 import { Pressable, View } from 'react-native';
 
@@ -41,7 +41,7 @@ export function UserProfileCard({
         onPress={onEditPress}
         accessibilityRole="button"
         accessibilityLabel="프로필 수정"
-        hitSlop={8}
+        hitSlop={PressableConfig.hitSlop}
         className="px-2"
       >
         <ThemedText type="default" className="text-settings-edit">

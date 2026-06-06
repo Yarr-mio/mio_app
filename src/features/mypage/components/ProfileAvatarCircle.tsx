@@ -1,4 +1,4 @@
-import { AvatarCircleColors, SettingsLayout } from '@/constants/theme';
+import { AvatarCircleColors, AvatarCircleLayout, SettingsLayout } from '@/constants/theme';
 import type { ImageSource } from 'expo-image';
 import { Image } from 'expo-image';
 import { cloneElement, isValidElement, type ReactNode } from 'react';
@@ -28,9 +28,12 @@ export function ProfileAvatarCircle({
   children,
 }: ProfileAvatarCircleProps) {
   const radius = size / 2;
+  const { radiusInset, strokeWidth } = AvatarCircleLayout;
 
   return (
+    // size prop 동적 적용 — 인라인 style 불가피
     <View style={{ width: size, height: size }}>
+      {/* SVG 절대 위치 — 인라인 style 불가피 */}
       <Svg width={size} height={size} style={{ position: 'absolute' }}>
         <Defs>
           <LinearGradient id="avatarCircleGrad" x1="0" y1="0" x2="1" y2="1">
@@ -41,10 +44,10 @@ export function ProfileAvatarCircle({
         <Circle
           cx={radius}
           cy={radius}
-          r={radius - 1}
+          r={radius - radiusInset}
           fill="url(#avatarCircleGrad)"
           stroke={AvatarCircleColors.stroke}
-          strokeWidth={1}
+          strokeWidth={strokeWidth}
         />
       </Svg>
       <View className="flex-1 items-center justify-center">

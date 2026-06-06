@@ -1,7 +1,6 @@
 import { LegalPlaceholderScreen } from '@/features/mypage/components/legalScreen/LegalPlaceholderScreen';
-
-const PRIVACY_TITLE = '개인정보 처리 방침';
+import { getLegalInfoLabel } from '@/features/mypage/constants/legalInfo';
 
 export function PrivacyPolicyLegalScreen() {
-  return <LegalPlaceholderScreen title={PRIVACY_TITLE} />;
+  return <LegalPlaceholderScreen title={getLegalInfoLabel('privacy')} />;
 }

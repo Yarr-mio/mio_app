@@ -7,16 +7,19 @@ import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type Props = {
+interface BackHeaderProps {
   title: string;
   rightAction?: ReactNode;
-};
+}
 
-export function BackHeader({ title, rightAction }: Props) {
+export function BackHeader({ title, rightAction }: BackHeaderProps) {
   const { top } = useSafeAreaInsets();
 
   return (
-    <View className={HeaderClasses.wrapper} style={{ paddingTop: top + 12 }}>
+    <View
+      className={HeaderClasses.wrapper}
+      style={{ paddingTop: top + HeaderLayout.topInsetExtra }}
+    >
       <View className={HeaderClasses.row}>
         <Pressable
           onPress={() => router.back()}
@@ -33,7 +36,7 @@ export function BackHeader({ title, rightAction }: Props) {
           />
         </Pressable>
 
-        <View className="pointer-events-none absolute inset-0 items-center justify-center px-12">
+        <View className={HeaderClasses.titleOverlay}>
           <ThemedText type="pageTitle" className="text-center text-fg" numberOfLines={1}>
             {title}
           </ThemedText>

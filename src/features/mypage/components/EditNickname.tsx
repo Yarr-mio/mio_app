@@ -1,5 +1,5 @@
+import { CloseIcon } from '@/assets/icons';
 import UserIcon from '@/assets/icons/user.svg';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
@@ -12,6 +12,7 @@ import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import {
   EditNicknameLayout,
   FgColors,
+  HeaderLayout,
   InputColors,
   PressableConfig,
   ScreenSpacing,
@@ -88,7 +89,11 @@ export function EditNicknameScreen() {
                 accessibilityLabel="닉네임 초기화"
                 hitSlop={PressableConfig.hitSlop}
               >
-                <Ionicons name="close-circle" size={20} color={FgColors.faint} />
+                <CloseIcon
+                  width={HeaderLayout.backHeaderIconSize}
+                  height={HeaderLayout.backHeaderIconSize}
+                  color={FgColors.faint}
+                />
               </Pressable>
             ) : null}
           </View>
@@ -104,6 +109,7 @@ export function EditNicknameScreen() {
         </View>
       </ScrollView>
 
+      {/* safe area 대응 — 인라인 style 불가피 */}
       <View className="px-6 pt-2" style={{ paddingBottom: bottomPadding }}>
         <Button disabled={!canSave} onPress={handleSave}>
           저장
