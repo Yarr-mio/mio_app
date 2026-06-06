@@ -1,8 +1,10 @@
-import { Delete_accountIcon, LogoutIcon } from '@/assets/icons';
+import { DeleteAccountIcon, LogoutIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { AppModal } from '@/components/ui/AppModal';
 import { BaseCard } from '@/components/ui/BaseCard';
+import { getPartnerByKey } from '@/constants/characters';
 import { AccountModalColors, AppModalLayout } from '@/constants/theme';
+import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -25,9 +27,9 @@ const LOGOUT_MODAL = {
 } as const;
 
 const WITHDRAW_MODAL = {
-  title: '정말 미오와 헤어지시겠어요?',
-  description:
-    '탈퇴하시면 그동안 미오와 함께 나눈\n소중한 대화와 마음 기록들이\n모두 삭제되며 이를 복구할 수 없어요',
+  title: (partnerName: string) => `정말 ${partnerName}와 헤어지시겠어요?`,
+  description: (partnerName: string) =>
+    `탈퇴하시면 그동안 ${partnerName}와 함께 나눈\n소중한 대화와 마음 기록들이\n모두 삭제되며 이를 복구할 수 없어요`,
   confirmLabel: '탈퇴하기',
 } as const;
 
@@ -50,6 +52,8 @@ function AccountActionRow({ label, onPress }: AccountActionRowProps) {
 
 export function AccountSection() {
   const [activeModal, setActiveModal] = useState<AccountActionId | null>(null);
+  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
+  const partnerName = getPartnerByKey(selectedPartner).name;
 
   const closeModal = () => setActiveModal(null);
 
@@ -90,7 +94,7 @@ export function AccountSection() {
         visible={activeModal === 'withdraw'}
         onClose={closeModal}
         icon={
-          <Delete_accountIcon
+          <DeleteAccountIcon
             width={AppModalLayout.iconSize}
             height={AppModalLayout.iconSize}
             color={AccountModalColors.icon}
@@ -98,8 +102,8 @@ export function AccountSection() {
         }
         iconBgColor={AccountModalColors.iconBg}
         iconBorderColor={AccountModalColors.iconBorder}
-        title={WITHDRAW_MODAL.title}
-        description={WITHDRAW_MODAL.description}
+        title={WITHDRAW_MODAL.title(partnerName)}
+        description={WITHDRAW_MODAL.description(partnerName)}
         confirmLabel={WITHDRAW_MODAL.confirmLabel}
         onConfirm={() => {
           console.log('회원탈퇴');

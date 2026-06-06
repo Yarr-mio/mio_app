@@ -4,7 +4,7 @@ export { default as CategoryIcon } from './category.svg';
 export { default as CheckboxCheckIcon } from './checkbox-check.svg';
 export { default as ChevronRightIcon } from './chevron-right.svg';
 export { default as CloseIcon } from './close.svg';
-export { default as Delete_accountIcon } from './delete_account.svg';
+export { default as DeleteAccountIcon } from './deleteAccount.svg';
 export { default as HomeTrendUpIcon } from './home-trend-up.svg';
 export { default as HomeIcon } from './home.svg';
 export { default as LogoutIcon } from './logout.svg';
