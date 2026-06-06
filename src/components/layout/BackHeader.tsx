@@ -1,8 +1,10 @@
 import { ArrowLeftIcon } from '@/assets/icons';
-import { FgColors } from '@/constants/theme';
+import { ThemedText } from '@/components/themed/ThemedText';
+import { FgColors, HeaderClasses, HeaderLayout, PressableConfig } from '@/constants/theme';
+import { cn } from '@/utils/cn';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
@@ -14,21 +16,33 @@ export function BackHeader({ title, rightAction }: Props) {
   const { top } = useSafeAreaInsets();
 
   return (
-    <View className="flex-row items-center px-5 pb-3" style={{ paddingTop: top + 12 }}>
-      <Pressable
-        onPress={() => router.back()}
-        accessibilityRole="button"
-        accessibilityLabel="뒤로가기"
-        accessibilityHint="이전 화면으로 이동합니다"
-        className="w-10 h-10 items-center justify-center"
-        hitSlop={8}
-      >
-        <ArrowLeftIcon width={20} height={20} color={FgColors.default} />
-      </Pressable>
+    <View className={HeaderClasses.wrapper} style={{ paddingTop: top + 12 }}>
+      <View className={HeaderClasses.row}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="뒤로가기"
+          accessibilityHint="이전 화면으로 이동합니다"
+          className={cn(HeaderClasses.backButton, 'z-10')}
+          hitSlop={PressableConfig.hitSlop}
+        >
+          <ArrowLeftIcon
+            width={HeaderLayout.backHeaderIconSize}
+            height={HeaderLayout.backHeaderIconSize}
+            color={FgColors.default}
+          />
+        </Pressable>
 
-      <Text className="flex-1 text-white text-lg font-semibold text-center">{title}</Text>
+        <View className="pointer-events-none absolute inset-0 items-center justify-center px-12">
+          <ThemedText type="pageTitle" className="text-center text-fg" numberOfLines={1}>
+            {title}
+          </ThemedText>
+        </View>
 
-      <View className="w-10 items-end">{rightAction}</View>
+        <View className={cn(HeaderClasses.backButton, 'z-10 items-center justify-center')}>
+          {rightAction}
+        </View>
+      </View>
     </View>
   );
 }

@@ -87,6 +87,16 @@ export const PressableConfig = {
 
 export const HeaderLayout = {
   backIconSize: 22,
+  backHeaderIconSize: 20,
+  backButtonSize: 35,
+} as const;
+
+/** NativeWind className — HeaderLayout.backButtonSize(35)와 함께 유지 */
+export const HeaderClasses = {
+  backButton:
+    'h-[35px] w-[35px] items-center justify-center rounded-full border border-line bg-surface',
+  row: 'relative min-h-[35px] flex-row items-center justify-between',
+  wrapper: 'px-5 pb-6',
 } as const;
 
 export const EmotionSelectBoxLayout = {
@@ -193,6 +203,13 @@ export const SettingsLayout = {
   userIconSize: 21,
   chevronWidth: 27,
   chevronHeight: 14,
+} as const;
+
+/** 닉네임 수정 화면 레이아웃 */
+export const EditNicknameLayout = {
+  avatarSize: 107,
+  userIconSize: 47,
+  maxLength: 10,
 } as const;
 
 /** 설정 화면 배경 선형 그라데이션  — SVG LinearGradient stopColor prop용 */
