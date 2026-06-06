@@ -10,9 +10,9 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import {
+  EditNicknameClasses,
   EditNicknameLayout,
   FgColors,
-  HeaderLayout,
   InputColors,
   PressableConfig,
   ScreenSpacing,
@@ -20,7 +20,7 @@ import {
 import { ProfileAvatarCircle } from '@/features/mypage/components/ProfileAvatarCircle';
 import { useUserStore } from '@/store/userStore';
 
-const { avatarSize, userIconSize, maxLength } = EditNicknameLayout;
+const { avatarSize, userIconSize, maxLength, clearIconSize } = EditNicknameLayout;
 
 export function EditNicknameScreen() {
   const router = useRouter();
@@ -88,12 +88,9 @@ export function EditNicknameScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="닉네임 초기화"
                 hitSlop={PressableConfig.hitSlop}
+                className={EditNicknameClasses.clearButton}
               >
-                <CloseIcon
-                  width={HeaderLayout.backHeaderIconSize}
-                  height={HeaderLayout.backHeaderIconSize}
-                  color={FgColors.faint}
-                />
+                <CloseIcon width={clearIconSize} height={clearIconSize} color={FgColors.faint} />
               </Pressable>
             ) : null}
           </View>

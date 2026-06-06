@@ -212,6 +212,14 @@ export const EditNicknameLayout = {
   avatarSize: 107,
   userIconSize: 47,
   maxLength: 10,
+  clearButtonSize: 24,
+  clearIconSize: 14,
+} as const;
+
+/** NativeWind className — EditNicknameLayout.clearButtonSize(24)와 함께 유지 */
+export const EditNicknameClasses = {
+  clearButton:
+    'h-[24px] w-[24px] items-center justify-center rounded-full border border-line bg-surface',
 } as const;
 
 /** 설정 화면 배경 선형 그라데이션  — SVG LinearGradient stopColor prop용 */
