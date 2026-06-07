@@ -100,7 +100,10 @@ export function SessionSummary() {
             variant="primary"
             size="lg"
             loading={isPending}
-            onPress={() => saveSession(sessionId ?? '')}
+            onPress={() => {
+              if (!sessionId || isPending) return;
+              saveSession(sessionId);
+            }}
           >
             기록 저장하기
           </Button>
