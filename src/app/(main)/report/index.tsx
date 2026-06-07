@@ -1,5 +1,5 @@
-import { ReportScreen } from '@/features/report/components/ReportScreen';
+import { GrowthReportScreen } from '@/features/report/components/GrowthReportScreen';
 
 export default function ReportRoute() {
-  return <ReportScreen />;
+  return <GrowthReportScreen />;
 }
