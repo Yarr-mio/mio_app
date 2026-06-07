@@ -74,6 +74,12 @@ export function shiftMonth(anchorDate: Date, delta: number): Date {
   return addMonths(kstDate(anchorDate), delta);
 }
 
+/** 주간 범위의 종료일(week_end) 기준으로 월간 앵커(해당 월 1일)를 반환 */
+export function getMonthAnchorFromWeekEnd(weekAnchorDate: Date): Date {
+  const { end: weekEnd } = getWeekRange(weekAnchorDate);
+  return startOfMonth(kstDate(weekEnd));
+}
+
 export function isFutureReportPeriod(start: Date): boolean {
   const today = startOfDay(kstDate(new Date()));
   return startOfDay(kstDate(start)) > today;
@@ -83,6 +89,15 @@ export function isCurrentKstMonth(anchorDate: Date): boolean {
   const today = kstDate(new Date());
   const anchor = kstDate(anchorDate);
   return today.getFullYear() === anchor.getFullYear() && today.getMonth() === anchor.getMonth();
+}
+
+export function isCurrentKstWeek(anchorDate: Date): boolean {
+  const todayRange = getWeekRange(new Date());
+  const anchorRange = getWeekRange(anchorDate);
+  return (
+    format(kstDate(todayRange.start), 'yyyy-MM-dd') ===
+    format(kstDate(anchorRange.start), 'yyyy-MM-dd')
+  );
 }
 
 export function toDateRangeIso(start: Date, end: Date): { from: string; to: string } {
