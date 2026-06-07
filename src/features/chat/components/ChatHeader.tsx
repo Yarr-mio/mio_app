@@ -1,11 +1,38 @@
 import { ThemedText } from '@/components/themed/ThemedText';
 import type { OnboardingCharacterId } from '@/constants/characters';
 import { getOnboardingCharacterById } from '@/constants/characters';
+import { useChatStore } from '@/features/chat/store/chatStore';
 import { Pressable, View } from 'react-native';
 
 interface ChatHeaderProps {
   characterId: OnboardingCharacterId;
   onEnd?: () => void;
+}
+
+// TODO: 임시 테스트 버튼 — 소크라테스 질문 + 감정 강도 슬라이드 시나리오 확인용. 작업 완료 후 제거.
+function TestSocraticFlowButton() {
+  const handlePress = () => {
+    useChatStore.getState().addMessage({
+      id: `test-socratic-${Date.now()}`,
+      role: 'ai',
+      type: 'socratic',
+      content: '지금 느끼는 그 감정이, 어떤 상황에서 가장 강하게 떠올랐나요?',
+      timestamp: new Date().toISOString(),
+    });
+  };
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel="소크라테스 질문 및 감정 강도 슬라이드 테스트"
+      className="px-3 py-1.5 rounded-xl border border-line-md mr-2"
+    >
+      <ThemedText type="small" className="text-fg-dim">
+        테스트
+      </ThemedText>
+    </Pressable>
+  );
 }
 
 export function ChatHeader({ characterId, onEnd }: ChatHeaderProps) {
@@ -24,6 +51,7 @@ export function ChatHeader({ characterId, onEnd }: ChatHeaderProps) {
           </ThemedText>
         </View>
       </View>
+      <TestSocraticFlowButton />
       {onEnd && (
         <Pressable
           onPress={onEnd}

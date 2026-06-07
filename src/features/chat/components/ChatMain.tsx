@@ -20,7 +20,7 @@ export function ChatMain() {
   const pendingEmotionScore = useChatStore((s) => s.pendingEmotionScore);
   const character = getOnboardingCharacterById(characterId);
 
-  const { sendMessage, isStreaming } = useChatSse(sessionId);
+  const { sendMessage, confirmEmotionScore, isStreaming } = useChatSse(sessionId);
   const { mutate: endChatSession } = useEndChatSession();
 
   return (
@@ -49,13 +49,7 @@ export function ChatMain() {
             contentContainerClassName="gap-4 px-4 py-4"
           />
           {emotionScoringActive ? (
-            <EmotionScorePanel
-              initialScore={pendingEmotionScore}
-              onConfirm={(_score) => {
-                // TODO: 점수 제출 엔드포인트 미명세 — 백엔드 확인 필요
-                useChatStore.getState().deactivateEmotionScoring();
-              }}
-            />
+            <EmotionScorePanel initialScore={pendingEmotionScore} onConfirm={confirmEmotionScore} />
           ) : (
             <ChatInputBar onSend={sendMessage} disabled={isStreaming} />
           )}

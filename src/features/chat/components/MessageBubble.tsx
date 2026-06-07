@@ -28,7 +28,7 @@ function AiBubble({ message, characterId }: Pick<MessageBubbleProps, 'message' |
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
-        <View className="bg-surface-md rounded-2xl rounded-tl-sm px-4 py-3">
+        <View className="border border-primary/20 bg-primary/10 rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
@@ -61,7 +61,7 @@ function SocraticBubble({ message, characterId, characterName }: MessageBubblePr
       <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
         <Label label={`${characterName}의 질문`} />
-        <View className="mt-1 border border-primary/30 bg-primary/10 rounded-2xl rounded-tl-sm px-4 py-3">
+        <View className="mt-1 border border-primary/30 bg-primary/20 rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>

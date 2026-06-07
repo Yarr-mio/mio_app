@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import type { SseCrisisData, SseDeltaData, SseDoneData, SseSessionMetaData } from '@/types/chat';
+import { useRef, useState } from 'react';
 
 // TODO: SSE 재연결 전략 미구현 (네트워크 끊김 대응 필요)
 
@@ -16,11 +16,15 @@ function parseSSELine(line: string): { event: string; data: unknown } | null {
 export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  // 소크라테스 질문에 대한 텍스트 답변 전송 직후 → 감정 강도 슬라이드 노출 → 슬라이드 확인 시점에 응답 전송
+  const awaitingSocraticScoreRef = useRef(false);
 
   function sendMessage(content: string) {
     if (!sessionId || isStreaming) return;
 
     const store = useChatStore.getState();
+    const lastMessage = store.messages[store.messages.length - 1];
+    const isSocraticReply = lastMessage?.role === 'ai' && lastMessage.type === 'socratic';
 
     store.addMessage({
       id: `user-${Date.now()}`,
@@ -29,11 +33,35 @@ export function useChatSse(sessionId: string | null) {
       content,
       timestamp: new Date().toISOString(),
     });
+
+    if (isSocraticReply) {
+      awaitingSocraticScoreRef.current = true;
+      store.activateEmotionScoring(50);
+      return;
+    }
+
     store.setAiTyping(true);
     setIsStreaming(true);
 
     // TODO: 서버 연동 전 mock 응답 사용
     runMock();
+  }
+
+  function confirmEmotionScore(score: number) {
+    const store = useChatStore.getState();
+    store.deactivateEmotionScoring();
+
+    if (awaitingSocraticScoreRef.current) {
+      awaitingSocraticScoreRef.current = false;
+      // TODO: 점수 제출 엔드포인트 미명세 — 백엔드 확인 필요. 현재는 텍스트 답변 + 감정 점수를 함께 제출했다고 가정하고
+      // 소크라테스식 답변에 어울리는 mock 응답을 트리거 (일반 답변용 mockText와 분리)
+      void score;
+      store.setAiTyping(true);
+      setIsStreaming(true);
+      runMock(
+        '그렇게 느끼고 계셨군요. 그 감정을 알아차린 것만으로도 의미 있는 한 걸음이에요. 잠시 그 마음에 함께 머물러볼까요?'
+      );
+    }
   }
 
   // TODO: 서버 연동 시 아래 mock을 실제 SSE fetch로 교체
@@ -93,9 +121,10 @@ export function useChatSse(sessionId: string | null) {
     }
   }
 
-  function runMock() {
+  function runMock(
+    mockText: string = '말씀 잘 들었어요. 그 상황에서 어떤 감정이 가장 크게 느껴졌나요?'
+  ) {
     const metaId = `ai-${Date.now()}`;
-    const mockText = '말씀 잘 들었어요. 그 상황에서 어떤 감정이 가장 크게 느껴졌나요?';
 
     setTimeout(() => {
       handleSessionMeta({ message_id: metaId, received_at: new Date().toISOString() });
@@ -122,5 +151,5 @@ export function useChatSse(sessionId: string | null) {
   void parseSSELine;
   void abortRef;
 
-  return { sendMessage, isStreaming };
+  return { sendMessage, confirmEmotionScore, isStreaming };
 }
