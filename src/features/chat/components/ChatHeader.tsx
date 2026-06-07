@@ -1,7 +1,7 @@
-import { Pressable, View } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { getOnboardingCharacterById } from '@/constants/characters';
 import type { OnboardingCharacterId } from '@/constants/characters';
+import { getOnboardingCharacterById } from '@/constants/characters';
+import { Pressable, View } from 'react-native';
 
 interface ChatHeaderProps {
   characterId: OnboardingCharacterId;
@@ -14,13 +14,13 @@ export function ChatHeader({ characterId, onEnd }: ChatHeaderProps) {
   return (
     <View className="flex-row items-center px-5 py-4">
       <View className="flex-row items-center gap-3 flex-1">
-        <View className="w-2 h-2 rounded-full bg-success" />
-        <View>
-          <ThemedText type="smallTitle" className="text-fg">
+        <View className="w-3 h-3 rounded-full bg-success" />
+        <View className="flex-row items-center">
+          <ThemedText type="smallTitle2" className="text-fg">
             {character.name}
           </ThemedText>
-          <ThemedText type="small" className="text-fg-dim">
-            함께 있어요
+          <ThemedText type="smallTitle" className="text-fg-dim">
+            {' · 함께 있어요'}
           </ThemedText>
         </View>
       </View>
