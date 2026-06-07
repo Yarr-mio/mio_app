@@ -44,7 +44,13 @@ const initialState: ChatState = {
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
   ...initialState,
 
-  startSession: (sessionId, characterId) => set({ sessionPhase: 'active', sessionId, characterId }),
+  startSession: (sessionId, characterId) =>
+    set({
+      ...initialState,
+      sessionPhase: 'active',
+      sessionId,
+      characterId,
+    }),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
 
