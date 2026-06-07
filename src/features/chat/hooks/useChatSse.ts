@@ -15,6 +15,7 @@ function parseSSELine(line: string): { event: string; data: unknown } | null {
 
 export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
+  // 실제 SSE 연동 시 진행 중인 fetch 요청을 취소할 AbortController 보관용 (현재는 mock이라 미할당)
   const abortRef = useRef<AbortController | null>(null);
   // 소크라테스 질문에 대한 텍스트 답변 전송 직후 → 감정 강도 슬라이드 노출 → 슬라이드 확인 시점에 응답 전송
   const awaitingSocraticScoreRef = useRef(false);
@@ -26,6 +27,8 @@ export function useChatSse(sessionId: string | null) {
     return () => {
       if (mockTimeoutRef.current) clearTimeout(mockTimeoutRef.current);
       if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
+      // 언마운트 시점의 최신 컨트롤러를 취소해야 하므로 ref를 그대로 읽는다 (값 복사 시 abort 무력화됨)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       abortRef.current?.abort();
     };
   }, []);
@@ -107,6 +110,8 @@ export function useChatSse(sessionId: string | null) {
     useChatStore.getState().appendDelta(data.msg_id, data.chunk);
   }
 
+  // TODO: 백엔드 명세가 확실해지면 연동
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleCrisis(data: SseCrisisData) {
     useChatStore.getState().addMessage({
       id: `crisis-${Date.now()}`,
