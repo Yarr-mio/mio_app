@@ -18,16 +18,20 @@ export function SessionStart() {
     <View className="flex-1 bg-midnight">
       <AuthBackground />
       <ScreenContainer className="flex-1 bg-transparent">
-        <View className="flex-1 items-center justify-center gap-6 px-8">
+        <View className="items-center pt-8">
+          <ThemedText type="title" className="text-center text-fg">
+            {character.name}와 대화하기
+          </ThemedText>
+        </View>
+        <View className="flex-1 items-center justify-center gap-8 px-8">
+          <ThemedText className="text-center text-fg text-2xl font-bold leading-9">
+            {character.name}와 함께{'\n'}이야기를 시작해 볼까요?
+          </ThemedText>
           <CharacterAvatar characterId={characterId} size="lg" />
-          <View className="items-center gap-2">
-            <ThemedText type="title" className="text-center text-fg">
-              {character.name}와 대화하기
-            </ThemedText>
-            <ThemedText type="default" className="text-center text-fg-soft">
-              {character.greeting}
-            </ThemedText>
-          </View>
+          <ThemedText type="defaultRegular" className="text-center text-fg-soft">
+            지금부터 편안하게 마음을 이야기해 보세요{'\n'}
+            {character.name}가 곁에서 함께할게요 😊
+          </ThemedText>
         </View>
         <View className="px-8 pb-6 gap-3">
           <Button
