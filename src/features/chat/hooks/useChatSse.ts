@@ -1,6 +1,6 @@
 import { useChatStore } from '@/features/chat/store/chatStore';
 import type { SseCrisisData, SseDeltaData, SseDoneData, SseSessionMetaData } from '@/types/chat';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // TODO: SSE 재연결 전략 미구현 (네트워크 끊김 대응 필요)
 
@@ -18,6 +18,17 @@ export function useChatSse(sessionId: string | null) {
   const abortRef = useRef<AbortController | null>(null);
   // 소크라테스 질문에 대한 텍스트 답변 전송 직후 → 감정 강도 슬라이드 노출 → 슬라이드 확인 시점에 응답 전송
   const awaitingSocraticScoreRef = useRef(false);
+  const mockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 언마운트/세션 전환 시 mock 타이머가 남아 새 세션의 store에 응답을 흘려보내는 것을 방지
+  useEffect(() => {
+    return () => {
+      if (mockTimeoutRef.current) clearTimeout(mockTimeoutRef.current);
+      if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
+      abortRef.current?.abort();
+    };
+  }, []);
 
   function sendMessage(content: string) {
     if (!sessionId || isStreaming) return;
@@ -126,16 +137,17 @@ export function useChatSse(sessionId: string | null) {
   ) {
     const metaId = `ai-${Date.now()}`;
 
-    setTimeout(() => {
+    mockTimeoutRef.current = setTimeout(() => {
       handleSessionMeta({ message_id: metaId, received_at: new Date().toISOString() });
 
       let i = 0;
-      const interval = setInterval(() => {
+      mockIntervalRef.current = setInterval(() => {
         if (i < mockText.length) {
           handleDelta({ msg_id: metaId, chunk: mockText[i] });
           i++;
         } else {
-          clearInterval(interval);
+          if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
+          mockIntervalRef.current = null;
           handleDone({
             msg_id: metaId,
             emotion_score: null,
