@@ -26,7 +26,7 @@ function Timestamp({ timestamp, align = 'left' }: { timestamp: string; align?: '
 function AiBubble({ message, characterId }: Pick<MessageBubbleProps, 'message' | 'characterId'>) {
   return (
     <View className="flex-row gap-2 pr-12">
-      <CharacterAvatar characterId={characterId} size="sm" />
+      <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
         <View className="bg-surface-md rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
@@ -58,7 +58,7 @@ function SocraticBubble({ message, characterId, characterName }: MessageBubblePr
   // TODO: SSE 응답에서 socratic 타입 식별 필드 백엔드 확인 필요 (message_type?: 'socratic')
   return (
     <View className="flex-row gap-2 pr-12">
-      <CharacterAvatar characterId={characterId} size="sm" />
+      <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
         <Label label={`${characterName}의 질문`} />
         <View className="mt-1 border border-primary/30 bg-primary/10 rounded-2xl rounded-tl-sm px-4 py-3">
@@ -78,7 +78,7 @@ function CrisisBubble({
 }: Pick<MessageBubbleProps, 'message' | 'characterId'>) {
   return (
     <View className="flex-row gap-2 pr-12">
-      <CharacterAvatar characterId={characterId} size="sm" />
+      <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink gap-2">
         <View className="bg-surface-md rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">

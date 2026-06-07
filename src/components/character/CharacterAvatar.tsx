@@ -4,13 +4,13 @@ import { Image } from 'expo-image';
 import { View } from 'react-native';
 
 const CHARACTER_AVATAR_SIZE = {
-  sm: 32,
+  sm: 28,
   md: 56,
   lg: 200,
 } as const;
 
 // 배경 원의 지름 = 캐릭터 크기의 1.6배 (캐릭터가 원 안에 여백을 두고 들어차도록)
-const CHARACTER_AVATAR_BACKGROUND_SCALE = 1.6;
+const CHARACTER_AVATAR_BACKGROUND_SCALE = 1.4;
 
 interface CharacterAvatarProps {
   characterId: OnboardingCharacterId;
