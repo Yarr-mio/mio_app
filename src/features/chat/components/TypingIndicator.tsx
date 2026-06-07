@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { Animated, View } from 'react-native';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { useEffect, useRef } from 'react';
+import { Animated, View } from 'react-native';
 
 function AnimatedDot({ delay }: { delay: number }) {
   const opacity = useRef(new Animated.Value(0.3)).current;
@@ -26,7 +26,7 @@ export function TypingIndicator() {
 
   return (
     <View className="flex-row gap-2 pr-12">
-      <CharacterAvatar characterId={characterId} size="sm" />
+      <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="bg-surface-md rounded-2xl px-4 py-3">
         <View className="flex-row gap-1.5 items-center h-5">
           <AnimatedDot delay={0} />
