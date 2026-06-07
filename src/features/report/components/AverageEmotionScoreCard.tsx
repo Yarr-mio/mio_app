@@ -17,11 +17,11 @@ interface AverageEmotionScoreCardProps {
 }
 
 export function AverageEmotionScoreCard({ period, anchorDate }: AverageEmotionScoreCardProps) {
-  const { averageScore, isFuture } = useEmotionConstellationData(period, anchorDate);
+  const { avgEmotionScore, isFuture } = useEmotionConstellationData(period, anchorDate);
 
   return (
     <BaseCard className={ReportCardClasses.body}>
-      <ThemedText type="default" className="text-fg">
+      <ThemedText type="default" className={ReportTextClasses.inCardTitle}>
         {REPORT_CARD_TITLES.averageScore}
       </ThemedText>
 
@@ -34,15 +34,16 @@ export function AverageEmotionScoreCard({ period, anchorDate }: AverageEmotionSc
       ) : (
         <View className={ReportCardClasses.averageScoreContent}>
           <View className="flex-row items-baseline">
+            {/* avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지 */}
             <ThemedText type="defaultBold" className={ReportTextClasses.scoreValue}>
-              {averageScore}
+              {avgEmotionScore}
             </ThemedText>
             <ThemedText type="default" className={ReportTextClasses.scoreDenominator}>
               {' '}
               /{EMOTION_SCORE_MAX}
             </ThemedText>
           </View>
-          <EmotionScoreBadgeFromScore score={averageScore} />
+          <EmotionScoreBadgeFromScore score={avgEmotionScore} />
         </View>
       )}
     </BaseCard>

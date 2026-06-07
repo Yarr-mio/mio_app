@@ -27,5 +27,6 @@ interface EmotionScoreBadgeFromScoreProps {
 }
 
 export function EmotionScoreBadgeFromScore({ score }: EmotionScoreBadgeFromScoreProps) {
+  // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
   return <EmotionScoreBadge level={getEmotionScoreLevel(score)} />;
 }

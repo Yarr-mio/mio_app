@@ -24,10 +24,39 @@ interface EmotionConstellationChartProps {
   showIntensityLabels?: boolean;
 }
 
+interface IntensityLabelLayout {
+  rectX: number;
+  rectY: number;
+  textX: number;
+  textY: number;
+}
+
 interface ChartIntensityLabelProps {
   x: number;
   y: number;
-  intensity: number;
+  svgWidth: number;
+  avgConditionScore: number;
+}
+
+function getIntensityLabelLayout(x: number, y: number, svgWidth: number): IntensityLabelLayout {
+  const {
+    intensityLabelWidth,
+    intensityLabelHeight,
+    intensityLabelAreaHeight,
+    intensityLabelOffset,
+  } = EmotionConstellationLayout;
+
+  const halfWidth = intensityLabelWidth / 2;
+  const clampedX = Math.min(Math.max(x, halfWidth), svgWidth - halfWidth);
+  const rectX = clampedX - halfWidth;
+  const rectY = y - intensityLabelOffset - intensityLabelAreaHeight;
+
+  return {
+    rectX,
+    rectY,
+    textX: clampedX,
+    textY: rectY + intensityLabelHeight / 2,
+  };
 }
 
 interface ChartPoint {
@@ -36,17 +65,19 @@ interface ChartPoint {
   hasData: boolean;
 }
 
-function hasPointData(intensity: number | null | undefined): boolean {
-  return intensity != null;
+function hasPointData(avgConditionScore: number | null | undefined): boolean {
+  // 점선/회색 판단은 avg_condition_score null 여부만 사용 (미래 날짜 비교 금지)
+  return avgConditionScore != null;
 }
 
-function intensityToNormalized(intensity: number | null | undefined): number {
-  if (intensity == null) {
+// avg_condition_score (1~5): 감정 별자리 차트 전용. avg_emotion_score(0~100)와 혼용 금지
+function conditionScoreToNormalized(avgConditionScore: number | null | undefined): number {
+  if (avgConditionScore == null) {
     return 0;
   }
 
   return (
-    (intensity - CHECKIN_CONDITION_SCORE_MIN) /
+    (avgConditionScore - CHECKIN_CONDITION_SCORE_MIN) /
     (CHECKIN_CONDITION_SCORE_MAX - CHECKIN_CONDITION_SCORE_MIN)
   );
 }
@@ -55,21 +86,17 @@ function isSolidSegment(fromHasData: boolean, toHasData: boolean): boolean {
   return fromHasData && toHasData;
 }
 
-function ChartIntensityLabel({ x, y, intensity }: ChartIntensityLabelProps) {
-  const level: IntensityLabelLevel = getIntensityLabelLevel(intensity);
+function ChartIntensityLabel({ x, y, svgWidth, avgConditionScore }: ChartIntensityLabelProps) {
+  const level: IntensityLabelLevel = getIntensityLabelLevel(avgConditionScore);
   const colors = IntensityLabelSvgColors[level];
   const {
     intensityLabelWidth,
     intensityLabelHeight,
-    intensityLabelAreaHeight,
-    intensityLabelOffset,
     intensityLabelFontSize,
     intensityLabelBorderWidth,
   } = EmotionConstellationLayout;
 
-  const rectX = x - intensityLabelWidth / 2;
-  const rectY = y - intensityLabelOffset - intensityLabelAreaHeight;
-  const textY = rectY + intensityLabelHeight / 2;
+  const { rectX, rectY, textX, textY } = getIntensityLabelLayout(x, y, svgWidth);
 
   return (
     <G>
@@ -84,14 +111,14 @@ function ChartIntensityLabel({ x, y, intensity }: ChartIntensityLabelProps) {
         strokeWidth={intensityLabelBorderWidth}
       />
       <SvgText
-        x={x}
+        x={textX}
         y={textY}
         fill={colors.text}
         fontSize={intensityLabelFontSize}
         textAnchor="middle"
-        alignmentBaseline="middle"
+        alignmentBaseline="central"
       >
-        {formatIntensityLabelValue(intensity)}
+        {formatIntensityLabelValue(avgConditionScore)}
       </SvgText>
     </G>
   );
@@ -119,7 +146,7 @@ export function EmotionConstellationChart({
   const svgHeight = labelAreaHeight + chartHeight;
   const chartTop = labelAreaHeight;
 
-  const normalized = points.map((point) => intensityToNormalized(point.intensity));
+  const normalized = points.map((point) => conditionScoreToNormalized(point.avg_condition_score));
   const innerWidth = Math.max(0, width - chartPaddingX * 2);
   const innerHeight = Math.max(0, chartHeight - chartPaddingY * 2);
   const stepX = points.length > 1 ? innerWidth / (points.length - 1) : 0;
@@ -127,7 +154,7 @@ export function EmotionConstellationChart({
   const chartPoints: ChartPoint[] = normalized.map((value, index) => {
     const x = chartPaddingX + stepX * index;
     const y = chartTop + chartPaddingY + innerHeight * (1 - value);
-    return { x, y, hasData: hasPointData(points[index].intensity) };
+    return { x, y, hasData: hasPointData(points[index].avg_condition_score) };
   });
 
   return (
@@ -143,8 +170,8 @@ export function EmotionConstellationChart({
           <Svg width={width} height={svgHeight}>
             {showIntensityLabels
               ? chartPoints.map((point, index) => {
-                  const intensity = points[index].intensity;
-                  if (intensity == null) {
+                  const avgConditionScore = points[index].avg_condition_score;
+                  if (avgConditionScore == null) {
                     return null;
                   }
 
@@ -153,7 +180,8 @@ export function EmotionConstellationChart({
                       key={`intensity-label-${points[index].label}`}
                       x={point.x}
                       y={point.y}
-                      intensity={intensity}
+                      svgWidth={width}
+                      avgConditionScore={avgConditionScore}
                     />
                   );
                 })
