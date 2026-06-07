@@ -229,14 +229,97 @@ export const EmotionConstellationLayout = {
   dotRadius: 4,
   activeDotRadius: 6,
   weekLabelTopGap: 10,
+  intensityLabelAreaHeight: 28,
+  intensityLabelOffset: 8,
+  intensityLabelWidth: 28,
+  intensityLabelHeight: 20,
+  intensityLabelFontSize: 12,
+  intensityLabelBorderWidth: 1,
+  emptyStrokeDasharray: '4 4',
+} as const;
+
+/** SVG stroke/fill — className 미지원 */
+export const ConstellationChartColors = {
+  data: '#FFFFFF',
+  empty: '#FFFFFF59',
+  emptyDot: '#959595',
+} as const;
+
+/** SVG 월간 강도 라벨 — tailwind intensity-* 토큰과 동일 값 */
+export const IntensityLabelSvgColors = {
+  high: { bg: '#5DCAA51A', border: '#5DCAA533', text: '#5DCAA5' },
+  mid: { bg: '#F0C0601A', border: '#F0C06033', text: '#F0C060' },
+  low: { bg: '#E54A4D1A', border: '#E54A4D33', text: '#E54A4D' },
 } as const;
 
 /** NativeWind className — EmotionConstellationLayout과 함께 유지 */
 export const EmotionConstellationClasses = {
   chartContainer: 'h-[72px]',
+  chartContainerWithLabels: 'h-[100px]',
   weekLabelsRow: 'mt-[10px] flex-row justify-between',
 } as const;
 
 export const EmotionConstellationTextClasses = {
   weekday: 'text-weekday text-[12px] font-medium',
+} as const;
+
+/** 성장 리포트 (GrowthReportScreen) */
+export const ReportLayout = {
+  chevronIconWidth: 12,
+  chevronIconHeight: 16,
+} as const;
+
+export const ReportCardClasses = {
+  body: 'p-6',
+  averageScoreEmpty: 'mt-4 min-h-[60px] items-center justify-center',
+  averageScoreContent: 'mt-3 flex-row items-center gap-3',
+} as const;
+
+export const ReportSectionClasses = {
+  constellationHeader: 'flex-row items-center gap-2 mb-4',
+  constellationSection: 'gap-2',
+  titleToDivider: 'mt-5',
+  dividerToPeriodControls: 'mt-6',
+  periodControls: 'gap-6',
+  reportCards: 'mt-6 gap-5',
+} as const;
+
+export const ReportDividerClasses = {
+  line: 'h-px w-full bg-line',
+} as const;
+
+export const ReportDateNavigatorClasses = {
+  container: 'flex-row items-center justify-center gap-2',
+  chevronButton: 'h-10 w-10 items-center justify-center',
+} as const;
+
+export const ReportTextClasses = {
+  pageTitle: 'text-2xl font-semibold text-fg',
+  cardTitle: 'text-xl font-semibold text-fg',
+  checkinCount: 'text-label-muted text-sm',
+  dateRange: 'text-label',
+  emptyState: 'text-label text-sm',
+  scoreValue: 'text-fg-default text-2xl font-semibold',
+  scoreDenominator: 'text-score-denominator text-base',
+} as const;
+
+export const ReportTabClasses = {
+  container: 'w-full flex-row gap-2',
+  tab: 'flex-1 items-center rounded-report-tab border py-2',
+  active: 'border-label-border bg-label-bg',
+  inactive: 'border-report-tab-inactive-border bg-report-tab-inactive-bg',
+  activeText: 'text-label-text',
+  inactiveText: 'text-label',
+} as const;
+
+export const EmotionScoreBadgeClasses = {
+  negative: 'border-emotion-negative-border bg-emotion-negative-bg',
+  neutral: 'border-emotion-neutral-border bg-emotion-neutral-bg',
+  positive: 'border-emotion-positive-border bg-emotion-positive-bg',
+} as const;
+
+export const EmotionScoreBadgeTextClasses = {
+  negative: 'text-emotion-negative-text',
+  neutral: 'text-emotion-neutral-text',
+  positive: 'text-emotion-positive-text',
 } as const;

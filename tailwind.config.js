@@ -43,6 +43,8 @@ module.exports = {
       },
       borderRadius: {
         card: '20px', // rounded-card — 온보딩 선택/소개 박스
+        'base-card': '20px', // rounded-base-card — BaseCard 컨테이너
+        'report-tab': '10px', // rounded-report-tab — 성장 리포트 주간/월간 탭
       },
       colors: {
         // Light 기본값 / dark: 접두사로 다크모드 적용
@@ -136,6 +138,35 @@ module.exports = {
         'label-bg': '#9D7FEE33', // bg-label-bg — #9D7FEE 20%
         'label-border': '#D8D0F833', // border-label-border — #D8D0F8 20%
         'label-text': '#9F92F3', // text-label-text
+
+        // 성장 리포트 — 기간 탭 (비활성)
+        'report-tab-inactive-bg': '#FFFFFF1A', // bg-report-tab-inactive-bg — white 10%
+        'report-tab-inactive-border': '#FFFFFF33', // border-report-tab-inactive-border — white 20%
+
+        // 성장 리포트 — 월간 감정 강도 라벨
+        'intensity-high-bg': '#5DCAA51A',
+        'intensity-high-border': '#5DCAA533',
+        'intensity-high-text': '#5DCAA5',
+        'intensity-mid-bg': '#F0C0601A',
+        'intensity-mid-border': '#F0C06033',
+        'intensity-mid-text': '#F0C060',
+        'intensity-low-bg': '#E54A4D1A',
+        'intensity-low-border': '#E54A4D33',
+        'intensity-low-text': '#E54A4D',
+
+        // 성장 리포트 — 평균 감정 점수 뱃지
+        'emotion-negative-bg': '#E54A4D1A',
+        'emotion-negative-border': '#E54A4D33',
+        'emotion-negative-text': '#E54A4DE5',
+        'emotion-neutral-bg': '#F0C0601A',
+        'emotion-neutral-border': '#F0C06033',
+        'emotion-neutral-text': '#F0C060E5',
+        'emotion-positive-bg': '#98C8901A',
+        'emotion-positive-border': '#98C89033',
+        'emotion-positive-text': '#98C890E5',
+
+        // 성장 리포트 — 점수 보조 텍스트
+        'score-denominator': '#969696', // text-score-denominator — /100
 
         //로그인 버튼 (애플/카카오)
         kakao: '#FEE500', // bg-kakao
