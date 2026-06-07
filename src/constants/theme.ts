@@ -231,7 +231,7 @@ export const EmotionConstellationLayout = {
   weekLabelTopGap: 10,
   intensityLabelAreaHeight: 28,
   intensityLabelOffset: 8,
-  intensityLabelWidth: 28,
+  intensityLabelWidth: 24,
   intensityLabelHeight: 20,
   intensityLabelFontSize: 12,
   intensityLabelBorderWidth: 1,
@@ -271,6 +271,8 @@ export const ReportLayout = {
 
 export const ReportCardClasses = {
   body: 'p-6',
+  statsBody: 'flex-1 p-6',
+  inCardBody: 'mt-3',
   averageScoreEmpty: 'mt-4 min-h-[60px] items-center justify-center',
   averageScoreContent: 'mt-3 flex-row items-center gap-3',
 } as const;
@@ -278,10 +280,54 @@ export const ReportCardClasses = {
 export const ReportSectionClasses = {
   constellationHeader: 'flex-row items-center gap-2 mb-4',
   constellationSection: 'gap-2',
+  statsRow: 'flex-row items-stretch gap-1.5',
   titleToDivider: 'mt-5',
   dividerToPeriodControls: 'mt-6',
   periodControls: 'gap-6',
-  reportCards: 'mt-6 gap-5',
+  reportCards: 'mt-6 gap-1.5',
+} as const;
+
+/** SVG fill — className 미지원 */
+export const ReportDistortionProgressColors = {
+  fill: '#A594F9',
+  background: '#FFFFFF14',
+} as const;
+
+export const ReportDistortionProgressLayout = {
+  barHeight: 4,
+  labelWidth: 64,
+  countWidth: 32,
+} as const;
+
+export const ReportDistortionProgressClasses = {
+  list: 'gap-2',
+  row: 'flex-row items-center gap-1',
+  label: 'w-16 shrink-0 text-sm text-fg',
+  count: 'w-8 shrink-0 text-right text-sm text-label',
+  barContainer: 'min-w-0 flex-1',
+} as const;
+
+/** SVG stroke/fill — className 미지원 */
+export const ReportTodoDonutColors = {
+  completed: '#98C890',
+  partial: '#F0C060',
+  failed: '#D9D9D9',
+  track: '#FFFFFF14',
+} as const;
+
+export const ReportTodoDonutLayout = {
+  size: 55,
+  strokeWidth: 4,
+  centerFontSize: 10,
+} as const;
+
+export const ReportTodoSummaryClasses = {
+  content: 'flex-row items-center gap-3',
+  chart: 'shrink-0',
+  legend: 'min-w-0 flex-1 gap-1',
+  legendItem: 'flex-row items-center gap-2',
+  legendBullet: 'h-2 w-2 rounded-full',
+  legendText: 'text-xs text-fg-default',
 } as const;
 
 export const ReportDividerClasses = {
@@ -296,11 +342,34 @@ export const ReportDateNavigatorClasses = {
 export const ReportTextClasses = {
   pageTitle: 'text-2xl font-semibold text-fg',
   cardTitle: 'text-xl font-semibold text-fg',
+  inCardTitle: 'text-fg-default',
   checkinCount: 'text-label-muted text-sm',
   dateRange: 'text-label',
   emptyState: 'text-label text-sm',
   scoreValue: 'text-fg-default text-2xl font-semibold',
   scoreDenominator: 'text-score-denominator text-base',
+  insufficientTitle: 'text-center text-xl font-semibold text-fg-default',
+  insufficientSubtitle: 'text-center text-base text-weekday',
+  insufficientCheckinCardTitle: 'text-base text-primary',
+  insufficientGuideSubtitle: 'text-center text-base font-medium text-weekday',
+  insufficientGuideItemLabel: 'shrink text-center text-xs font-medium text-weekday',
+} as const;
+
+export const ReportInsufficientDataLayout = {
+  characterImageSize: 200,
+  guideIconSize: 20,
+} as const;
+
+export const ReportInsufficientDataClasses = {
+  container: 'mt-6 w-full items-center gap-9',
+  heroSection: 'w-full items-center gap-4',
+  cards: 'w-full gap-2',
+  checkinCountRow: 'mt-3 flex-row items-baseline',
+  guideIconCircle:
+    'h-16 w-16 items-center justify-center rounded-full border border-line bg-surface',
+  guideItemsRow: 'mt-5 flex-row justify-between gap-2',
+  guideItem: 'min-w-0 flex-1 items-center gap-4',
+  guideItemText: 'w-full shrink min-w-0 items-center',
 } as const;
 
 export const ReportTabClasses = {
@@ -322,4 +391,22 @@ export const EmotionScoreBadgeTextClasses = {
   negative: 'text-emotion-negative-text',
   neutral: 'text-emotion-neutral-text',
   positive: 'text-emotion-positive-text',
+} as const;
+
+export const IntensityLabelClasses = {
+  high: 'border-intensity-high-border bg-intensity-high-bg',
+  mid: 'border-intensity-mid-border bg-intensity-mid-bg',
+  low: 'border-intensity-low-border bg-intensity-low-bg',
+} as const;
+
+export const IntensityLabelTextClasses = {
+  high: 'text-intensity-high-text',
+  mid: 'text-intensity-mid-text',
+  low: 'text-intensity-low-text',
+} as const;
+
+export const IntensityLabelBaseClasses = 'rounded-full border px-2 py-0.5';
+
+export const ReportPendingStateClasses = {
+  container: 'mt-6 min-h-[200px] items-center justify-center gap-3',
 } as const;

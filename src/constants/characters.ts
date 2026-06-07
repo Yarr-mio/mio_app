@@ -104,3 +104,19 @@ const CHARACTER_BY_ID = Object.fromEntries(
 export function getOnboardingCharacterById(id: OnboardingCharacterId) {
   return CHARACTER_BY_ID[id];
 }
+
+/** 성장 리포트 — 데이터 부족 상태 캐릭터 이미지 */
+export const REPORT_CHARACTER_DATA_IMAGES: Record<OnboardingCharacterId, number> = {
+  mio: require('../../assets/images/report/characters/data/mio_data.png'),
+  bau: require('../../assets/images/report/characters/data/bau_data.png'),
+  rumi: require('../../assets/images/report/characters/data/rumi_data.png'),
+  momo: require('../../assets/images/report/characters/data/momo_data.png'),
+  chichi: require('../../assets/images/report/characters/data/chichi_data.png'),
+};
+
+export function getReportCharacterDataImage(characterId: OnboardingCharacterId): number {
+  return (
+    REPORT_CHARACTER_DATA_IMAGES[characterId] ??
+    REPORT_CHARACTER_DATA_IMAGES[ONBOARDING_DEFAULT_CHARACTER_ID]
+  );
+}

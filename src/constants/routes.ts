@@ -17,3 +17,9 @@ export const HOME_ROUTES = {
 } as const;
 
 export type HomeRoute = (typeof HOME_ROUTES)[keyof typeof HOME_ROUTES];
+
+export const MAIN_ROUTES = {
+  chat: '/(main)/chat',
+} as const;
+
+export type MainRoute = (typeof MAIN_ROUTES)[keyof typeof MAIN_ROUTES];

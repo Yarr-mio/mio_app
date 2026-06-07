@@ -168,6 +168,15 @@ module.exports = {
         // 성장 리포트 — 점수 보조 텍스트
         'score-denominator': '#969696', // text-score-denominator — /100
 
+        // 성장 리포트 — 인지 왜곡 프로그레스 바
+        'distortion-progress-fill': '#A594F9', // bg-distortion-progress-fill
+        'distortion-progress-bg': '#FFFFFF14', // bg-distortion-progress-bg — white 8%
+
+        // 성장 리포트 — TO-DO 도넛 차트
+        'todo-completed': '#98C890',
+        'todo-partial': '#F0C060',
+        'todo-failed': '#D9D9D9',
+
         //로그인 버튼 (애플/카카오)
         kakao: '#FEE500', // bg-kakao
         'kakao-text': '#000000D9', // text-kakao
