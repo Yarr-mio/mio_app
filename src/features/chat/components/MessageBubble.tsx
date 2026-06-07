@@ -1,10 +1,10 @@
-import { Linking, Pressable, View } from 'react-native';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Label } from '@/components/ui/Label';
 import type { OnboardingCharacterId } from '@/constants/characters';
-import { formatCheckinTime } from '@/utils/date';
 import type { ChatMessage } from '@/types/chat';
+import { formatCheckinTime } from '@/utils/date';
+import { Linking, Pressable, View } from 'react-native';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -12,9 +12,12 @@ interface MessageBubbleProps {
   characterName: string;
 }
 
-function Timestamp({ timestamp }: { timestamp: string }) {
+function Timestamp({ timestamp, align = 'left' }: { timestamp: string; align?: 'left' | 'right' }) {
   return (
-    <ThemedText type="smallMedium" className="text-fg-faint mt-1">
+    <ThemedText
+      type="smallMedium"
+      className={`text-fg-faint mt-1 ${align === 'right' ? 'text-right' : 'text-left'}`}
+    >
       {formatCheckinTime(timestamp)}
     </ThemedText>
   );
@@ -25,12 +28,12 @@ function AiBubble({ message, characterId }: Pick<MessageBubbleProps, 'message' |
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" />
       <View className="shrink">
-        <View className="bg-surface-md rounded-2xl px-4 py-3">
+        <View className="bg-surface-md rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
-        <Timestamp timestamp={message.timestamp} />
+        <Timestamp timestamp={message.timestamp} align="left" />
       </View>
     </View>
   );
@@ -40,12 +43,12 @@ function UserBubble({ message }: Pick<MessageBubbleProps, 'message'>) {
   return (
     <View className="flex-row-reverse gap-2 pl-12">
       <View className="shrink">
-        <View className="bg-primary rounded-2xl px-4 py-3">
+        <View className="bg-primary rounded-2xl rounded-tr-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
-        <Timestamp timestamp={message.timestamp} />
+        <Timestamp timestamp={message.timestamp} align="right" />
       </View>
     </View>
   );
@@ -58,12 +61,12 @@ function SocraticBubble({ message, characterId, characterName }: MessageBubblePr
       <CharacterAvatar characterId={characterId} size="sm" />
       <View className="shrink">
         <Label label={`${characterName}의 질문`} />
-        <View className="mt-1 border border-primary/30 bg-primary/10 rounded-2xl px-4 py-3">
+        <View className="mt-1 border border-primary/30 bg-primary/10 rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
         </View>
-        <Timestamp timestamp={message.timestamp} />
+        <Timestamp timestamp={message.timestamp} align="left" />
       </View>
     </View>
   );
@@ -77,7 +80,7 @@ function CrisisBubble({
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" />
       <View className="shrink gap-2">
-        <View className="bg-surface-md rounded-2xl px-4 py-3">
+        <View className="bg-surface-md rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg">
             {message.content}
           </ThemedText>
@@ -106,7 +109,7 @@ function CrisisBubble({
             ))}
           </View>
         )}
-        <Timestamp timestamp={message.timestamp} />
+        <Timestamp timestamp={message.timestamp} align="left" />
       </View>
     </View>
   );
