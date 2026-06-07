@@ -1,5 +1,4 @@
 import { CheckinSummaryRow } from '@/components/checkin/CheckinSummaryRow';
-import { EmotionConstellationChart } from '@/components/emotion/EmotionConstellationChart';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -21,6 +20,7 @@ import {
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeMock } from '@/features/home/hooks/useHomeMock';
+import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
 import { useUserStore } from '@/store/userStore';
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
@@ -53,7 +53,7 @@ export function HomeScreen() {
   const hasCheckIn = Boolean(todayCheckin);
   const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
-  const { hasActions, actions, toggleAction, weekLabels, weekIntensities } = useHomeMock();
+  const { hasActions, actions, toggleAction } = useHomeMock();
 
   return (
     <View className="flex-1 bg-midnight">
@@ -145,11 +145,7 @@ export function HomeScreen() {
               headerActionLabel="자세히"
               onHeaderActionPress={() => router.push(HOME_ROUTES.report)}
             >
-              <EmotionConstellationChart
-                values={weekIntensities}
-                labels={weekLabels}
-                activeIndex={weekIntensities.length - 1}
-              />
+              <EmotionConstellationPreview />
             </HomeCardShell>
 
             <View className="rounded-card border border-line bg-surface p-6">

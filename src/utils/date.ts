@@ -1,10 +1,96 @@
 import { TZDate } from '@date-fns/tz';
-import { format } from 'date-fns';
+import {
+  addMonths,
+  addWeeks,
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 const TZ = 'Asia/Seoul';
 
+export const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+export const DAYS_PER_WEEK = 7;
+
+const KOREAN_WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
+
 const kst = (isoString: string) => new TZDate(isoString, TZ);
+
+const kstDate = (date: Date) => new TZDate(date, TZ);
+
+export function toKstDate(date: Date = new Date()): TZDate {
+  return kstDate(date);
+}
+
+export function getKoreanWeekdayLabel(date: Date): string {
+  return KOREAN_WEEKDAY_LABELS[kstDate(date).getDay()];
+}
+
+export interface ReportDateRange {
+  start: Date;
+  end: Date;
+  label: string;
+}
+
+function formatReportDateWithWeekday(date: Date): string {
+  const kst = kstDate(date);
+  return `${format(kst, 'yyyy.MM.dd')} (${getKoreanWeekdayLabel(date)})`;
+}
+
+export function getWeekRange(anchorDate: Date): ReportDateRange {
+  const kst = kstDate(anchorDate);
+  const start = startOfWeek(kst, { weekStartsOn: 0 });
+  const end = endOfWeek(kst, { weekStartsOn: 0 });
+
+  return {
+    start,
+    end,
+    label: `${formatReportDateWithWeekday(start)} ~ ${formatReportDateWithWeekday(end)}`,
+  };
+}
+
+export function getMonthRange(anchorDate: Date): ReportDateRange {
+  const kst = kstDate(anchorDate);
+  const start = startOfMonth(kst);
+  const end = endOfMonth(kst);
+
+  return {
+    start,
+    end,
+    label: `${formatReportDateWithWeekday(start)} ~ ${formatReportDateWithWeekday(end)}`,
+  };
+}
+
+export function shiftWeek(anchorDate: Date, delta: number): Date {
+  return addWeeks(kstDate(anchorDate), delta);
+}
+
+export function shiftMonth(anchorDate: Date, delta: number): Date {
+  return addMonths(kstDate(anchorDate), delta);
+}
+
+export function isFutureReportPeriod(start: Date): boolean {
+  const today = startOfDay(kstDate(new Date()));
+  return startOfDay(kstDate(start)) > today;
+}
+
+export function isCurrentKstMonth(anchorDate: Date): boolean {
+  const today = kstDate(new Date());
+  const anchor = kstDate(anchorDate);
+  return today.getFullYear() === anchor.getFullYear() && today.getMonth() === anchor.getMonth();
+}
+
+export function toDateRangeIso(start: Date, end: Date): { from: string; to: string } {
+  return {
+    from: format(kstDate(start), 'yyyy-MM-dd'),
+    to: format(kstDate(end), 'yyyy-MM-dd'),
+  };
+}
 
 /** ISO 문자열(UTC)로 저장된 날짜가 한국 시간 기준 오늘인지 확인 */
 export function isToday(isoString: string): boolean {
