@@ -44,7 +44,5 @@ export type ThemedTextProps = TextProps & {
 };
 
 export function ThemedText({ className, type = 'default', ...rest }: ThemedTextProps) {
-  return (
-    <Text className={cn('text-ink dark:text-ink-night', typeClasses[type], className)} {...rest} />
-  );
+  return <Text className={cn(typeClasses[type], className)} {...rest} />;
 }
