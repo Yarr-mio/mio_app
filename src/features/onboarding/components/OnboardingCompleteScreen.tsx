@@ -8,6 +8,7 @@ import {
 import { AUTH_ROUTES } from '@/constants/routes';
 import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
 import { useSignupComplete } from '@/features/auth/hooks/useAuth';
+import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { userStoreUtils, useUserStore } from '@/store/userStore';
 import { Image } from 'expo-image';
@@ -22,6 +23,7 @@ export function OnboardingCompleteScreen() {
   const { character_id, emotion_state, emoji_score, concern_types, preferred_style } =
     useOnboardingStore();
   const { setOnboardingResult } = useUserStore();
+  const setSelectedPartner = usePartnerStore((state) => state.setSelectedPartner);
   const signupComplete = useSignupComplete();
   const selectedCharacterId = character_id ?? ONBOARDING_DEFAULT_CHARACTER_ID;
   const character = getOnboardingCharacterById(selectedCharacterId);
@@ -36,6 +38,7 @@ export function OnboardingCompleteScreen() {
       preferredStyle: preferred_style,
       characterId: selectedCharacterId,
     });
+    setSelectedPartner(selectedCharacterId);
 
     try {
       await signupComplete.mutateAsync();

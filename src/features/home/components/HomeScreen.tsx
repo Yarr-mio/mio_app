@@ -4,10 +4,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { HomeCardShell } from '@/components/ui/HomeCardShell';
-import {
-  getOnboardingCharacterById,
-  ONBOARDING_DEFAULT_CHARACTER_ID,
-} from '@/constants/characters';
+import { getPartnerByKey } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
 import { HOME_TITLES } from '@/constants/home';
 import { HOME_ROUTES } from '@/constants/routes';
@@ -21,6 +18,7 @@ import {
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeMock } from '@/features/home/hooks/useHomeMock';
+import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useUserStore } from '@/store/userStore';
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
@@ -41,11 +39,10 @@ function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undef
 
 export function HomeScreen() {
   const signupInfo = useUserStore((state) => state.signupInfo);
-  const onboardingResult = useUserStore((state) => state.onboardingResult);
+  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
+  const partner = getPartnerByKey(selectedPartner);
 
   const nickname = signupInfo?.nickname ?? '친구';
-  const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
-  const character = getOnboardingCharacterById(characterId);
 
   const { data: todayCheckinData } = useCheckinToday();
   const todayCheckin = getLatestTodayCheckin(todayCheckinData?.checkins ?? []);
@@ -89,7 +86,7 @@ export function HomeScreen() {
             </View>
             <View className="self-end">
               <Image
-                source={character.image}
+                source={partner.image}
                 style={{
                   width: HomeLayout.characterImageSize,
                   height: HomeLayout.characterImageSize,

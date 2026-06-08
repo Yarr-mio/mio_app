@@ -1,20 +1,15 @@
 import type { OnboardingStyleType } from '@/constants/onboarding';
+import type { ImageSource } from 'expo-image';
 
 export type OnboardingCharacterId = 'mio' | 'bau' | 'rumi' | 'momo' | 'chichi';
 
-export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
-
-export type ApiPreferredStyle = 'empathetic' | 'analytical' | 'solution' | 'balanced';
-
-export const ONBOARDING_STYLE_TO_API_PREFERRED_STYLE: Record<
-  OnboardingStyleType,
-  ApiPreferredStyle
-> = {
-  empathy: 'empathetic',
-  realistic: 'analytical',
-  action: 'solution',
-  reflective: 'balanced',
-} as const;
+export interface PartnerMeta {
+  key: OnboardingCharacterId;
+  name: string;
+  tag: string;
+  intro: string;
+  image: ImageSource;
+}
 
 export const ONBOARDING_CHARACTERS = [
   {
@@ -69,6 +64,31 @@ export const ONBOARDING_CHARACTERS = [
   },
 ] as const;
 
+// TODO: ONBOARDING_CHARACTERS.quote는 curly quote(“ ”)를 사용해 replace(/^"|"$/g, '')로는 따옴표가 제거되지 않음.
+// PARTNER_LIST intro는 따옴표 없는 문구(예: mio → '지금 느끼는 감정, 함께 천천히 들여다봐요')가 올바른 값인지,
+// quote에서 파생한 값(따옴표 포함)이 올바른 값인지 디자인/기획 확인 필요.
+export const PARTNER_LIST: PartnerMeta[] = ONBOARDING_CHARACTERS.map((char) => ({
+  key: char.id,
+  name: char.name,
+  tag: char.chipLabel,
+  intro: char.quote.replace(/^"|"$/g, ''),
+  image: char.image,
+}));
+
+export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
+
+export type ApiPreferredStyle = 'empathetic' | 'analytical' | 'solution' | 'balanced';
+
+export const ONBOARDING_STYLE_TO_API_PREFERRED_STYLE: Record<
+  OnboardingStyleType,
+  ApiPreferredStyle
+> = {
+  empathy: 'empathetic',
+  realistic: 'analytical',
+  action: 'solution',
+  reflective: 'balanced',
+} as const;
+
 /** 전체 캐릭터 목록 표시 순서 */
 export const ONBOARDING_ALL_CHARACTER_IDS: OnboardingCharacterId[] = [
   'mio',
@@ -103,4 +123,12 @@ const CHARACTER_BY_ID = Object.fromEntries(
 
 export function getOnboardingCharacterById(id: OnboardingCharacterId) {
   return CHARACTER_BY_ID[id];
+}
+
+const PARTNER_BY_KEY = Object.fromEntries(
+  PARTNER_LIST.map((partner) => [partner.key, partner])
+) as Record<OnboardingCharacterId, PartnerMeta>;
+
+export function getPartnerByKey(key: OnboardingCharacterId): PartnerMeta {
+  return PARTNER_BY_KEY[key];
 }

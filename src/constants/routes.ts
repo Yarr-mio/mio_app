@@ -8,7 +8,17 @@ export const AUTH_ROUTES = {
   home: '/(main)/home',
 } as const;
 
+export const MAIN_ROUTES = {
+  settings: '/(main)/explore',
+  editNickname: '/(main)/explore/edit-nickname',
+  partner: '/(main)/explore/partner',
+  legalTerms: '/(main)/explore/legal/terms',
+  legalPrivacy: '/(main)/explore/legal/privacy',
+  legalSensitive: '/(main)/explore/legal/sensitive',
+} as const;
+
 export type AuthRoute = (typeof AUTH_ROUTES)[keyof typeof AUTH_ROUTES];
+export type MainRoute = (typeof MAIN_ROUTES)[keyof typeof MAIN_ROUTES];
 
 export const HOME_ROUTES = {
   checkin: '/(main)/home/checkin',
