@@ -55,7 +55,7 @@ function resolveMockStatus(period: ReportPeriod, anchorDate: Date): ReportStatus
   }
 
   const offset = getPeriodOffset(period, anchorDate);
-  if (offset === -1) {
+  if (period === 'week' && offset === 0) {
     return REPORT_STATUS.INSUFFICIENT_DATA;
   }
 
@@ -101,7 +101,7 @@ function buildWeeklyReport(anchorDate: Date, status: ReportStatus): WeeklyReport
     week_end: weekEnd,
     status,
     is_partial: isInsufficient,
-    checkin_count: isInsufficient ? 1 : 8,
+    checkin_count: isInsufficient ? REPORT_REQUIRED_CHECKIN_COUNT - 1 : 8,
     required_count: isInsufficient ? REPORT_REQUIRED_CHECKIN_COUNT : undefined,
     // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
     avg_emotion_score: isInsufficient ? 0 : 72,
@@ -141,12 +141,23 @@ function buildMonthlyReport(anchorDate: Date, status: ReportStatus): MonthlyRepo
   };
 }
 
+const MOCK_WEEKLY_EMOTION_TREND_FULL = {
+  scores: [3.5, 4, null, 3, 4.5, 2.5, 3] as (number | null)[],
+  checkinCounts: [2, 3, 0, 1, 3, 2, 1],
+};
+
+const MOCK_WEEKLY_EMOTION_TREND_CURRENT_WEEK = {
+  scores: [3.5, 4, null, null, null, null, null] as (number | null)[],
+  checkinCounts: [1, 1, 0, 0, 0, 0, 0],
+};
+
 function buildWeeklyEmotionTrend(anchorDate: Date): EmotionTrendData {
   const { start, end } = getWeekRange(anchorDate);
   const { from: periodStart, to: periodEnd } = toDateRangeIso(start, end);
-
-  const weeklyScores: (number | null)[] = [3.5, 4, null, 3, 4.5, 2.5, 3];
-  const weeklyCheckinCounts = [2, 3, 0, 1, 3, 2, 1];
+  const trend = isCurrentKstWeek(anchorDate)
+    ? MOCK_WEEKLY_EMOTION_TREND_CURRENT_WEEK
+    : MOCK_WEEKLY_EMOTION_TREND_FULL;
+  const { scores: weeklyScores, checkinCounts: weeklyCheckinCounts } = trend;
 
   return {
     period_start: periodStart,
