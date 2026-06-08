@@ -66,7 +66,7 @@ export function CharacterStoryCard({ period, anchorDate, characterId }: Characte
       return (
         <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
           {collapsedStoryText}
-          {CHARACTER_STORY_TRUNCATE_ELLIPSIS}
+          {CHARACTER_STORY_TRUNCATE_ELLIPSIS}{' '}
           <ThemedText
             type="small"
             className={ReportTextClasses.characterStoryReadMore}
