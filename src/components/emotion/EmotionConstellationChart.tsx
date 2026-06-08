@@ -70,7 +70,7 @@ function hasPointData(avgConditionScore: number | null | undefined): boolean {
   return avgConditionScore != null;
 }
 
-// avg_condition_score (1~5): 감정 별자리 차트 전용. avg_emotion_score(0~100)와 혼용 금지
+// avg_condition_score 1-5는 감정 별자리 차트 전용. avg_emotion_score 0-100와 혼용 금지
 function conditionScoreToNormalized(avgConditionScore: number | null | undefined): number {
   if (avgConditionScore == null) {
     return 0;
@@ -158,7 +158,10 @@ export function EmotionConstellationChart({
   });
 
   return (
-    <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} className="w-full">
+    <View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      className={EmotionConstellationClasses.fullWidth}
+    >
       <View
         className={
           showIntensityLabels

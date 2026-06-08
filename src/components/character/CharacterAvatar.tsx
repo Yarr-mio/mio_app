@@ -1,10 +1,11 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
 import { getOnboardingCharacterById } from '@/constants/characters';
+import { CharacterAvatarLayout } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 
 const CHARACTER_AVATAR_SIZE = {
-  xs: 22,
+  xs: CharacterAvatarLayout.xs,
   sm: 28,
   md: 56,
   lg: 200,

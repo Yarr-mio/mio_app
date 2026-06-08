@@ -87,8 +87,8 @@ export function ScoreSlider({
   const labelTop = paddingTop + labelTopInSlider;
 
   return (
-    <View className="w-full">
-      <View className="relative w-full" style={{ paddingTop }}>
+    <View className={ScoreSliderClasses.root}>
+      <View className={ScoreSliderClasses.rootRelative} style={{ paddingTop }}>
         {/* showThumbLabel: thumb 위 별도 영역에 현재 값 라벨 표시 */}
         {showThumbLabel && containerWidth > 0 ? (
           <View
@@ -109,13 +109,13 @@ export function ScoreSlider({
         ) : null}
 
         {/* readonly: 슬라이더 조작 비활성화 */}
-        <View className="w-full" onLayout={handleTrackLayout}>
+        <View className={ScoreSliderClasses.trackWrapper} onLayout={handleTrackLayout}>
           <View className={ScoreSliderClasses.sliderArea} style={{ height: sliderAreaHeight }}>
             <Slider
               value={normalizedValue}
               minimumValue={ScoreSliderRange.min}
               maximumValue={ScoreSliderRange.max}
-              step={1}
+              step={ScoreSliderRange.step}
               disabled={readonly}
               onValueChange={(nextValue) => {
                 const next = clampScore(Array.isArray(nextValue) ? nextValue[0] : nextValue);
