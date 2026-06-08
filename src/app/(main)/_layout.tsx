@@ -3,7 +3,7 @@ import { Tabs, useSegments } from 'expo-router';
 import AppTabs from '@/components/layout/AppTabs';
 
 /** 탭 스택 상세 화면 — 전체 화면으로 표시하고 하단 탭 바 숨김 */
-const TAB_BAR_HIDDEN_SEGMENTS = ['partner'] as const;
+const TAB_BAR_HIDDEN_SEGMENTS = ['partner', 'edit-nickname', 'legal'] as const;
 
 export default function MainLayout() {
   const segments = useSegments();
