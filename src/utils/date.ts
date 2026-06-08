@@ -5,7 +5,6 @@ import {
   endOfMonth,
   endOfWeek,
   format,
-  startOfDay,
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
@@ -78,11 +77,6 @@ export function shiftMonth(anchorDate: Date, delta: number): Date {
 export function getMonthAnchorFromWeekEnd(weekAnchorDate: Date): Date {
   const { end: weekEnd } = getWeekRange(weekAnchorDate);
   return startOfMonth(kstDate(weekEnd));
-}
-
-export function isFutureReportPeriod(start: Date): boolean {
-  const today = startOfDay(kstDate(new Date()));
-  return startOfDay(kstDate(start)) > today;
 }
 
 export function isCurrentKstMonth(anchorDate: Date): boolean {

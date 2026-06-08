@@ -28,6 +28,12 @@ export const REPORT_PENDING_MESSAGE = '리포트를 생성하고 있어요';
 
 export const REPORT_REQUIRED_CHECKIN_COUNT = 3;
 
+/** 월간 리포트 생성에 필요한 최소 체크인 횟수 */
+export const REPORT_REQUIRED_MONTHLY_CHECKIN_COUNT = 7;
+
+export const REPORT_INSUFFICIENT_MONTHLY_DATA_MESSAGE =
+  '아직 기록이 부족해요. 체크인을 7회 이상 완료하면 월간 리포트를 볼 수 있어요.';
+
 export const REPORT_INSUFFICIENT_TITLE = '아직 기록이 부족해요';
 
 export const REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE = {

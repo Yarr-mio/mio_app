@@ -394,7 +394,7 @@ export const ReportCardClasses = {
 
 export const ReportCharacterStoryClasses = {
   header: 'flex-row items-center gap-3',
-  profilePlaceholder: 'h-12 w-12 shrink-0 rounded-full bg-surface-md',
+  profileImage: 'shrink-0',
   headerText: 'min-w-0 flex-1 gap-1',
   divider: 'my-3',
   storyBody: 'w-full gap-1',
