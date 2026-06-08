@@ -2,9 +2,15 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '';
 
+const APP_VARIANT = process.env.APP_VARIANT;
+const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
+
+const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'mio_app';
+const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'mio_app',
+  name: APP_NAME,
   slug: 'mio_app',
   version: '1.0.0',
   orientation: 'portrait',
@@ -13,10 +19,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   ios: {
     icon: './assets/expo.icon',
-    bundleIdentifier: 'com.mio.yarr',
+    bundleIdentifier: BUNDLE_IDENTIFIER,
   },
   android: {
-    package: 'com.mio.yarr',
+    package: BUNDLE_IDENTIFIER,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
