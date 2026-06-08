@@ -1,18 +1,8 @@
 import { EmotionConstellationChart } from '@/components/emotion/EmotionConstellationChart';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
-import {
-  formatCheckinCountLabel,
-  REPORT_CARD_TITLES,
-  REPORT_EMPTY_MESSAGE,
-  type ReportPeriod,
-} from '@/constants/report';
-import {
-  HomeCardClasses,
-  ReportCardClasses,
-  ReportSectionClasses,
-  ReportTextClasses,
-} from '@/constants/theme';
+import { formatCheckinCountLabel, REPORT_CARD_TITLES, type ReportPeriod } from '@/constants/report';
+import { ReportCardClasses, ReportSectionClasses, ReportTextClasses } from '@/constants/theme';
 import {
   getActiveChartIndex,
   useEmotionConstellationData,
@@ -29,26 +19,14 @@ interface EmotionConstellationProps {
 interface EmotionConstellationContentProps {
   period: ReportPeriod;
   points: ConstellationChartPoint[];
-  isFuture: boolean;
   activeIndex: number;
 }
 
 function EmotionConstellationContent({
   period,
   points,
-  isFuture,
   activeIndex,
 }: EmotionConstellationContentProps) {
-  if (period === 'week' && isFuture) {
-    return (
-      <View className={HomeCardClasses.emptyState}>
-        <ThemedText type="small" className={ReportTextClasses.emptyState}>
-          {REPORT_EMPTY_MESSAGE}
-        </ThemedText>
-      </View>
-    );
-  }
-
   const isMonthly = period === 'month';
 
   return (
@@ -66,16 +44,11 @@ export function EmotionConstellation({
   anchorDate,
   showCard = true,
 }: EmotionConstellationProps) {
-  const { points, checkinCount, isFuture } = useEmotionConstellationData(period, anchorDate);
+  const { points, checkinCount } = useEmotionConstellationData(period, anchorDate);
   const activeIndex = getActiveChartIndex(period, anchorDate);
 
   const chart = (
-    <EmotionConstellationContent
-      period={period}
-      points={points}
-      isFuture={isFuture}
-      activeIndex={activeIndex}
-    />
+    <EmotionConstellationContent period={period} points={points} activeIndex={activeIndex} />
   );
 
   if (!showCard) {
@@ -88,11 +61,9 @@ export function EmotionConstellation({
         <ThemedText className={ReportTextClasses.cardTitle}>
           {REPORT_CARD_TITLES.constellation}
         </ThemedText>
-        {!isFuture ? (
-          <ThemedText type="small" className={ReportTextClasses.checkinCount}>
-            {formatCheckinCountLabel(checkinCount)}
-          </ThemedText>
-        ) : null}
+        <ThemedText type="small" className={ReportTextClasses.checkinCount}>
+          {formatCheckinCountLabel(checkinCount)}
+        </ThemedText>
       </View>
       <BaseCard className={ReportCardClasses.body}>{chart}</BaseCard>
     </View>
@@ -106,15 +77,8 @@ interface EmotionConstellationPreviewProps {
 export function EmotionConstellationPreview({
   anchorDate = new Date(),
 }: EmotionConstellationPreviewProps) {
-  const { points, isFuture } = useEmotionConstellationData('week', anchorDate);
+  const { points } = useEmotionConstellationData('week', anchorDate);
   const activeIndex = getActiveChartIndex('week', anchorDate);
 
-  return (
-    <EmotionConstellationContent
-      period="week"
-      points={points}
-      isFuture={isFuture}
-      activeIndex={activeIndex}
-    />
-  );
+  return <EmotionConstellationContent period="week" points={points} activeIndex={activeIndex} />;
 }

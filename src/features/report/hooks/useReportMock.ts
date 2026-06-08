@@ -1,7 +1,9 @@
 import {
   DISTORTION_TYPE_LABELS,
   REPORT_INSUFFICIENT_DATA_DEFAULT_MESSAGE,
+  REPORT_INSUFFICIENT_MONTHLY_DATA_MESSAGE,
   REPORT_REQUIRED_CHECKIN_COUNT,
+  REPORT_REQUIRED_MONTHLY_CHECKIN_COUNT,
   REPORT_STATUS,
   type ReportPeriod,
 } from '@/constants/report';
@@ -21,7 +23,7 @@ import {
   toDateRangeIso,
   toKstDate,
 } from '@/utils/date';
-import { addDays, differenceInWeeks, format, startOfMonth } from 'date-fns';
+import { addDays, differenceInWeeks, format } from 'date-fns';
 
 /** 개발용: true이면 현재 기간 리포트를 PENDING 상태로 시뮬레이션 */
 const MOCK_REPORT_FORCE_PENDING = false;
@@ -38,8 +40,6 @@ function getPeriodOffset(period: ReportPeriod, anchorDate: Date): number {
     return differenceInWeeks(anchorStart, todayStart);
   }
 
-  const todayMonth = format(startOfMonth(today), 'yyyy-MM');
-  const anchorMonth = format(startOfMonth(anchor), 'yyyy-MM');
   const todayYear = today.getFullYear();
   const anchorYear = anchor.getFullYear();
   return (anchorYear - todayYear) * 12 + (anchor.getMonth() - today.getMonth());
@@ -55,7 +55,16 @@ function resolveMockStatus(period: ReportPeriod, anchorDate: Date): ReportStatus
   }
 
   const offset = getPeriodOffset(period, anchorDate);
+
+  if (offset > 0) {
+    return REPORT_STATUS.INSUFFICIENT_DATA;
+  }
+
   if (period === 'week' && offset === 0) {
+    return REPORT_STATUS.INSUFFICIENT_DATA;
+  }
+
+  if (period === 'month' && offset === 0) {
     return REPORT_STATUS.INSUFFICIENT_DATA;
   }
 
@@ -94,6 +103,7 @@ function buildWeeklyReport(anchorDate: Date, status: ReportStatus): WeeklyReport
   const { from: weekStart, to: weekEnd } = toDateRangeIso(start, end);
   const offset = getPeriodOffset('week', anchorDate);
   const isInsufficient = status === REPORT_STATUS.INSUFFICIENT_DATA;
+  const isFuturePeriod = offset > 0;
 
   return {
     report_id: `weekly-${weekStart}`,
@@ -101,7 +111,7 @@ function buildWeeklyReport(anchorDate: Date, status: ReportStatus): WeeklyReport
     week_end: weekEnd,
     status,
     is_partial: isInsufficient,
-    checkin_count: isInsufficient ? REPORT_REQUIRED_CHECKIN_COUNT - 1 : 8,
+    checkin_count: isInsufficient ? (isFuturePeriod ? 0 : REPORT_REQUIRED_CHECKIN_COUNT - 1) : 8,
     required_count: isInsufficient ? REPORT_REQUIRED_CHECKIN_COUNT : undefined,
     // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
     avg_emotion_score: isInsufficient ? 0 : 72,
@@ -115,11 +125,23 @@ function buildWeeklyReport(anchorDate: Date, status: ReportStatus): WeeklyReport
   };
 }
 
+const MOCK_MONTHLY_EMOTION_TREND_FULL = {
+  scores: [3.2, 3.8, 4.1, null] as (number | null)[],
+  checkinCounts: [5, 7, 6, 0],
+};
+
+const MOCK_MONTHLY_EMOTION_TREND_CURRENT_MONTH = {
+  scores: [3.5, null, null, null] as (number | null)[],
+  checkinCounts: [5, 0, 0, 0],
+};
+
 function buildMonthlyReport(anchorDate: Date, status: ReportStatus): MonthlyReportData {
   const { start, end } = getMonthRange(anchorDate);
   const { from: monthStart, to: monthEnd } = toDateRangeIso(start, end);
   const offset = getPeriodOffset('month', anchorDate);
   const isInsufficient = status === REPORT_STATUS.INSUFFICIENT_DATA;
+  const isFuturePeriod = offset > 0;
+  const currentMonthCheckinCount = MOCK_MONTHLY_EMOTION_TREND_CURRENT_MONTH.checkinCounts[0];
 
   return {
     report_id: `monthly-${monthStart}`,
@@ -127,8 +149,8 @@ function buildMonthlyReport(anchorDate: Date, status: ReportStatus): MonthlyRepo
     month_end: monthEnd,
     status,
     is_partial: isInsufficient,
-    checkin_count: isInsufficient ? 2 : 24,
-    required_count: isInsufficient ? REPORT_REQUIRED_CHECKIN_COUNT : undefined,
+    checkin_count: isInsufficient ? (isFuturePeriod ? 0 : currentMonthCheckinCount) : 24,
+    required_count: isInsufficient ? REPORT_REQUIRED_MONTHLY_CHECKIN_COUNT : undefined,
     // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
     avg_emotion_score: isInsufficient ? 0 : 68,
     distortion_top3: buildDistortionTop3(offset !== -2),
@@ -137,7 +159,7 @@ function buildMonthlyReport(anchorDate: Date, status: ReportStatus): MonthlyRepo
     todo_summary: buildTodoSummary(62.5),
     session_summary: { total: 8, total_minutes: 120 },
     generated_at: MOCK_GENERATED_AT,
-    message: isInsufficient ? REPORT_INSUFFICIENT_DATA_DEFAULT_MESSAGE : undefined,
+    message: isInsufficient ? REPORT_INSUFFICIENT_MONTHLY_DATA_MESSAGE : undefined,
   };
 }
 
@@ -174,9 +196,10 @@ function buildWeeklyEmotionTrend(anchorDate: Date): EmotionTrendData {
 function buildMonthlyEmotionTrend(anchorDate: Date): EmotionTrendData {
   const { start, end } = getMonthRange(anchorDate);
   const { from: periodStart, to: periodEnd } = toDateRangeIso(start, end);
-
-  const monthlyScores: (number | null)[] = [3.2, 3.8, 4.1, null];
-  const monthlyCheckinCounts = [5, 7, 6, 0];
+  const trend = isCurrentKstMonth(anchorDate)
+    ? MOCK_MONTHLY_EMOTION_TREND_CURRENT_MONTH
+    : MOCK_MONTHLY_EMOTION_TREND_FULL;
+  const { scores: monthlyScores, checkinCounts: monthlyCheckinCounts } = trend;
 
   return {
     period_start: periodStart,

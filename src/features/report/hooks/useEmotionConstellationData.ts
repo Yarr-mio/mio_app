@@ -5,14 +5,7 @@ import {
 } from '@/constants/report';
 import { getMockEmotionTrendData, getMockReportData } from '@/features/report/hooks/useReportMock';
 import type { ConstellationChartPoint } from '@/types/report';
-import {
-  DAYS_PER_WEEK,
-  getMonthRange,
-  getWeekRange,
-  isFutureReportPeriod,
-  MS_PER_DAY,
-  toKstDate,
-} from '@/utils/date';
+import { DAYS_PER_WEEK, getMonthRange, getWeekRange, MS_PER_DAY, toKstDate } from '@/utils/date';
 import { getDate } from 'date-fns';
 
 interface EmotionConstellationData {
@@ -20,7 +13,6 @@ interface EmotionConstellationData {
   checkinCount: number;
   // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
   avgEmotionScore: number;
-  isFuture: boolean;
 }
 
 function mapTrendToChartPoints(
@@ -49,21 +41,6 @@ export function useEmotionConstellationData(
   anchorDate: Date
 ): EmotionConstellationData {
   const resolvedAnchorDate = resolveReportAnchorDate(period, anchorDate);
-  const range =
-    period === 'week' ? getWeekRange(resolvedAnchorDate) : getMonthRange(resolvedAnchorDate);
-  const isFuture = period === 'week' && isFutureReportPeriod(range.start);
-
-  if (isFuture) {
-    const points = REPORT_WEEKDAY_LABELS.map((label) => ({ label, avg_condition_score: null }));
-
-    return {
-      points,
-      checkinCount: 0,
-      avgEmotionScore: 0,
-      isFuture: true,
-    };
-  }
-
   const report = getMockReportData(period, resolvedAnchorDate);
   const emotionTrend = getMockEmotionTrendData(period, resolvedAnchorDate);
   const points = mapTrendToChartPoints(period, emotionTrend.points);
@@ -72,7 +49,6 @@ export function useEmotionConstellationData(
     points,
     checkinCount: report.checkin_count,
     avgEmotionScore: report.avg_emotion_score,
-    isFuture: false,
   };
 }
 
