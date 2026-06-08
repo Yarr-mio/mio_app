@@ -1,3 +1,4 @@
+import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { getOnboardingCharacterById, type OnboardingCharacterId } from '@/constants/characters';
@@ -90,8 +91,9 @@ export function CharacterStoryCard({ period, anchorDate, characterId }: Characte
     <BaseCard className={ReportCardClasses.body}>
       {/* 상단 헤더 영역 */}
       <View className={ReportCharacterStoryClasses.header}>
-        {/* develop 브랜치 머지 후 캐릭터 프로필 이미지로 교체 예정 */}
-        <View className={ReportCharacterStoryClasses.profilePlaceholder} />
+        <View className={ReportCharacterStoryClasses.profileImage}>
+          <CharacterAvatar characterId={characterId} size="xs" background />
+        </View>
 
         <View className={ReportCharacterStoryClasses.headerText}>
           <ThemedText type="default" className={ReportTextClasses.characterStoryTitle}>

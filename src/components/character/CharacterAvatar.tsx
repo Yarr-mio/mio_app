@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { View } from 'react-native';
 
 const CHARACTER_AVATAR_SIZE = {
+  xs: 22,
   sm: 28,
   md: 56,
   lg: 200,
@@ -14,7 +15,7 @@ const CHARACTER_AVATAR_BACKGROUND_SCALE = 1.4;
 
 interface CharacterAvatarProps {
   characterId: OnboardingCharacterId;
-  size: 'sm' | 'md' | 'lg';
+  size: 'xs' | 'sm' | 'md' | 'lg';
   // TODO: variant="planet" 에셋 추가 전까지 default와 동일 이미지 사용
   variant?: 'default' | 'planet';
   // 캐릭터 뒤에 원형 배경(primary 60% 투명도)을 표시할지 여부. 기본값은 미표시.
