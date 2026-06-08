@@ -22,8 +22,8 @@ export function AverageEmotionScoreCard({ period, anchorDate }: AverageEmotionSc
       </ThemedText>
 
       <View className={ReportCardClasses.averageScoreContent}>
-        <View className="flex-row items-baseline">
-          {/* avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지 */}
+        <View className={ReportCardClasses.averageScoreValueRow}>
+          {/* avg_emotion_score는 0-100 리포트 집계용. avg_condition_score 1-5와 혼용 금지 */}
           <ThemedText type="defaultBold" className={ReportTextClasses.scoreValue}>
             {avgEmotionScore}
           </ThemedText>

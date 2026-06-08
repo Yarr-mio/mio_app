@@ -368,9 +368,15 @@ export const IntensityLabelSvgColors = {
 
 /** NativeWind className — EmotionConstellationLayout과 함께 유지 */
 export const EmotionConstellationClasses = {
+  fullWidth: 'w-full',
   chartContainer: 'h-[72px]',
   chartContainerWithLabels: 'h-[100px]',
   weekLabelsRow: 'mt-[10px] flex-row justify-between',
+} as const;
+
+/** CharacterAvatar xs 사이즈 (22dp) */
+export const CharacterAvatarLayout = {
+  xs: 22,
 } as const;
 
 export const EmotionConstellationTextClasses = {
@@ -389,6 +395,7 @@ export const ReportCardClasses = {
   inCardBody: 'mt-3',
   averageScoreEmpty: 'mt-4 min-h-[60px] items-center justify-center',
   averageScoreContent: 'mt-3 flex-row items-center gap-3',
+  averageScoreValueRow: 'flex-row items-baseline',
   averageScoreSlider: 'mt-3',
 } as const;
 
@@ -398,9 +405,15 @@ export const ReportCharacterStoryClasses = {
   headerText: 'min-w-0 flex-1 gap-1',
   divider: 'my-3',
   storyBody: 'w-full gap-1',
+  storyText: 'w-full text-fg',
 } as const;
 
 export const ReportSectionClasses = {
+  screenRoot: 'flex-1 bg-midnight',
+  screenContainer: 'flex-1 bg-transparent',
+  scrollContent: 'grow px-8 pb-8',
+  headerSection: 'pt-6',
+  chatButtonContainer: 'mb-6 px-8 pt-4',
   constellationHeader: 'flex-row items-center gap-2 mb-4',
   constellationSection: 'gap-2',
   statsRow: 'flex-row items-stretch gap-1.5',
@@ -465,6 +478,7 @@ export const ReportDateNavigatorClasses = {
 export const ReportTextClasses = {
   pageTitle: 'text-2xl font-semibold text-fg',
   cardTitle: 'text-xl font-semibold text-fg',
+  bodyText: 'text-fg',
   inCardTitle: 'text-fg-default',
   checkinCount: 'text-label-muted text-sm',
   dateRange: 'text-label',
@@ -508,6 +522,7 @@ export const ReportTabClasses = {
 } as const;
 
 export const EmotionScoreBadgeClasses = {
+  base: 'rounded-full border px-2.5 py-1',
   negative: 'border-emotion-negative-border bg-emotion-negative-bg',
   neutral: 'border-emotion-neutral-border bg-emotion-neutral-bg',
   positive: 'border-emotion-positive-border bg-emotion-positive-bg',
@@ -541,6 +556,7 @@ export const ReportPendingStateClasses = {
 export const ScoreSliderRange = {
   min: 0,
   max: 100,
+  step: 1,
   tickValues: [0, 25, 50, 75, 100],
 } as const;
 
@@ -564,6 +580,9 @@ export const ScoreSliderLayout = {
 
 /** NativeWind className — ScoreSliderLayout px 값과 동일하게 유지 */
 export const ScoreSliderClasses = {
+  root: 'w-full',
+  rootRelative: 'relative w-full',
+  trackWrapper: 'w-full',
   sliderArea: 'relative justify-center overflow-visible',
   thumb: 'h-[20px] w-[20px] rounded-full bg-primary',
   thumbLabel: 'rounded-full border border-label-border bg-label-bg px-3 py-1',

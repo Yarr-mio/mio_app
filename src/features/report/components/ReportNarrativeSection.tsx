@@ -15,7 +15,7 @@ export function ReportNarrativeSection({ narrative }: ReportNarrativeSectionProp
         {REPORT_CARD_TITLES.narrative}
       </ThemedText>
       <BaseCard className={ReportCardClasses.body}>
-        <ThemedText type="default" className="text-fg">
+        <ThemedText type="default" className={ReportTextClasses.bodyText}>
           {narrative}
         </ThemedText>
       </BaseCard>

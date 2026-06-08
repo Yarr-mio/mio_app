@@ -135,15 +135,15 @@ export function GrowthReportScreen() {
   };
 
   return (
-    <View className="flex-1 bg-midnight">
+    <View className={ReportSectionClasses.screenRoot}>
       <HomeReportBackground />
-      <ScreenContainer className="flex-1 bg-transparent">
+      <ScreenContainer className={ReportSectionClasses.screenContainer}>
         <ScrollView
-          className="flex-1 bg-transparent"
-          contentContainerClassName="grow px-8 pb-8"
+          className={ReportSectionClasses.screenContainer}
+          contentContainerClassName={ReportSectionClasses.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View className="pt-6">
+          <View className={ReportSectionClasses.headerSection}>
             <ThemedText
               type="defaultBold"
               className={cn('text-center', ReportTextClasses.pageTitle)}
@@ -172,7 +172,7 @@ export function GrowthReportScreen() {
           {renderReportContent()}
         </ScrollView>
 
-        <View className="mb-6 px-8 pt-4">
+        <View className={ReportSectionClasses.chatButtonContainer}>
           <Button onPress={handleGoToChat}>{formatReportChatButtonLabel(character.name)}</Button>
         </View>
       </ScreenContainer>

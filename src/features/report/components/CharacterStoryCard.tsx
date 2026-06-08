@@ -56,7 +56,7 @@ export function CharacterStoryCard({ period, anchorDate, characterId }: Characte
   const renderStoryBody = () => {
     if (expanded) {
       return (
-        <ThemedText type="small" className="w-full text-fg">
+        <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
           {storyText}
         </ThemedText>
       );
@@ -64,7 +64,7 @@ export function CharacterStoryCard({ period, anchorDate, characterId }: Characte
 
     if (isStoryLongEnough) {
       return (
-        <ThemedText type="small" className="w-full text-fg">
+        <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
           {collapsedStoryText}
           {CHARACTER_STORY_TRUNCATE_ELLIPSIS}
           <ThemedText
@@ -81,7 +81,7 @@ export function CharacterStoryCard({ period, anchorDate, characterId }: Characte
     }
 
     return (
-      <ThemedText type="small" className="w-full text-fg">
+      <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
         {storyText}
       </ThemedText>
     );

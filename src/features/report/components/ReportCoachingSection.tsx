@@ -13,7 +13,7 @@ export function ReportCoachingSection({ coachingDirection }: ReportCoachingSecti
     <View className={ReportSectionClasses.constellationSection}>
       <ThemedText className={ReportTextClasses.cardTitle}>{REPORT_CARD_TITLES.coaching}</ThemedText>
       <BaseCard className={ReportCardClasses.body}>
-        <ThemedText type="default" className="text-fg">
+        <ThemedText type="default" className={ReportTextClasses.bodyText}>
           {coachingDirection}
         </ThemedText>
       </BaseCard>
