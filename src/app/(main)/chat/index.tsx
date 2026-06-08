@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { ChatBackground } from '@/components/themed/ChatBackground';
 import { useActiveSession } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { SessionStart } from '@/features/chat/components/SessionStart';
@@ -17,7 +18,11 @@ export default function ChatScreen() {
   }, [activeSession, startSession]);
 
   if (isLoading) {
-    return <View className="flex-1 bg-midnight" />;
+    return (
+      <View className="flex-1 bg-midnight">
+        <ChatBackground />
+      </View>
+    );
   }
 
   if (sessionPhase === 'active') {

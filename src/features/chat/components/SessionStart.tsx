@@ -1,5 +1,5 @@
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { AuthBackground } from '@/components/themed/AuthBackground';
+import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
@@ -16,7 +16,7 @@ export function SessionStart() {
 
   return (
     <View className="flex-1 bg-midnight">
-      <AuthBackground />
+      <ChatBackground />
       <ScreenContainer className="flex-1 bg-transparent">
         <View className="items-center pt-8">
           <ThemedText type="title" className="text-center text-fg">

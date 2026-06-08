@@ -1,5 +1,6 @@
 import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
+import { ChatBackground } from '@/components/themed/ChatBackground';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useChatSse } from '@/features/chat/hooks/useChatSse';
@@ -25,6 +26,7 @@ export function ChatMain() {
 
   return (
     <View className="flex-1 bg-midnight">
+      <ChatBackground />
       <ScreenContainer className="flex-1 bg-transparent">
         <ChatHeader
           characterId={characterId}

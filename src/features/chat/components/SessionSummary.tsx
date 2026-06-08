@@ -1,4 +1,5 @@
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
+import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -29,6 +30,7 @@ export function SessionSummary() {
     // TODO: Memory 도메인 폴링 전략 미결 — summary_status 'pending' 처리 필요
     return (
       <View className="flex-1 bg-midnight items-center justify-center">
+        <ChatBackground />
         <ActivityIndicator color={PrimaryColors.DEFAULT} size="large" />
         <ThemedText type="small" className="text-fg-muted mt-4">
           대화 요약을 불러오는 중...
@@ -41,6 +43,7 @@ export function SessionSummary() {
 
   return (
     <View className="flex-1 bg-midnight">
+      <ChatBackground />
       <ScreenContainer className="flex-1 bg-transparent">
         <ScrollView
           contentContainerClassName="px-5 pb-8 gap-4"

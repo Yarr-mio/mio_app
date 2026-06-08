@@ -1,6 +1,6 @@
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { AuthBackground } from '@/components/themed/AuthBackground';
+import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
@@ -35,7 +35,7 @@ export function SessionEnd() {
 
   return (
     <View className="flex-1 bg-midnight">
-      <AuthBackground />
+      <ChatBackground />
       <ScreenContainer className="flex-1 bg-transparent">
         <View className="flex-1 items-center justify-center gap-6 px-8">
           {/* TODO: variant="planet" 에셋 추가 후 variant prop 전달 */}
