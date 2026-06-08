@@ -11,7 +11,7 @@ import { getDate } from 'date-fns';
 interface EmotionConstellationData {
   points: ConstellationChartPoint[];
   checkinCount: number;
-  // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
+  // avg_emotion_score 0-100: 리포트 집계용. avg_condition_score 1-5와 혼용 금지
   avgEmotionScore: number;
 }
 
@@ -23,7 +23,7 @@ function mapTrendToChartPoints(
 
   return labels.map((label, index) => ({
     label,
-    // avg_condition_score (1~5): 감정 별자리 차트 전용. avg_emotion_score(0~100)와 혼용 금지
+    // avg_condition_score 1-5: 감정 별자리 차트 전용. avg_emotion_score 0-100와 혼용 금지
     avg_condition_score: trendPoints[index]?.avg_condition_score ?? null,
   }));
 }

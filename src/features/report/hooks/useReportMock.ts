@@ -7,6 +7,21 @@ import {
   REPORT_STATUS,
   type ReportPeriod,
 } from '@/constants/report';
+import {
+  MOCK_DISTORTION_COUNTS,
+  MOCK_DISTORTION_EMPTY_PERIOD_OFFSET,
+  MOCK_MONTHLY_EMOTION_TREND_CURRENT_MONTH,
+  MOCK_MONTHLY_EMOTION_TREND_FULL,
+  MOCK_MONTHLY_REPORT_GENERATED,
+  MOCK_REPORT_EMPTY,
+  MOCK_REPORT_GENERATED_AT,
+  MOCK_TODO_COMPLETION_RATE,
+  MOCK_TODO_SUMMARY_BASE,
+  MOCK_WEEKLY_EMOTION_TREND_CURRENT_WEEK,
+  MOCK_WEEKLY_EMOTION_TREND_FULL,
+  MOCK_WEEKLY_INSUFFICIENT_CHECKIN_COUNT,
+  MOCK_WEEKLY_REPORT_GENERATED,
+} from '@/features/report/data/reportMockConstants';
 import type {
   DistortionTop3Item,
   EmotionTrendData,
@@ -27,8 +42,6 @@ import { addDays, differenceInWeeks, format } from 'date-fns';
 
 /** 개발용: true이면 현재 기간 리포트를 PENDING 상태로 시뮬레이션 */
 const MOCK_REPORT_FORCE_PENDING = false;
-
-const MOCK_GENERATED_AT = '2026-06-07T00:00:00.000Z';
 
 function getPeriodOffset(period: ReportPeriod, anchorDate: Date): number {
   const today = toKstDate(new Date());
@@ -77,24 +90,28 @@ function buildDistortionTop3(includeItems: boolean): DistortionTop3Item[] {
   }
 
   return [
-    { type: 'catastrophizing', label: DISTORTION_TYPE_LABELS.catastrophizing, count: 4 },
-    { type: 'mind_reading', label: DISTORTION_TYPE_LABELS.mind_reading, count: 3 },
-    { type: 'self_blame', label: DISTORTION_TYPE_LABELS.self_blame, count: 2 },
+    {
+      type: 'catastrophizing',
+      label: DISTORTION_TYPE_LABELS.catastrophizing,
+      count: MOCK_DISTORTION_COUNTS.catastrophizing,
+    },
+    {
+      type: 'mind_reading',
+      label: DISTORTION_TYPE_LABELS.mind_reading,
+      count: MOCK_DISTORTION_COUNTS.mind_reading,
+    },
+    {
+      type: 'self_blame',
+      label: DISTORTION_TYPE_LABELS.self_blame,
+      count: MOCK_DISTORTION_COUNTS.self_blame,
+    },
   ];
 }
 
 function buildTodoSummary(completionRate: number) {
   return {
-    total: 9,
-    completed: 5,
-    skipped: 1,
-    expired: 1,
+    ...MOCK_TODO_SUMMARY_BASE,
     completion_rate: completionRate,
-    category_distribution: {
-      심리_안정: 3,
-      인지_재구성: 4,
-      행동_활성화: 2,
-    },
   };
 }
 
@@ -111,29 +128,28 @@ function buildWeeklyReport(anchorDate: Date, status: ReportStatus): WeeklyReport
     week_end: weekEnd,
     status,
     is_partial: isInsufficient,
-    checkin_count: isInsufficient ? (isFuturePeriod ? 0 : REPORT_REQUIRED_CHECKIN_COUNT - 1) : 8,
+    checkin_count: isInsufficient
+      ? isFuturePeriod
+        ? MOCK_REPORT_EMPTY.checkinCount
+        : MOCK_WEEKLY_INSUFFICIENT_CHECKIN_COUNT
+      : MOCK_WEEKLY_REPORT_GENERATED.checkinCount,
     required_count: isInsufficient ? REPORT_REQUIRED_CHECKIN_COUNT : undefined,
-    // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
-    avg_emotion_score: isInsufficient ? 0 : 72,
-    distortion_top3: buildDistortionTop3(offset !== -2),
+    // avg_emotion_score는 0-100 리포트 집계용. avg_condition_score 1-5와 혼용 금지
+    avg_emotion_score: isInsufficient
+      ? MOCK_REPORT_EMPTY.avgEmotionScore
+      : MOCK_WEEKLY_REPORT_GENERATED.avgEmotionScore,
+    distortion_top3: buildDistortionTop3(offset !== MOCK_DISTORTION_EMPTY_PERIOD_OFFSET),
     narrative: null,
     coaching_direction: null,
-    todo_summary: buildTodoSummary(55.6),
-    session_summary: { total: 3, total_minutes: 45 },
-    generated_at: MOCK_GENERATED_AT,
+    todo_summary: buildTodoSummary(MOCK_TODO_COMPLETION_RATE.weekly),
+    session_summary: {
+      total: MOCK_WEEKLY_REPORT_GENERATED.sessionTotal,
+      total_minutes: MOCK_WEEKLY_REPORT_GENERATED.sessionTotalMinutes,
+    },
+    generated_at: MOCK_REPORT_GENERATED_AT,
     message: isInsufficient ? REPORT_INSUFFICIENT_DATA_DEFAULT_MESSAGE : undefined,
   };
 }
-
-const MOCK_MONTHLY_EMOTION_TREND_FULL = {
-  scores: [3.2, 3.8, 4.1, null] as (number | null)[],
-  checkinCounts: [5, 7, 6, 0],
-};
-
-const MOCK_MONTHLY_EMOTION_TREND_CURRENT_MONTH = {
-  scores: [3.5, null, null, null] as (number | null)[],
-  checkinCounts: [5, 0, 0, 0],
-};
 
 function buildMonthlyReport(anchorDate: Date, status: ReportStatus): MonthlyReportData {
   const { start, end } = getMonthRange(anchorDate);
@@ -149,29 +165,28 @@ function buildMonthlyReport(anchorDate: Date, status: ReportStatus): MonthlyRepo
     month_end: monthEnd,
     status,
     is_partial: isInsufficient,
-    checkin_count: isInsufficient ? (isFuturePeriod ? 0 : currentMonthCheckinCount) : 24,
+    checkin_count: isInsufficient
+      ? isFuturePeriod
+        ? MOCK_REPORT_EMPTY.checkinCount
+        : currentMonthCheckinCount
+      : MOCK_MONTHLY_REPORT_GENERATED.checkinCount,
     required_count: isInsufficient ? REPORT_REQUIRED_MONTHLY_CHECKIN_COUNT : undefined,
-    // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
-    avg_emotion_score: isInsufficient ? 0 : 68,
-    distortion_top3: buildDistortionTop3(offset !== -2),
+    // avg_emotion_score는 0-100 리포트 집계용. avg_condition_score 1-5와 혼용 금지
+    avg_emotion_score: isInsufficient
+      ? MOCK_REPORT_EMPTY.avgEmotionScore
+      : MOCK_MONTHLY_REPORT_GENERATED.avgEmotionScore,
+    distortion_top3: buildDistortionTop3(offset !== MOCK_DISTORTION_EMPTY_PERIOD_OFFSET),
     narrative: null,
     coaching_direction: null,
-    todo_summary: buildTodoSummary(62.5),
-    session_summary: { total: 8, total_minutes: 120 },
-    generated_at: MOCK_GENERATED_AT,
+    todo_summary: buildTodoSummary(MOCK_TODO_COMPLETION_RATE.monthly),
+    session_summary: {
+      total: MOCK_MONTHLY_REPORT_GENERATED.sessionTotal,
+      total_minutes: MOCK_MONTHLY_REPORT_GENERATED.sessionTotalMinutes,
+    },
+    generated_at: MOCK_REPORT_GENERATED_AT,
     message: isInsufficient ? REPORT_INSUFFICIENT_MONTHLY_DATA_MESSAGE : undefined,
   };
 }
-
-const MOCK_WEEKLY_EMOTION_TREND_FULL = {
-  scores: [3.5, 4, null, 3, 4.5, 2.5, 3] as (number | null)[],
-  checkinCounts: [2, 3, 0, 1, 3, 2, 1],
-};
-
-const MOCK_WEEKLY_EMOTION_TREND_CURRENT_WEEK = {
-  scores: [3.5, 4, null, null, null, null, null] as (number | null)[],
-  checkinCounts: [1, 1, 0, 0, 0, 0, 0],
-};
 
 function buildWeeklyEmotionTrend(anchorDate: Date): EmotionTrendData {
   const { start, end } = getWeekRange(anchorDate);
@@ -186,7 +201,7 @@ function buildWeeklyEmotionTrend(anchorDate: Date): EmotionTrendData {
     period_end: periodEnd,
     points: weeklyScores.map((score, index) => ({
       date: format(addDays(start, index), 'yyyy-MM-dd'),
-      // avg_condition_score (1~5): 감정 별자리 차트 전용. avg_emotion_score(0~100)와 혼용 금지
+      // avg_condition_score 1-5는 감정 별자리 차트 전용. avg_emotion_score 0-100와 혼용 금지
       avg_condition_score: score,
       checkin_count: weeklyCheckinCounts[index],
     })),
@@ -206,10 +221,58 @@ function buildMonthlyEmotionTrend(anchorDate: Date): EmotionTrendData {
     period_end: periodEnd,
     points: monthlyScores.map((score, weekIndex) => ({
       date: format(addDays(start, weekIndex * 7), 'yyyy-MM-dd'),
-      // avg_condition_score (1~5): 감정 별자리 차트 전용. avg_emotion_score(0~100)와 혼용 금지
+      // avg_condition_score 1-5는 감정 별자리 차트 전용. avg_emotion_score 0-100와 혼용 금지
       avg_condition_score: score,
       checkin_count: monthlyCheckinCounts[weekIndex],
     })),
+  };
+}
+
+function buildPendingReportData(period: ReportPeriod, anchorDate: Date): ReportData {
+  if (period === 'week') {
+    const { start, end } = getWeekRange(anchorDate);
+    const { from: weekStart, to: weekEnd } = toDateRangeIso(start, end);
+    return {
+      report_id: `weekly-pending-${weekStart}`,
+      week_start: weekStart,
+      week_end: weekEnd,
+      status: REPORT_STATUS.PENDING,
+      is_partial: false,
+      checkin_count: MOCK_REPORT_EMPTY.checkinCount,
+      // avg_emotion_score는 0-100 리포트 집계용. avg_condition_score 1-5와 혼용 금지
+      avg_emotion_score: MOCK_REPORT_EMPTY.avgEmotionScore,
+      distortion_top3: [],
+      narrative: null,
+      coaching_direction: null,
+      todo_summary: buildTodoSummary(MOCK_TODO_COMPLETION_RATE.pending),
+      session_summary: {
+        total: MOCK_REPORT_EMPTY.sessionTotal,
+        total_minutes: MOCK_REPORT_EMPTY.sessionTotalMinutes,
+      },
+      generated_at: MOCK_REPORT_GENERATED_AT,
+    };
+  }
+
+  const { start, end } = getMonthRange(anchorDate);
+  const { from: monthStart, to: monthEnd } = toDateRangeIso(start, end);
+  return {
+    report_id: `monthly-pending-${monthStart}`,
+    month_start: monthStart,
+    month_end: monthEnd,
+    status: REPORT_STATUS.PENDING,
+    is_partial: false,
+    checkin_count: MOCK_REPORT_EMPTY.checkinCount,
+    // avg_emotion_score는 0-100 리포트 집계용. avg_condition_score 1-5와 혼용 금지
+    avg_emotion_score: MOCK_REPORT_EMPTY.avgEmotionScore,
+    distortion_top3: [],
+    narrative: null,
+    coaching_direction: null,
+    todo_summary: buildTodoSummary(MOCK_TODO_COMPLETION_RATE.pending),
+    session_summary: {
+      total: MOCK_REPORT_EMPTY.sessionTotal,
+      total_minutes: MOCK_REPORT_EMPTY.sessionTotalMinutes,
+    },
+    generated_at: MOCK_REPORT_GENERATED_AT,
   };
 }
 
@@ -217,45 +280,7 @@ export function getMockReportData(period: ReportPeriod, anchorDate: Date): Repor
   const status = resolveMockStatus(period, anchorDate);
 
   if (status === REPORT_STATUS.PENDING) {
-    if (period === 'week') {
-      const { start, end } = getWeekRange(anchorDate);
-      const { from: weekStart, to: weekEnd } = toDateRangeIso(start, end);
-      return {
-        report_id: `weekly-pending-${weekStart}`,
-        week_start: weekStart,
-        week_end: weekEnd,
-        status: REPORT_STATUS.PENDING,
-        is_partial: false,
-        checkin_count: 0,
-        // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
-        avg_emotion_score: 0,
-        distortion_top3: [],
-        narrative: null,
-        coaching_direction: null,
-        todo_summary: buildTodoSummary(0),
-        session_summary: { total: 0, total_minutes: 0 },
-        generated_at: MOCK_GENERATED_AT,
-      };
-    }
-
-    const { start, end } = getMonthRange(anchorDate);
-    const { from: monthStart, to: monthEnd } = toDateRangeIso(start, end);
-    return {
-      report_id: `monthly-pending-${monthStart}`,
-      month_start: monthStart,
-      month_end: monthEnd,
-      status: REPORT_STATUS.PENDING,
-      is_partial: false,
-      checkin_count: 0,
-      // avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지
-      avg_emotion_score: 0,
-      distortion_top3: [],
-      narrative: null,
-      coaching_direction: null,
-      todo_summary: buildTodoSummary(0),
-      session_summary: { total: 0, total_minutes: 0 },
-      generated_at: MOCK_GENERATED_AT,
-    };
+    return buildPendingReportData(period, anchorDate);
   }
 
   return period === 'week'
