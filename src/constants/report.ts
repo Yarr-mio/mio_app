@@ -171,6 +171,33 @@ export function formatReportChatButtonLabel(characterName: string): string {
   return `${characterName}와 이야기 하러 가기`;
 }
 
+export const CHARACTER_STORY_PERIOD_LABELS = {
+  weekly: '주간',
+  monthly: '월간',
+} as const;
+
+export type CharacterStoryPeriod = keyof typeof CHARACTER_STORY_PERIOD_LABELS;
+
+export const REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD: Record<ReportPeriod, CharacterStoryPeriod> = {
+  week: 'weekly',
+  month: 'monthly',
+};
+
+export const CHARACTER_STORY_TRUNCATE_ELLIPSIS = '...';
+
+export const CHARACTER_STORY_READ_MORE_INLINE_LABEL = '더보기';
+
+export const CHARACTER_STORY_COLLAPSE_LABEL = '...접기';
+
+export const CHARACTER_STORY_READ_MORE_MIN_LENGTH = 90;
+
+export function formatCharacterStoryCardTitle(
+  characterName: string,
+  period: CharacterStoryPeriod
+): string {
+  return `${characterName}의 ${CHARACTER_STORY_PERIOD_LABELS[period]} 이야기`;
+}
+
 export function getEmotionScoreLevel(score: number): EmotionScoreLevel {
   if (score < EMOTION_SCORE_THRESHOLDS.negative) {
     return 'negative';

@@ -139,6 +139,7 @@ module.exports = {
         'label-bg': '#9D7FEE33', // bg-label-bg — #9D7FEE 20%
         'label-border': '#D8D0F833', // border-label-border — #D8D0F8 20%
         'label-text': '#9F92F3', // text-label-text
+        'character-story-title': '#D8D0F8', // text-character-story-title — 캐릭터 이야기 카드 제목
 
         // 성장 리포트 — 기간 탭 (비활성)
         'report-tab-inactive-bg': '#FFFFFF1A', // bg-report-tab-inactive-bg — white 10%

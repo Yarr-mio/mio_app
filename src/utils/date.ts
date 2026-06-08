@@ -107,6 +107,39 @@ export function toDateRangeIso(start: Date, end: Date): { from: string; to: stri
   };
 }
 
+/** 해당 월 기준 주차 계산 (주간 종료일 토요일 기준) */
+export function getWeekOfMonth(anchorDate: Date): number {
+  const { end } = getWeekRange(anchorDate);
+  const kstEnd = kstDate(end);
+
+  return Math.floor((kstEnd.getDate() - 1) / DAYS_PER_WEEK) + 1;
+}
+
+/** 캐릭터 이야기 카드 주간 날짜 라벨 */
+export function formatCharacterStoryWeeklyDateLabel(anchorDate: Date): string {
+  const { start, end } = getWeekRange(anchorDate);
+  const kstStart = kstDate(start);
+  const kstEnd = kstDate(end);
+  const month = kstStart.getMonth() + 1;
+  const weekOfMonth = getWeekOfMonth(anchorDate);
+  const startFormatted = format(kstStart, 'yyyy.MM.dd');
+  const endFormatted = format(kstEnd, 'MM.dd');
+
+  return `${month}월 ${weekOfMonth}주 · ${startFormatted} ~ ${endFormatted}`;
+}
+
+/** 캐릭터 이야기 카드 월간 날짜 라벨 */
+export function formatCharacterStoryMonthlyDateLabel(anchorDate: Date): string {
+  const { start, end } = getMonthRange(anchorDate);
+  const kstStart = kstDate(start);
+  const kstEnd = kstDate(end);
+  const month = kstStart.getMonth() + 1;
+  const startFormatted = format(kstStart, 'yyyy.MM.dd');
+  const endFormatted = format(kstEnd, 'MM.dd');
+
+  return `${month}월 · ${startFormatted} ~ ${endFormatted}`;
+}
+
 /** ISO 문자열(UTC)로 저장된 날짜가 한국 시간 기준 오늘인지 확인 */
 export function isToday(isoString: string): boolean {
   const fmt = (d: TZDate) => format(d, 'yyyy-MM-dd');

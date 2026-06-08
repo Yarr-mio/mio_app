@@ -383,6 +383,15 @@ export const ReportCardClasses = {
   inCardBody: 'mt-3',
   averageScoreEmpty: 'mt-4 min-h-[60px] items-center justify-center',
   averageScoreContent: 'mt-3 flex-row items-center gap-3',
+  averageScoreSlider: 'mt-3',
+} as const;
+
+export const ReportCharacterStoryClasses = {
+  header: 'flex-row items-center gap-3',
+  profilePlaceholder: 'h-12 w-12 shrink-0 rounded-full bg-surface-md',
+  headerText: 'min-w-0 flex-1 gap-1',
+  divider: 'my-3',
+  storyBody: 'w-full gap-1',
 } as const;
 
 export const ReportSectionClasses = {
@@ -461,6 +470,9 @@ export const ReportTextClasses = {
   insufficientCheckinCardTitle: 'text-base text-primary',
   insufficientGuideSubtitle: 'text-center text-base font-medium text-weekday',
   insufficientGuideItemLabel: 'shrink text-center text-xs font-medium text-weekday',
+  characterStoryTitle: 'text-character-story-title',
+  characterStoryDate: 'text-label',
+  characterStoryReadMore: 'text-weekday',
 } as const;
 
 export const ReportInsufficientDataLayout = {
@@ -517,4 +529,38 @@ export const IntensityLabelBaseClasses = 'rounded-full border px-2 py-0.5';
 
 export const ReportPendingStateClasses = {
   container: 'mt-6 min-h-[200px] items-center justify-center gap-3',
+} as const;
+
+/** ScoreSlider 값 범위 및 눈금 */
+export const ScoreSliderRange = {
+  min: 0,
+  max: 100,
+  tickValues: [0, 25, 50, 75, 100],
+} as const;
+
+/** ScoreSlider 네이티브 prop용 색상  */
+export const ScoreSliderColors = {
+  trackActive: '#7060E0',
+  trackInactive: '#E8E8E8',
+  thumb: '#7060E0',
+} as const;
+
+/** ScoreSlider 레이아웃 */
+export const ScoreSliderLayout = {
+  trackHeight: 9,
+  thumbSize: 20,
+  thumbTouchSize: 44,
+  thumbLabelGap: 6,
+  thumbLabelEstimatedHeight: 26,
+  sliderAreaPaddingY: 12,
+  tickLabelsMarginTop: 4,
+} as const;
+
+/** NativeWind className — ScoreSliderLayout px 값과 동일하게 유지 */
+export const ScoreSliderClasses = {
+  sliderArea: 'relative justify-center overflow-visible',
+  thumb: 'h-[20px] w-[20px] rounded-full bg-primary',
+  thumbLabel: 'rounded-full border border-label-border bg-label-bg px-3 py-1',
+  thumbLabelText: 'text-sm leading-5 font-medium text-label-text',
+  tickLabels: 'mt-1 flex-row justify-between',
 } as const;
