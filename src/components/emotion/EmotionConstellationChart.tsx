@@ -76,8 +76,13 @@ function conditionScoreToNormalized(avgConditionScore: number | null | undefined
     return 0;
   }
 
+  const clampedScore = Math.min(
+    CHECKIN_CONDITION_SCORE_MAX,
+    Math.max(CHECKIN_CONDITION_SCORE_MIN, avgConditionScore)
+  );
+
   return (
-    (avgConditionScore - CHECKIN_CONDITION_SCORE_MIN) /
+    (clampedScore - CHECKIN_CONDITION_SCORE_MIN) /
     (CHECKIN_CONDITION_SCORE_MAX - CHECKIN_CONDITION_SCORE_MIN)
   );
 }
