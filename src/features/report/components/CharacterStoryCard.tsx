@@ -41,7 +41,7 @@ export function CharacterStoryCard({ period, anchorDate, characterId }: Characte
     period === 'weekly'
       ? formatCharacterStoryWeeklyDateLabel(anchorDate)
       : formatCharacterStoryMonthlyDateLabel(anchorDate);
-  const isStoryLongEnough = storyText.length >= CHARACTER_STORY_READ_MORE_MIN_LENGTH;
+  const isStoryLongEnough = storyText.length > CHARACTER_STORY_READ_MORE_MIN_LENGTH;
   const collapsedStoryText = storyText.slice(0, CHARACTER_STORY_READ_MORE_MIN_LENGTH);
   const showCollapse = expanded && isStoryLongEnough;
 
