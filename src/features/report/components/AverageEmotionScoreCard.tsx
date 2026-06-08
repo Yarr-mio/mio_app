@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
+import { ScoreSlider } from '@/components/ui/ScoreSlider';
 import {
   EMOTION_SCORE_MAX,
   REPORT_CARD_TITLES,
@@ -32,19 +33,26 @@ export function AverageEmotionScoreCard({ period, anchorDate }: AverageEmotionSc
           </ThemedText>
         </View>
       ) : (
-        <View className={ReportCardClasses.averageScoreContent}>
-          <View className="flex-row items-baseline">
-            {/* avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지 */}
-            <ThemedText type="defaultBold" className={ReportTextClasses.scoreValue}>
-              {avgEmotionScore}
-            </ThemedText>
-            <ThemedText type="default" className={ReportTextClasses.scoreDenominator}>
-              {' '}
-              /{EMOTION_SCORE_MAX}
-            </ThemedText>
+        <>
+          <View className={ReportCardClasses.averageScoreContent}>
+            <View className="flex-row items-baseline">
+              {/* avg_emotion_score (0~100): 리포트 집계용. avg_condition_score(1~5)와 혼용 금지 */}
+              <ThemedText type="defaultBold" className={ReportTextClasses.scoreValue}>
+                {avgEmotionScore}
+              </ThemedText>
+              <ThemedText type="default" className={ReportTextClasses.scoreDenominator}>
+                {' '}
+                / {EMOTION_SCORE_MAX}
+              </ThemedText>
+            </View>
+            <EmotionScoreBadgeFromScore score={avgEmotionScore} />
           </View>
-          <EmotionScoreBadgeFromScore score={avgEmotionScore} />
-        </View>
+
+          {/* 평균 감정 점수를 ScoreSlider로 시각화 */}
+          <View className={ReportCardClasses.averageScoreSlider}>
+            <ScoreSlider value={avgEmotionScore} readonly showThumbLabel={false} showTickLabels />
+          </View>
+        </>
       )}
     </BaseCard>
   );

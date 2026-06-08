@@ -14,7 +14,7 @@ interface EmotionScoreBadgeProps {
 
 export function EmotionScoreBadge({ level }: EmotionScoreBadgeProps) {
   return (
-    <View className={cn('rounded-full border px-2.5 py-0.5', EmotionScoreBadgeClasses[level])}>
+    <View className={cn('rounded-full border px-2.5 py-1', EmotionScoreBadgeClasses[level])}>
       <ThemedText type="smallMedium" className={EmotionScoreBadgeTextClasses[level]}>
         {EMOTION_SCORE_LABELS[level]}
       </ThemedText>
