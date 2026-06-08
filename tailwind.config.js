@@ -43,8 +43,9 @@ module.exports = {
       },
       borderRadius: {
         card: '20px', // rounded-card — 온보딩 선택/소개 박스
-        'base-card': '20px', // rounded-base-card — BaseCard 컨테이너
         'report-tab': '10px', // rounded-report-tab — 성장 리포트 주간/월간 탭
+        'base-card': '15px', // rounded-base-card — BaseCard 공통 컨테이너
+        'modal-button': '10px', // rounded-modal-button — AppModal 버튼
       },
       colors: {
         // Light 기본값 / dark: 접두사로 다크모드 적용
@@ -176,6 +177,21 @@ module.exports = {
         'todo-completed': '#98C890',
         'todo-partial': '#F0C060',
         'todo-failed': '#D9D9D9',
+        // 설정(더보기) 화면
+        'settings-edit': '#A594F9', // text-settings-edit — 프로필 수정 버튼
+        'settings-account': '#F07878', // text-settings-account — 로그아웃·회원 탈퇴
+        'settings-account-bg': '#F078781A', // bg-settings-account-bg — #F07878 10%
+        'settings-account-border': '#F0787833', // border-settings-account-border — #F07878 20%
+        'avatar-gradient-start': '#2A1F5A', // ProfileAvatarCircle 그라데이션 시작
+        'avatar-gradient-end': '#1A1535', // ProfileAvatarCircle 그라데이션 끝
+        'avatar-stroke': '#9D7FEE59', // border-avatar-stroke — #9D7FEE 35%
+        'avatar-icon': '#6E4B97', // ProfileAvatarCircle 내부 SVG 아이콘
+
+        // AppModal
+        'modal-surface': '#1E2140', // bg-modal-surface
+        'modal-border': '#7C6FF733', // border-modal-border — #7C6FF7 20%
+        'modal-overlay': '#00000080', // bg-modal-overlay — black 50%
+        'modal-confirm-text': '#323232', // text-modal-confirm-text
 
         //로그인 버튼 (애플/카카오)
         kakao: '#FEE500', // bg-kakao

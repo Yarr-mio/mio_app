@@ -14,6 +14,7 @@ export type ThemedTextType =
   | 'defaultBold'
   | 'defaultRegular'
   | 'subtitle'
+  | 'pageTitle'
   | 'link'
   | 'linkPrimary'
   | 'code';
@@ -31,6 +32,7 @@ const typeClasses: Record<ThemedTextType, string> = {
   smallTitle2: 'text-lg font-semibold leading-6',
   defaultBold: 'text-base font-bold',
   defaultRegular: 'text-base leading-6 font-normal',
+  pageTitle: 'text-2xl font-bold leading-[30px]',
   link: 'text-sm font-sans leading-[30px]',
   linkPrimary: 'text-sm font-sans leading-[30px] text-link',
   code: `text-xs font-mono ${Platform.OS === 'android' ? 'font-bold' : 'font-medium'}`,
@@ -42,7 +44,5 @@ export type ThemedTextProps = TextProps & {
 };
 
 export function ThemedText({ className, type = 'default', ...rest }: ThemedTextProps) {
-  return (
-    <Text className={cn('text-ink dark:text-ink-night', typeClasses[type], className)} {...rest} />
-  );
+  return <Text className={cn(typeClasses[type], className)} {...rest} />;
 }
