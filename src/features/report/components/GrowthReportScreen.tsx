@@ -8,6 +8,7 @@ import {
 } from '@/constants/characters';
 import {
   formatReportChatButtonLabel,
+  REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD,
   REPORT_STATUS,
   REPORT_TITLE,
   type ReportPeriod,
@@ -15,6 +16,7 @@ import {
 import { MAIN_ROUTES } from '@/constants/routes';
 import { ReportDividerClasses, ReportSectionClasses, ReportTextClasses } from '@/constants/theme';
 import { AverageEmotionScoreCard } from '@/features/report/components/AverageEmotionScoreCard';
+import { CharacterStoryCard } from '@/features/report/components/CharacterStoryCard';
 import { DistortionTop3Section } from '@/features/report/components/DistortionTop3Section';
 import { EmotionConstellation } from '@/features/report/components/EmotionConstellation';
 import { ReportCoachingSection } from '@/features/report/components/ReportCoachingSection';
@@ -119,6 +121,11 @@ export function GrowthReportScreen() {
           <DistortionTop3Section distortionTop3={report.distortion_top3} />
           <TodoSummaryCard period={period} todoSummary={report.todo_summary} />
         </View>
+        <CharacterStoryCard
+          period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
+          anchorDate={anchorDate}
+          characterId={characterId}
+        />
         {report.narrative ? <ReportNarrativeSection narrative={report.narrative} /> : null}
         {report.coaching_direction ? (
           <ReportCoachingSection coachingDirection={report.coaching_direction} />
