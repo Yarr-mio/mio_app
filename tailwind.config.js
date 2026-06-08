@@ -116,6 +116,10 @@ module.exports = {
         // 홈화면: 마음 탐색 CTA 버튼
         'mind-explore-btn': '#3D2875', // bg-mind-explore-btn
 
+        // 채팅
+        'chat-subtext': '#6B6E8A', // text-chat-subtext — 채팅 보조 텍스트
+        'primary-inactive': '#7060E060', // bg-primary-inactive — 주요 액션 비활성 상태 (~38% opacity)
+
         // ── 서브 버튼 탭 (선택형 칩) ─────────────────
         // 선택됨: #9D7FEE 10% 배경 + 50% stroke = bg-sub-tab-selected-bg, border-sub-tab-selected-border
         'sub-tab-selected-bg': '#9D7FEE1A',
