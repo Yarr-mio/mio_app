@@ -1,6 +1,13 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const APP_VARIANT = process.env.APP_VARIANT;
+const APP_VARIANTS = ['development', 'preview', 'production'] as const;
+type AppVariant = (typeof APP_VARIANTS)[number];
+
+const rawAppVariant = process.env.APP_VARIANT ?? 'development';
+if (!APP_VARIANTS.includes(rawAppVariant as AppVariant)) {
+  throw new Error(`APP_VARIANT must be one of: ${APP_VARIANTS.join(', ')}`);
+}
+const APP_VARIANT = rawAppVariant as AppVariant;
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
 const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
