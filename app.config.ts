@@ -1,9 +1,11 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '';
-
 const APP_VARIANT = process.env.APP_VARIANT;
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
+
+const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'mio_app';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
