@@ -7,7 +7,7 @@ const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
   ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
   : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
 
-const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'mio_app';
+const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
