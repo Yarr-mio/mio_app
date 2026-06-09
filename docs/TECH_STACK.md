@@ -38,7 +38,7 @@
 >   - `@react-native-kakao/core` — SDK 초기화(`initializeKakaoSDK`), Expo config plugin(URL Scheme, Info.plist, AndroidManifest 자동 설정)
 >   - `@react-native-kakao/user` — 카카오 로그인(`login()`) → `accessToken` 획득
 >   - `expo-build-properties` — Android Kakao Maven repository 주입 (`app.config.ts`)
-> - **환경변수:** `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` (`.env`, `src/constants/config.ts`에서 접근)
+> - **환경변수:** `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` (`.env.local`, `src/constants/config.ts`에서 접근)
 > - **설정 파일:** `app.config.ts` — `@react-native-kakao/core` plugin, `ios.handleKakaoOpenUrl: true`
 > - **FE 구현:** `src/features/auth/utils/kakaoLogin.ts` → accessToken → `POST /v1/auth/login`
 > - **빌드:** 네이티브 빌드 필수 (Expo Go 미지원) — `npx expo prebuild` 후 `npx expo run:ios` / `run:android`
@@ -57,7 +57,7 @@
 | SVG          | `react-native-svg`                  | 설치됨      | `assets/icons/` SVG 아이콘 렌더링                                            |
 | 아이콘       | `@expo/vector-icons` (Ionicons)     | Expo에 포함 | `expo-symbols`도 설치됨                                                      |
 | 날짜         | `date-fns` + `@date-fns/tz`         | 설치됨      | `src/utils/date.ts`에서 KST 기준 래핑                                        |
-| 환경변수     | `expo-constants` + `.env`           | 설치됨      |                                                                              |
+| 환경변수     | `expo-constants` + `.env.local`     | 설치됨      |                                                                              |
 | Kakao 빌드   | `expo-build-properties`             | 설치됨      | Android Kakao Maven repo — `app.config.ts` plugin                            |
 | 보안 저장소  | `expo-secure-store`                 | 설치됨      | refresh_token 영속 저장                                                      |
 | 디바이스 ID  | `expo-crypto`                       | 설치됨      | UUID v4 `deviceId` 생성 (`src/utils/deviceId.ts`)                            |
