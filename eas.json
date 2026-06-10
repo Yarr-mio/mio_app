@@ -7,36 +7,21 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "development"
-      },
-      "ios": {
-        "bundleIdentifier": "com.mio.yarr.dev"
-      },
-      "android": {
-        "package": "com.mio.yarr.dev"
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "preview"
-      },
-      "ios": {
-        "bundleIdentifier": "com.mio.yarr.dev"
-      },
-      "android": {
-        "package": "com.mio.yarr.dev"
+        "APP_VARIANT": "preview",
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115"
       }
     },
     "production": {
       "env": {
-        "APP_VARIANT": "production"
-      },
-      "ios": {
-        "bundleIdentifier": "com.mio.yarr"
-      },
-      "android": {
-        "package": "com.mio.yarr"
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY": "050d798b600de08a88ccd0d3914c8b11"
       }
     }
   }

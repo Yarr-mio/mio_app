@@ -10,9 +10,10 @@ if (!APP_VARIANTS.includes(rawAppVariant as AppVariant)) {
 const APP_VARIANT = rawAppVariant as AppVariant;
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
-const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
-  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
-  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
+const KAKAO_NATIVE_APP_KEY =
+  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ??
+  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ??
+  '';
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
@@ -29,6 +30,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     icon: './assets/expo.icon',
     bundleIdentifier: BUNDLE_IDENTIFIER,
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     package: BUNDLE_IDENTIFIER,
@@ -82,17 +86,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
-    [
-      '@react-native-kakao/core',
-      {
-        // URL Scheme(kakao{NATIVE_APP_KEY}) 등 네이티브 설정용
-        nativeAppKey: KAKAO_NATIVE_APP_KEY,
-        ios: {
-          // 카카오톡 로그인 후 앱 복귀 URL 처리
-          handleKakaoOpenUrl: true,
-        },
-      },
-    ],
+    ...(KAKAO_NATIVE_APP_KEY
+      ? [
+          [
+            '@react-native-kakao/core',
+            {
+              // URL Scheme(kakao{NATIVE_APP_KEY}) 등 네이티브 설정용
+              nativeAppKey: KAKAO_NATIVE_APP_KEY,
+              ios: {
+                // 카카오톡 로그인 후 앱 복귀 URL 처리
+                handleKakaoOpenUrl: true,
+              },
+            },
+          ] as [string, any],
+        ]
+      : []),
   ],
   experiments: {
     typedRoutes: true,
