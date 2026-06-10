@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Alert, Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -8,19 +8,19 @@ import { Button } from '@/components/ui/Button';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { AuthTextClasses, ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
+import { useAppleLogin } from '@/features/auth/hooks/useAppleLogin';
 import { useKakaoLogin } from '@/features/auth/hooks/useKakaoLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
   const kakaoLogin = useKakaoLogin();
-
-  const handleAppleLogin = async () => {
-    Alert.alert('애플 로그인', '애플 로그인은 준비 중입니다.');
-  };
+  const appleLogin = useAppleLogin();
 
   const handleGoHome = () => {
     router.replace(AUTH_ROUTES.home);
   };
+
+  const isLoginPending = kakaoLogin.isPending || appleLogin.isPending;
 
   return (
     <View className="flex-1 bg-midnight">
@@ -37,16 +37,23 @@ export default function LoginScreen() {
         </View>
 
         <View className="gap-3 pb-2">
-          <SocialLoginButton
-            provider="apple"
-            onPress={handleAppleLogin}
-            disabled={kakaoLogin.isPending}
-          />
+          {Platform.OS === 'ios' ? (
+            <SocialLoginButton
+              provider="apple"
+              onPress={appleLogin.login}
+              disabled={isLoginPending}
+            />
+          ) : null}
           <SocialLoginButton
             provider="kakao"
             onPress={kakaoLogin.login}
-            disabled={kakaoLogin.isPending}
+            disabled={isLoginPending}
           />
+          {appleLogin.error ? (
+            <ThemedText type="small" className="text-center text-danger">
+              {appleLogin.error}
+            </ThemedText>
+          ) : null}
           {kakaoLogin.error ? (
             // ErrorState 컴포넌트 구현 후 교체할 것
             <ThemedText type="small" className="text-center text-danger">
@@ -54,7 +61,7 @@ export default function LoginScreen() {
             </ThemedText>
           ) : null}
           {__DEV__ ? (
-            <Button onPress={handleGoHome} disabled={kakaoLogin.isPending}>
+            <Button onPress={handleGoHome} disabled={isLoginPending}>
               홈화면 이동
             </Button>
           ) : null}
