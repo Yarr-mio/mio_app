@@ -8,14 +8,16 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development",
-        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115"
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115",
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY": "4f295723556577374b0b96ba53f92115"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "preview",
-        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115"
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115",
+        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY": "4f295723556577374b0b96ba53f92115"
       }
     },
     "production": {
