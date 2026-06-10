@@ -13,9 +13,6 @@ const MOCK_ACTIONS_INITIAL: HomeRecommendedAction[] = [
   { id: '3', text: '왜곡된 생각이 없는지 체크해 보기', completed: false },
 ];
 
-const MOCK_WEEK_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
-const MOCK_WEEK_INTENSITIES = [2, 3, 4, 3, 5, 4, 6] as const;
-
 export function useHomeMock() {
   const [actions, setActions] = useState(() =>
     MOCK_ACTIONS_INITIAL.map((action) => ({ ...action }))
@@ -31,8 +28,6 @@ export function useHomeMock() {
 
   return {
     hasActions: MOCK_HAS_ACTIONS,
-    weekLabels: [...MOCK_WEEK_LABELS] as string[],
-    weekIntensities: [...MOCK_WEEK_INTENSITIES] as number[],
     actions,
     toggleAction,
   };

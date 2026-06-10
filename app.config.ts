@@ -1,10 +1,25 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '';
+const APP_VARIANTS = ['development', 'preview', 'production'] as const;
+type AppVariant = (typeof APP_VARIANTS)[number];
+
+const rawAppVariant = process.env.APP_VARIANT ?? 'development';
+if (!APP_VARIANTS.includes(rawAppVariant as AppVariant)) {
+  throw new Error(`APP_VARIANT must be one of: ${APP_VARIANTS.join(', ')}`);
+}
+const APP_VARIANT = rawAppVariant as AppVariant;
+const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
+
+const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
+
+const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
+const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'mio_app',
+  name: APP_NAME,
   slug: 'mio_app',
   version: '1.0.0',
   orientation: 'portrait',
@@ -13,10 +28,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'automatic',
   ios: {
     icon: './assets/expo.icon',
-    bundleIdentifier: 'com.mio.yarr',
+    bundleIdentifier: BUNDLE_IDENTIFIER,
   },
   android: {
-    package: 'com.mio.yarr',
+    package: BUNDLE_IDENTIFIER,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',

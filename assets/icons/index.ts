@@ -3,6 +3,7 @@ export { default as ArrowLeftIcon } from './arrow-left.svg';
 export { default as ArrowUpIcon } from './arrow-up.svg';
 export { default as CategoryIcon } from './category.svg';
 export { default as CheckboxCheckIcon } from './checkbox-check.svg';
+export { default as ChevronLeftIcon } from './chevron-left.svg';
 export { default as ChevronRightIcon } from './chevron-right.svg';
 export { default as CloseIcon } from './close.svg';
 export { default as DeleteAccountIcon } from './deleteAccount.svg';

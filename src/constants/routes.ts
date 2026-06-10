@@ -15,6 +15,7 @@ export const MAIN_ROUTES = {
   legalTerms: '/(main)/explore/legal/terms',
   legalPrivacy: '/(main)/explore/legal/privacy',
   legalSensitive: '/(main)/explore/legal/sensitive',
+  chat: '/(main)/chat',
 } as const;
 
 export type AuthRoute = (typeof AUTH_ROUTES)[keyof typeof AUTH_ROUTES];

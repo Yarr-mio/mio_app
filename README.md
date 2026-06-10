@@ -20,8 +20,8 @@ Expo SDK 55 + Expo Router + TanStack Query 기반 React Native 앱.
 pnpm install
 
 # 2. 환경 변수 설정
-cp .env.example .env
-# .env 파일을 열어 실제 값으로 채운다
+cp .env.example .env.local
+# .env.local 파일을 열어 실제 값으로 채운다
 
 # 3. 앱 실행
 npx expo start

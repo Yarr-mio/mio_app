@@ -1,91 +1,255 @@
 import { ThemedText } from '@/components/themed/ThemedText';
 import {
+  CHECKIN_CONDITION_SCORE_MAX,
+  CHECKIN_CONDITION_SCORE_MIN,
+  formatIntensityLabelValue,
+  getIntensityLabelLevel,
+  type IntensityLabelLevel,
+} from '@/constants/report';
+import {
+  ConstellationChartColors,
   EmotionConstellationClasses,
   EmotionConstellationLayout,
   EmotionConstellationTextClasses,
-  FgColors,
+  IntensityLabelSvgColors,
 } from '@/constants/theme';
+import type { ConstellationChartPoint } from '@/types/report';
 import { useState } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, Polyline } from 'react-native-svg';
+import Svg, { Circle, G, Polyline, Rect, Text as SvgText } from 'react-native-svg';
 
 interface EmotionConstellationChartProps {
-  values: number[];
-  labels: string[];
+  points: ConstellationChartPoint[];
   activeIndex?: number;
+  showIntensityLabels?: boolean;
 }
 
-function normalizeValues(values: number[]) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  if (min === max) {
-    return values.map(() => 0.5);
+interface IntensityLabelLayout {
+  rectX: number;
+  rectY: number;
+  textX: number;
+  textY: number;
+}
+
+interface ChartIntensityLabelProps {
+  x: number;
+  y: number;
+  svgWidth: number;
+  avgConditionScore: number;
+}
+
+function getIntensityLabelLayout(x: number, y: number, svgWidth: number): IntensityLabelLayout {
+  const {
+    intensityLabelWidth,
+    intensityLabelHeight,
+    intensityLabelAreaHeight,
+    intensityLabelOffset,
+  } = EmotionConstellationLayout;
+
+  const halfWidth = intensityLabelWidth / 2;
+  const clampedX = Math.min(Math.max(x, halfWidth), svgWidth - halfWidth);
+  const rectX = clampedX - halfWidth;
+  const rectY = y - intensityLabelOffset - intensityLabelAreaHeight;
+
+  return {
+    rectX,
+    rectY,
+    textX: clampedX,
+    textY: rectY + intensityLabelHeight / 2,
+  };
+}
+
+interface ChartPoint {
+  x: number;
+  y: number;
+  hasData: boolean;
+}
+
+function hasPointData(avgConditionScore: number | null | undefined): boolean {
+  // 점선/회색 판단은 avg_condition_score null 여부만 사용 (미래 날짜 비교 금지)
+  return avgConditionScore != null;
+}
+
+// avg_condition_score 1-5는 감정 별자리 차트 전용. avg_emotion_score 0-100와 혼용 금지
+function conditionScoreToNormalized(avgConditionScore: number | null | undefined): number {
+  if (avgConditionScore == null) {
+    return 0;
   }
-  return values.map((v) => (v - min) / (max - min));
+
+  const clampedScore = Math.min(
+    CHECKIN_CONDITION_SCORE_MAX,
+    Math.max(CHECKIN_CONDITION_SCORE_MIN, avgConditionScore)
+  );
+
+  return (
+    (clampedScore - CHECKIN_CONDITION_SCORE_MIN) /
+    (CHECKIN_CONDITION_SCORE_MAX - CHECKIN_CONDITION_SCORE_MIN)
+  );
+}
+
+function isSolidSegment(fromHasData: boolean, toHasData: boolean): boolean {
+  return fromHasData && toHasData;
+}
+
+function ChartIntensityLabel({ x, y, svgWidth, avgConditionScore }: ChartIntensityLabelProps) {
+  const level: IntensityLabelLevel = getIntensityLabelLevel(avgConditionScore);
+  const colors = IntensityLabelSvgColors[level];
+  const {
+    intensityLabelWidth,
+    intensityLabelHeight,
+    intensityLabelFontSize,
+    intensityLabelBorderWidth,
+  } = EmotionConstellationLayout;
+
+  const { rectX, rectY, textX, textY } = getIntensityLabelLayout(x, y, svgWidth);
+
+  return (
+    <G>
+      <Rect
+        x={rectX}
+        y={rectY}
+        width={intensityLabelWidth}
+        height={intensityLabelHeight}
+        rx={intensityLabelHeight / 2}
+        fill={colors.bg}
+        stroke={colors.border}
+        strokeWidth={intensityLabelBorderWidth}
+      />
+      <SvgText
+        x={textX}
+        y={textY}
+        fill={colors.text}
+        fontSize={intensityLabelFontSize}
+        textAnchor="middle"
+        alignmentBaseline="central"
+      >
+        {formatIntensityLabelValue(avgConditionScore)}
+      </SvgText>
+    </G>
+  );
 }
 
 export function EmotionConstellationChart({
-  values,
-  labels,
-  activeIndex = values.length - 1,
+  points,
+  activeIndex = points.length - 1,
+  showIntensityLabels = false,
 }: EmotionConstellationChartProps) {
   const [width, setWidth] = useState(0);
 
-  const normalized = normalizeValues(values);
-  const height = EmotionConstellationLayout.chartHeight;
-  const paddingX = EmotionConstellationLayout.chartPaddingX;
-  const paddingY = EmotionConstellationLayout.chartPaddingY;
+  const {
+    chartHeight,
+    chartPaddingX,
+    chartPaddingY,
+    intensityLabelAreaHeight,
+    strokeWidth,
+    dotRadius,
+    activeDotRadius,
+    emptyStrokeDasharray,
+  } = EmotionConstellationLayout;
 
-  const innerWidth = Math.max(0, width - paddingX * 2);
-  const innerHeight = Math.max(0, height - paddingY * 2);
-  const stepX = values.length > 1 ? innerWidth / (values.length - 1) : 0;
+  const labelAreaHeight = showIntensityLabels ? intensityLabelAreaHeight : 0;
+  const svgHeight = labelAreaHeight + chartHeight;
+  const chartTop = labelAreaHeight;
 
-  const points = normalized.map((v, i) => {
-    const x = paddingX + stepX * i;
-    const y = paddingY + innerHeight * (1 - v);
-    return { x, y };
+  const normalized = points.map((point) => conditionScoreToNormalized(point.avg_condition_score));
+  const innerWidth = Math.max(0, width - chartPaddingX * 2);
+  const innerHeight = Math.max(0, chartHeight - chartPaddingY * 2);
+  const stepX = points.length > 1 ? innerWidth / (points.length - 1) : 0;
+
+  const chartPoints: ChartPoint[] = normalized.map((value, index) => {
+    const x = chartPaddingX + stepX * index;
+    const y = chartTop + chartPaddingY + innerHeight * (1 - value);
+    return { x, y, hasData: hasPointData(points[index].avg_condition_score) };
   });
 
-  const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
-
   return (
-    <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} className="w-full">
-      <View className={EmotionConstellationClasses.chartContainer}>
+    <View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      className={EmotionConstellationClasses.fullWidth}
+    >
+      <View
+        className={
+          showIntensityLabels
+            ? EmotionConstellationClasses.chartContainerWithLabels
+            : EmotionConstellationClasses.chartContainer
+        }
+      >
         {width > 0 ? (
-          <Svg width={width} height={height}>
-            <Polyline
-              points={polylinePoints}
-              fill="none"
-              stroke={FgColors.default}
-              strokeWidth={EmotionConstellationLayout.strokeWidth}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            {points.map((p, i) => (
-              <Circle
-                key={`${i}-${p.x}-${p.y}`}
-                cx={p.x}
-                cy={p.y}
-                r={
-                  i === activeIndex
-                    ? EmotionConstellationLayout.activeDotRadius
-                    : EmotionConstellationLayout.dotRadius
-                }
-                fill={FgColors.default}
-              />
-            ))}
+          <Svg width={width} height={svgHeight}>
+            {showIntensityLabels
+              ? chartPoints.map((point, index) => {
+                  const avgConditionScore = points[index].avg_condition_score;
+                  if (avgConditionScore == null) {
+                    return null;
+                  }
+
+                  return (
+                    <ChartIntensityLabel
+                      key={`intensity-label-${points[index].label}`}
+                      x={point.x}
+                      y={point.y}
+                      svgWidth={width}
+                      avgConditionScore={avgConditionScore}
+                    />
+                  );
+                })
+              : null}
+
+            {chartPoints.slice(0, -1).map((fromPoint, index) => {
+              const toPoint = chartPoints[index + 1];
+              const solid = isSolidSegment(fromPoint.hasData, toPoint.hasData);
+
+              return (
+                <Polyline
+                  key={`segment-${index}`}
+                  points={`${fromPoint.x},${fromPoint.y} ${toPoint.x},${toPoint.y}`}
+                  fill="none"
+                  stroke={solid ? ConstellationChartColors.data : ConstellationChartColors.empty}
+                  strokeWidth={strokeWidth}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeDasharray={solid ? undefined : emptyStrokeDasharray}
+                />
+              );
+            })}
+
+            {chartPoints.map((point, index) => {
+              const radius = index === activeIndex ? activeDotRadius : dotRadius;
+
+              if (point.hasData) {
+                return (
+                  <Circle
+                    key={`dot-${points[index].label}`}
+                    cx={point.x}
+                    cy={point.y}
+                    r={radius}
+                    fill={ConstellationChartColors.data}
+                  />
+                );
+              }
+
+              return (
+                <Circle
+                  key={`dot-${points[index].label}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r={radius}
+                  fill={ConstellationChartColors.emptyDot}
+                />
+              );
+            })}
           </Svg>
         ) : null}
       </View>
 
       <View className={EmotionConstellationClasses.weekLabelsRow}>
-        {labels.map((label, idx) => (
+        {points.map((point) => (
           <ThemedText
-            key={`${label}-${idx}`}
+            key={point.label}
             type="small"
             className={EmotionConstellationTextClasses.weekday}
           >
-            {label}
+            {point.label}
           </ThemedText>
         ))}
       </View>
