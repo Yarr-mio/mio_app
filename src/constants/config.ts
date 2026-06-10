@@ -23,7 +23,10 @@ export const API_BASE_URL = resolveApiBaseUrl();
 export const AUTH_CONSENT_VERSION = '1.0';
 
 /** 카카오 네이티브 앱 키 (Kakao SDK 초기화 및 config plugin용) */
-export const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '';
+export const KAKAO_NATIVE_APP_KEY =
+  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ??
+  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ??
+  '';
 
 /**
  * HTTP 상태 코드 상수
