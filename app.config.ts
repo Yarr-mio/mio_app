@@ -21,7 +21,7 @@ const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: APP_NAME,
-  slug: 'mio_app',
+  slug: 'mio',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "mio_app",
-    "slug": "mio_app",
+    "slug": "mio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -64,8 +64,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": "e17848d5-6cb3-4765-af10-b068f2ff80c9"
-      }
-    }
+        "projectId": "f2a19c23-76cc-4936-b370-0c160ceb33e9"
+      },
+      "router": {}
+    },
+    "owner": "mio_yarr"
   }
 }
