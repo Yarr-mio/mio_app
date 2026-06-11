@@ -56,12 +56,13 @@ export async function postAuthLogin(
     };
   }
 
-  console.log('[AUTH] login request:', {
-    provider: body.provider,
-    accessToken: body.accessToken,
-    idToken: body.idToken,
-    deviceId: body.deviceId,
-  });
+  if (__DEV__) {
+    console.log('[AUTH] login request:', {
+      provider: body.provider,
+      hasAccessToken: Boolean(body.accessToken),
+      hasIdToken: Boolean(body.idToken),
+    });
+  }
   const { data } = await apiClient.post<AuthLoginResponse>('/v1/auth/login', body);
   return data;
 }
@@ -95,7 +96,9 @@ export async function postAuthSignupConsent(
     };
   }
 
-  console.log('[AUTH] consent request:', { consents: body.consents });
+  if (__DEV__) {
+    console.log('[AUTH] consent request: sent');
+  }
   const { data } = await apiClient.post<AuthSignupConsentResponse>('/v1/auth/signup/consent', body);
   return data;
 }
@@ -118,11 +121,9 @@ export async function postAuthSignupProfile(
     };
   }
 
-  console.log('[AUTH] profile request:', {
-    nickname: body.nickname,
-    ageRange: body.ageRange,
-    gender: body.gender,
-  });
+  if (__DEV__) {
+    console.log('[AUTH] profile request:', { sent: 'profile fields' });
+  }
   const { data } = await apiClient.post<AuthSignupProfileResponse>('/v1/auth/signup/profile', body);
   return data;
 }
@@ -142,7 +143,9 @@ export async function postAuthSignupComplete(): Promise<AuthSignupCompleteRespon
     };
   }
 
-  console.log('[AUTH] signup complete request: 호출됨');
+  if (__DEV__) {
+    console.log('[AUTH] signup complete request: 호출됨');
+  }
   const { data } = await apiClient.post<AuthSignupCompleteResponse>('/v1/auth/signup/complete');
   return data;
 }

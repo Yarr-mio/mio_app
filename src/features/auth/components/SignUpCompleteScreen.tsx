@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Alert, ScrollView, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -66,7 +67,20 @@ export default function SignUpCompleteScreen() {
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
 
-  const { isReady, isPending } = useSignupCompleteOnMount(router);
+  const { isReady, isPending, errorMessage, retry } = useSignupCompleteOnMount(router);
+  const retryRef = useRef(retry);
+  retryRef.current = retry;
+
+  useEffect(() => {
+    if (!errorMessage) {
+      return;
+    }
+
+    Alert.alert('회원가입 완료', errorMessage, [
+      { text: '확인', style: 'cancel' },
+      { text: '다시 시도', onPress: () => retryRef.current() },
+    ]);
+  }, [errorMessage]);
 
   const handleStartPartnerMatching = () => {
     router.push(AUTH_ROUTES.onboardingStep1);

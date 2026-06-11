@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import type { Router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 
 import {
   getAuthNicknameDuplicateCheck,
@@ -87,12 +86,21 @@ export function useSignupComplete() {
 interface UseSignupCompleteOnMountResult {
   isReady: boolean;
   isPending: boolean;
+  errorMessage: string | null;
+  retry: () => void;
 }
 
 // 회원가입 완료 화면 진입 시 complete API 호출
 export function useSignupCompleteOnMount(router: Router): UseSignupCompleteOnMountResult {
   const { mutateAsync, isPending } = useSignupComplete();
   const [isReady, setIsReady] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const retry = () => {
+    setErrorMessage(null);
+    setRetryCount((count) => count + 1);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -107,6 +115,7 @@ export function useSignupCompleteOnMount(router: Router): UseSignupCompleteOnMou
 
         if (response.data.signup_step === 'COMPLETED' && response.data.status === 'ACTIVE') {
           setIsReady(true);
+          setErrorMessage(null);
           return;
         }
 
@@ -128,7 +137,7 @@ export function useSignupCompleteOnMount(router: Router): UseSignupCompleteOnMou
           error instanceof Error
             ? error.message
             : '회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
-        Alert.alert('회원가입 완료', message);
+        setErrorMessage(message);
       }
     };
 
@@ -137,11 +146,13 @@ export function useSignupCompleteOnMount(router: Router): UseSignupCompleteOnMou
     return () => {
       cancelled = true;
     };
-  }, [router, mutateAsync]);
+  }, [router, mutateAsync, retryCount]);
 
   return {
     isReady,
     isPending,
+    errorMessage,
+    retry,
   };
 }
 

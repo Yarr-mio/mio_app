@@ -44,18 +44,6 @@
             "./assets/fonts/NotoSansKR-Thin.ttf"
           ]
         }
-      ],
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#0D0D1A",
-          "image": "./assets/images/background/splash_background.png",
-          "resizeMode": "cover",
-          "android": {
-            "image": "./assets/images/background/splash_background.png",
-            "resizeMode": "cover"
-          }
-        }
       ]
     ],
     "experiments": {
