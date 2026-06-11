@@ -222,6 +222,23 @@ export const EditNicknameLayout = {
   clearIconSize: 14,
 } as const;
 
+/** 회원가입 프로필 설정 화면 */
+export const SignupInfoLayout = {
+  nicknameMaxLength: 13,
+  nicknameMinLength: 2,
+} as const;
+
+/** 닉네임 중복 확인 버튼 — SignUpInfoScreen (기존 tailwind 색상 토큰 재사용) */
+export const NicknameDuplicateCheckClasses = {
+  default: 'rounded-lg border border-line bg-surface px-3 py-2',
+  available: 'rounded-lg border border-emotion-positive-border bg-emotion-positive-bg px-3 py-2',
+  unavailable: 'rounded-lg border border-intensity-low-border bg-intensity-low-bg px-3 py-2',
+  defaultText: 'text-label',
+  availableText: 'text-todo-completed',
+  unavailableText: 'text-intensity-low-text',
+  errorHint: 'text-intensity-low-text/80',
+} as const;
+
 /** NativeWind className — EditNicknameLayout.clearButtonSize(24)와 함께 유지 */
 export const EditNicknameClasses = {
   clearButton:

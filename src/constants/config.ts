@@ -34,6 +34,8 @@ export const KAKAO_NATIVE_APP_KEY =
  */
 export const HTTP_STATUS = {
   UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  CONFLICT: 409,
 } as const;
 
 /** 스플래시 화면이 표시되는 기본 시간(ms)*/
