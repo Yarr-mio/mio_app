@@ -23,8 +23,10 @@ function createMockMeta(): ApiMeta {
   return { trace_id: `mock_${Date.now()}` };
 }
 
-function mockSignupStep(): SignupStep {
-  return 'SOCIAL_AUTHENTICATED';
+let mockSignupStepState: SignupStep = 'SOCIAL_AUTHENTICATED';
+
+function setMockSignupStep(step: SignupStep): void {
+  mockSignupStepState = step;
 }
 
 export async function postAuthLogin(
@@ -38,7 +40,7 @@ export async function postAuthLogin(
    *
    */
   if (USE_MOCK) {
-    const step = mockSignupStep();
+    setMockSignupStep('SOCIAL_AUTHENTICATED');
     return {
       data: {
         access_token: 'eyJhbGci.mock_access',
@@ -46,7 +48,7 @@ export async function postAuthLogin(
         expires_in: 900,
         is_new_user: true,
         is_new_device: true,
-        signup_step: step,
+        signup_step: mockSignupStepState,
         onboarding_step: 0,
         user: null,
       },
@@ -54,6 +56,12 @@ export async function postAuthLogin(
     };
   }
 
+  console.log('[AUTH] login request:', {
+    provider: body.provider,
+    accessToken: body.accessToken,
+    idToken: body.idToken,
+    deviceId: body.deviceId,
+  });
   const { data } = await apiClient.post<AuthLoginResponse>('/v1/auth/login', body);
   return data;
 }
@@ -64,7 +72,7 @@ export async function postAuthLogin(
 export async function getAuthSignupStatus(): Promise<AuthSignupStatusResponse> {
   if (USE_MOCK) {
     return {
-      data: { signup_step: 'SOCIAL_AUTHENTICATED', onboarding_step: 0 },
+      data: { signup_step: mockSignupStepState, onboarding_step: 0 },
       meta: createMockMeta(),
     };
   }
@@ -80,12 +88,14 @@ export async function postAuthSignupConsent(
   body: AuthSignupConsentRequest
 ): Promise<AuthSignupConsentResponse> {
   if (USE_MOCK) {
+    setMockSignupStep('CONSENT_AGREED');
     return {
       data: { signup_step: 'CONSENT_AGREED' },
       meta: createMockMeta(),
     };
   }
 
+  console.log('[AUTH] consent request:', { consents: body.consents });
   const { data } = await apiClient.post<AuthSignupConsentResponse>('/v1/auth/signup/consent', body);
   return data;
 }
@@ -97,6 +107,7 @@ export async function postAuthSignupProfile(
   body: AuthSignupProfileRequest
 ): Promise<AuthSignupProfileResponse> {
   if (USE_MOCK) {
+    setMockSignupStep('PROFILE_COMPLETED');
     return {
       data: {
         signup_step: 'PROFILE_COMPLETED',
@@ -107,6 +118,11 @@ export async function postAuthSignupProfile(
     };
   }
 
+  console.log('[AUTH] profile request:', {
+    nickname: body.nickname,
+    ageRange: body.ageRange,
+    gender: body.gender,
+  });
   const { data } = await apiClient.post<AuthSignupProfileResponse>('/v1/auth/signup/profile', body);
   return data;
 }
@@ -116,6 +132,7 @@ export async function postAuthSignupProfile(
  */
 export async function postAuthSignupComplete(): Promise<AuthSignupCompleteResponse> {
   if (USE_MOCK) {
+    setMockSignupStep('COMPLETED');
     return {
       data: {
         signup_step: 'COMPLETED',
@@ -125,6 +142,7 @@ export async function postAuthSignupComplete(): Promise<AuthSignupCompleteRespon
     };
   }
 
+  console.log('[AUTH] signup complete request: 호출됨');
   const { data } = await apiClient.post<AuthSignupCompleteResponse>('/v1/auth/signup/complete');
   return data;
 }
@@ -183,6 +201,7 @@ export async function postAuthLogout(
   const body: AuthLogoutRequest = { deviceId };
 
   if (USE_MOCK) {
+    setMockSignupStep('SOCIAL_AUTHENTICATED');
     return { data: { success: true }, meta: createMockMeta() };
   }
 
