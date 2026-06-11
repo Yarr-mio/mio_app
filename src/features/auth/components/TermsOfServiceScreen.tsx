@@ -8,11 +8,14 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { HTTP_STATUS } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { FgColors, ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import { useSignupConsent } from '@/features/auth/hooks/useAuth';
 import { buildSignupConsents, type TermConsentId } from '@/features/auth/utils/buildSignupConsents';
+import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
+import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_STEP_COUNT = 4;
@@ -146,11 +149,24 @@ export default function TermsOfServiceScreen() {
     }
 
     try {
-      await signupConsent.mutateAsync({
+      const response = await signupConsent.mutateAsync({
         consents: buildSignupConsents(checkedState),
       });
+
+      if (response.data.signup_step !== 'CONSENT_AGREED') {
+        throw new Error('약관 동의에 실패했습니다. 다시 시도해 주세요.');
+      }
+
       router.push(AUTH_ROUTES.signupInfo);
     } catch (error) {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
+        await handleSignupStepInvalid(router);
+        return;
+      }
+
       const message =
         error instanceof Error ? error.message : '약관 동의에 실패했습니다. 다시 시도해 주세요.';
       Alert.alert('약관 동의', message);

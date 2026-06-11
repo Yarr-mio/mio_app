@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { useSignupCompleteOnMount } from '@/features/auth/hooks/useAuth';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
@@ -65,6 +66,8 @@ export default function SignUpCompleteScreen() {
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
 
+  const { isReady, isPending } = useSignupCompleteOnMount(router);
+
   const handleStartPartnerMatching = () => {
     router.push(AUTH_ROUTES.onboardingStep1);
   };
@@ -112,7 +115,9 @@ export default function SignUpCompleteScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button onPress={handleStartPartnerMatching}>파트너 매칭 시작</Button>
+          <Button disabled={!isReady || isPending} onPress={handleStartPartnerMatching}>
+            파트너 매칭 시작
+          </Button>
         </View>
       </ScreenContainer>
     </View>
