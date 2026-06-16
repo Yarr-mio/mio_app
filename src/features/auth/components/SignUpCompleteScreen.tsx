@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Alert, ScrollView, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import { useSignupCompleteOnMount } from '@/features/auth/hooks/useAuth';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
@@ -65,6 +67,21 @@ export default function SignUpCompleteScreen() {
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
 
+  const { isReady, isPending, errorMessage, retry } = useSignupCompleteOnMount(router);
+  const retryRef = useRef(retry);
+  retryRef.current = retry;
+
+  useEffect(() => {
+    if (!errorMessage) {
+      return;
+    }
+
+    Alert.alert('회원가입 완료', errorMessage, [
+      { text: '확인', style: 'cancel' },
+      { text: '다시 시도', onPress: () => retryRef.current() },
+    ]);
+  }, [errorMessage]);
+
   const handleStartPartnerMatching = () => {
     router.push(AUTH_ROUTES.onboardingStep1);
   };
@@ -112,7 +129,9 @@ export default function SignUpCompleteScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button onPress={handleStartPartnerMatching}>파트너 매칭 시작</Button>
+          <Button disabled={!isReady || isPending} onPress={handleStartPartnerMatching}>
+            파트너 매칭 시작
+          </Button>
         </View>
       </ScreenContainer>
     </View>

@@ -7,11 +7,23 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { HTTP_STATUS } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
-import { InputColors, ScreenSpacing } from '@/constants/theme';
+import {
+  InputColors,
+  NicknameDuplicateCheckClasses,
+  ScreenSpacing,
+  SignupInfoLayout,
+} from '@/constants/theme';
+import {
+  NicknameDuplicateCheckButton,
+  type NicknameDuplicateCheckStatus,
+} from '@/features/auth/components/NicknameDuplicateCheckButton';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useSignupProfile } from '@/features/auth/hooks/useAuth';
+import { useNicknameDuplicateCheck, useSignupProfile } from '@/features/auth/hooks/useAuth';
+import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
 import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
+import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import { useUserStore } from '@/store/userStore';
 import type { UserAgeRange, UserGender } from '@/types/user';
 import { cn } from '@/utils/cn';
@@ -20,8 +32,11 @@ const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_pr
 
 const SIGNUP_STEP_COUNT = 4;
 const SIGNUP_CURRENT_STEP = 3;
-const NICKNAME_MAX_LENGTH = 10;
 const PROFILE_IMAGE_SIZE = 107;
+const NICKNAME_MAX_LENGTH = SignupInfoLayout.nicknameMaxLength;
+const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
+const NICKNAME_HINT_DEFAULT = `닉네임은 ${NICKNAME_MIN_LENGTH}자 이상, 최대 ${NICKNAME_MAX_LENGTH}자까지 가능해요`;
+const NICKNAME_HINT_DUPLICATE = '중복된 닉네임입니다';
 
 type GenderOption = UserGender | 'none';
 type AgeOption = UserAgeRange;
@@ -84,15 +99,57 @@ function SelectableField({ label, children }: SelectableFieldProps) {
 export default function SignUpInfoScreen() {
   const router = useRouter();
   const signupProfile = useSignupProfile();
+  const nicknameDuplicateCheck = useNicknameDuplicateCheck();
   const { setSignupInfo } = useUserStore();
   const [nickname, setNickname] = useState('');
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [gender, setGender] = useState<GenderOption | null>(null);
   const [age, setAge] = useState<AgeOption | null>(null);
+  const [duplicateCheckStatus, setDuplicateCheckStatus] =
+    useState<NicknameDuplicateCheckStatus>('idle');
 
   const trimmedNickname = nickname.trim();
-  const canContinue = trimmedNickname.length > 0;
+  const isNicknameValid =
+    trimmedNickname.length >= NICKNAME_MIN_LENGTH && trimmedNickname.length <= NICKNAME_MAX_LENGTH;
+  const canContinue = isNicknameValid && duplicateCheckStatus === 'available';
   const isNicknameActive = isNicknameFocused || nickname.length > 0;
+  const isDuplicateCheckDisabled =
+    !isNicknameValid || nicknameDuplicateCheck.isPending || duplicateCheckStatus !== 'idle';
+
+  const handleNicknameChange = (text: string) => {
+    setNickname(text.slice(0, NICKNAME_MAX_LENGTH));
+    setDuplicateCheckStatus('idle');
+  };
+
+  const handleDuplicateCheck = async () => {
+    if (!isNicknameValid || nicknameDuplicateCheck.isPending) {
+      return;
+    }
+
+    try {
+      const response = await nicknameDuplicateCheck.mutateAsync(trimmedNickname);
+      setDuplicateCheckStatus(response.data.duplicate ? 'unavailable' : 'available');
+    } catch (error) {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
+        await handleSignupStepInvalid(router);
+        return;
+      }
+
+      if (status === HTTP_STATUS.CONFLICT) {
+        setDuplicateCheckStatus('unavailable');
+        return;
+      }
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : '닉네임 중복 확인에 실패했습니다. 다시 시도해 주세요.';
+      Alert.alert('닉네임 확인', message);
+    }
+  };
 
   const handleContinue = async () => {
     if (!canContinue) {
@@ -102,13 +159,17 @@ export default function SignUpInfoScreen() {
     const normalizedGender = gender === 'none' ? null : gender;
 
     try {
-      await signupProfile.mutateAsync(
+      const response = await signupProfile.mutateAsync(
         mapSignupProfileInput({
           nickname: trimmedNickname,
           gender: normalizedGender,
           ageRange: age,
         })
       );
+
+      if (response.data.signup_step !== 'PROFILE_COMPLETED') {
+        throw new Error('프로필 저장에 실패했습니다. 다시 시도해 주세요.');
+      }
 
       setSignupInfo({
         nickname: trimmedNickname,
@@ -121,6 +182,19 @@ export default function SignUpInfoScreen() {
         params: { nickname: trimmedNickname },
       });
     } catch (error) {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
+        await handleSignupStepInvalid(router);
+        return;
+      }
+
+      if (status === HTTP_STATUS.CONFLICT) {
+        setDuplicateCheckStatus('unavailable');
+        return;
+      }
+
       const message =
         error instanceof Error ? error.message : '프로필 저장에 실패했습니다. 다시 시도해 주세요.';
       Alert.alert('프로필 설정', message);
@@ -165,7 +239,7 @@ export default function SignUpInfoScreen() {
               </ThemedText>
               <View
                 className={cn(
-                  'h-16 justify-center rounded-2xl border px-4',
+                  'h-16 flex-row items-center rounded-2xl border px-4',
                   isNicknameActive
                     ? 'border-accent/50 bg-accent/10'
                     : 'border-accent/10 bg-accent/5'
@@ -173,17 +247,33 @@ export default function SignUpInfoScreen() {
               >
                 <TextInput
                   value={nickname}
-                  onChangeText={(text) => setNickname(text.slice(0, NICKNAME_MAX_LENGTH))}
+                  onChangeText={handleNicknameChange}
                   placeholder="닉네임을 입력해 주세요"
                   placeholderTextColor={InputColors.placeholder}
                   onFocus={() => setIsNicknameFocused(true)}
                   onBlur={() => setIsNicknameFocused(false)}
-                  className="text-base font-medium text-fg"
+                  maxLength={NICKNAME_MAX_LENGTH}
+                  className="flex-1 text-base font-medium text-fg"
                   accessibilityLabel="닉네임"
                 />
+                <NicknameDuplicateCheckButton
+                  status={duplicateCheckStatus}
+                  disabled={isDuplicateCheckDisabled}
+                  onPress={handleDuplicateCheck}
+                />
               </View>
-              <ThemedText type="smallRegular" className="ml-2 text-label">
-                닉네임 설정은 최대 {NICKNAME_MAX_LENGTH}자까지 가능해요
+              <ThemedText
+                type="smallRegular"
+                className={cn(
+                  'ml-2',
+                  duplicateCheckStatus === 'unavailable'
+                    ? NicknameDuplicateCheckClasses.errorHint
+                    : 'text-label'
+                )}
+              >
+                {duplicateCheckStatus === 'unavailable'
+                  ? NICKNAME_HINT_DUPLICATE
+                  : NICKNAME_HINT_DEFAULT}
               </ThemedText>
             </View>
 

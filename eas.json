@@ -7,21 +7,18 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "development",
-        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115"
+        "APP_VARIANT": "development"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "preview",
-        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV": "4f295723556577374b0b96ba53f92115"
+        "APP_VARIANT": "preview"
       }
     },
     "production": {
       "env": {
-        "APP_VARIANT": "production",
-        "EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY": "050d798b600de08a88ccd0d3914c8b11"
+        "APP_VARIANT": "production"
       }
     }
   }

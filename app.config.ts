@@ -30,6 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     icon: './assets/expo.icon',
     bundleIdentifier: BUNDLE_IDENTIFIER,
+    usesAppleSignIn: true,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
@@ -86,6 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
+    'expo-apple-authentication',
     ...(KAKAO_NATIVE_APP_KEY
       ? [
           [

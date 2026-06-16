@@ -13,7 +13,7 @@ const TERM_TO_CONSENT_TYPE: Record<TermConsentId, ConsentType> = {
 export function buildSignupConsents(checkedState: Record<TermConsentId, boolean>): SignupConsent[] {
   return (Object.keys(TERM_TO_CONSENT_TYPE) as TermConsentId[]).map((id) => ({
     type: TERM_TO_CONSENT_TYPE[id],
-    agreed: checkedState[id],
+    agreed: id === 'marketing' ? checkedState[id] : true,
     version: AUTH_CONSENT_VERSION,
   }));
 }
