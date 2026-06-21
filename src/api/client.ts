@@ -48,12 +48,13 @@ function getAppVersion(): string {
 }
 
 /**
- * 백엔드 에러코드를 AxiosError에서 추출한다.
+ * 백엔드 에러코드를 AxiosError에서 추출
  *
  * 명세가 완전히 Swagger로 확정된 상태가 아니라서,
- * 아래와 같은 형태들을 유연하게 지원하도록 방어적으로 구현했다.
+ * 아래와 같은 형태들을 유연하게 지원하도록 방어적으로 구현
  *
  * - { error_code: "AUTH_TOKEN_EXPIRED" }
+ * - { code: "AUTH_TOKEN_EXPIRED" }
  * - { error: { code: "AUTH_TOKEN_EXPIRED" } }
  */
 function readErrorCode(error: AxiosError): string | null {
@@ -63,6 +64,9 @@ function readErrorCode(error: AxiosError): string | null {
 
   const direct = obj['error_code'];
   if (typeof direct === 'string') return direct;
+
+  const topLevelCode = obj['code'];
+  if (typeof topLevelCode === 'string') return topLevelCode;
 
   const nested = obj['error'];
   if (nested && typeof nested === 'object') {
@@ -193,7 +197,7 @@ async function clearLocalAuthAndRedirect(): Promise<void> {
 /**
  * Response interceptor:
  * - 401 + AUTH_TOKEN_EXPIRED → refresh → 원 요청 1회 재시도
- * - 401 + REFRESH_TOKEN_INVALID → 강제 로그아웃
+ * - 401 + REFRESH_TOKEN_INVALID: 강제 로그아웃 (_skipAuthRefresh 요청 포함)
  *
  * 동시성:
  * - 여러 요청이 동시에 401을 맞아도 refresh는 1번만 수행하도록 `refreshPromise`로 병합한다.
@@ -211,13 +215,12 @@ apiClient.interceptors.response.use(
       throw error;
     }
 
-    if (originalRequest._skipAuthRefresh) {
+    if (errorCode === 'REFRESH_TOKEN_INVALID') {
+      await clearLocalAuthAndRedirect();
       throw error;
     }
 
-    // 토큰 전부 삭제 + 로그인 화면으로 이동
-    if (errorCode === 'REFRESH_TOKEN_INVALID') {
-      await clearLocalAuthAndRedirect();
+    if (originalRequest._skipAuthRefresh) {
       throw error;
     }
 
