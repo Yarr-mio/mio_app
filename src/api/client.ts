@@ -73,6 +73,40 @@ function readErrorCode(error: AxiosError): string | null {
 }
 
 /**
+ * dev 환경에서 API 에러 응답 바디를 구조화해 로깅한다.
+ *
+ * 글로벌 에러 포맷: { error: { code, message, details, trace_id } }
+ */
+function logApiErrorResponse(error: AxiosError): void {
+  if (!__DEV__) return;
+
+  const status = error.response?.status;
+  const data = error.response?.data;
+  const url = error.config?.url;
+
+  if (!isRecord(data)) {
+    console.error('[API] error response:', { status, url, data });
+    return;
+  }
+
+  const nestedError = data.error;
+  if (isRecord(nestedError)) {
+    console.error('[API] error response:', {
+      status,
+      url,
+      code: nestedError.code,
+      message: nestedError.message,
+      details: nestedError.details,
+      trace_id: nestedError.trace_id,
+      raw: data,
+    });
+    return;
+  }
+
+  console.error('[API] error response:', { status, url, raw: data });
+}
+
+/**
  * Authorization 주입.
  *
  * - accessToken이 있고, 요청에 Authorization이 직접 지정되지 않았다면 자동으로 Bearer 토큰 주입.
@@ -167,6 +201,8 @@ async function clearLocalAuthAndRedirect(): Promise<void> {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    logApiErrorResponse(error);
+
     const originalRequest = error.config;
     const status = error.response?.status;
     const errorCode = readErrorCode(error);

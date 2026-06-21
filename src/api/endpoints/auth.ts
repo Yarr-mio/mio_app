@@ -56,14 +56,16 @@ export async function postAuthLogin(
     };
   }
 
-  if (__DEV__) {
-    console.log('[AUTH] login request:', {
-      provider: body.provider,
-      hasAccessToken: Boolean(body.accessToken),
-      hasIdToken: Boolean(body.idToken),
-    });
-  }
-  const { data } = await apiClient.post<AuthLoginResponse>('/v1/auth/login', body);
+  const apiBody = {
+    provider: body.provider,
+    deviceId: body.deviceId,
+    ...(body.idToken ? { idToken: body.idToken } : {}),
+    ...(body.accessToken ? { accessToken: body.accessToken } : {}),
+  };
+
+  const { data } = await apiClient.post<AuthLoginResponse>('/v1/auth/login', apiBody, {
+    _skipAuthInjection: true,
+  });
   return data;
 }
 
@@ -97,9 +99,12 @@ export async function postAuthSignupConsent(
   }
 
   if (__DEV__) {
-    console.log('[AUTH] consent request: sent');
+    console.log('[AUTH] consent request body:', JSON.stringify(body));
   }
   const { data } = await apiClient.post<AuthSignupConsentResponse>('/v1/auth/signup/consent', body);
+  if (__DEV__) {
+    console.log('[AUTH] consent response:', JSON.stringify(data));
+  }
   return data;
 }
 
@@ -122,9 +127,12 @@ export async function postAuthSignupProfile(
   }
 
   if (__DEV__) {
-    console.log('[AUTH] profile request:', { sent: 'profile fields' });
+    console.log('[AUTH] profile request body:', JSON.stringify(body));
   }
   const { data } = await apiClient.post<AuthSignupProfileResponse>('/v1/auth/signup/profile', body);
+  if (__DEV__) {
+    console.log('[AUTH] profile response:', JSON.stringify(data));
+  }
   return data;
 }
 
@@ -143,10 +151,10 @@ export async function postAuthSignupComplete(): Promise<AuthSignupCompleteRespon
     };
   }
 
-  if (__DEV__) {
-    console.log('[AUTH] signup complete request: 호출됨');
-  }
   const { data } = await apiClient.post<AuthSignupCompleteResponse>('/v1/auth/signup/complete');
+  if (__DEV__) {
+    console.log('[AUTH] signup complete response:', JSON.stringify(data));
+  }
   return data;
 }
 
@@ -163,10 +171,16 @@ export async function getAuthNicknameDuplicateCheck(
     };
   }
 
+  if (__DEV__) {
+    console.log('[AUTH] nickname duplicate check:', nickname);
+  }
   const { data } = await apiClient.get<AuthNicknameDuplicateCheckResponse>(
     '/v1/auth/nickname/duplicate-check',
     { params: { nickname } }
   );
+  if (__DEV__) {
+    console.log('[AUTH] nickname duplicate response:', JSON.stringify(data));
+  }
   return data;
 }
 
