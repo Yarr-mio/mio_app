@@ -1,16 +1,18 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { HTTP_STATUS } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { ScreenSpacing } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useSignupCompleteOnMount } from '@/features/auth/hooks/useAuth';
+import { useSignupComplete, useSignupStatus } from '@/features/auth/hooks/useAuth';
+import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
+import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
@@ -66,24 +68,45 @@ export default function SignUpCompleteScreen() {
   const router = useRouter();
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
+  const signupComplete = useSignupComplete();
+  const signupStatus = useSignupStatus();
+  const isPending = signupComplete.isPending || signupStatus.isPending;
 
-  const { isReady, isPending, errorMessage, retry } = useSignupCompleteOnMount(router);
-  const retryRef = useRef(retry);
-  retryRef.current = retry;
-
-  useEffect(() => {
-    if (!errorMessage) {
+  const handleStartPartnerMatching = async () => {
+    if (isPending) {
       return;
     }
 
-    Alert.alert('회원가입 완료', errorMessage, [
-      { text: '확인', style: 'cancel' },
-      { text: '다시 시도', onPress: () => retryRef.current() },
-    ]);
-  }, [errorMessage]);
+    try {
+      const statusResponse = await signupStatus.mutateAsync();
 
-  const handleStartPartnerMatching = () => {
-    router.push(AUTH_ROUTES.onboardingStep1);
+      if (statusResponse.data.signup_step === 'ONBOARDING_COMPLETED') {
+        const response = await signupComplete.mutateAsync();
+
+        if (response.data.signup_step !== 'COMPLETED' || response.data.status !== 'ACTIVE') {
+          throw new Error('회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.');
+        }
+
+        router.replace(AUTH_ROUTES.home);
+        return;
+      }
+
+      router.push(AUTH_ROUTES.onboardingStep1);
+    } catch (error) {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
+        await handleSignupStepInvalid(router);
+        return;
+      }
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : '회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
+      Alert.alert('회원가입 완료', message);
+    }
   };
 
   return (
@@ -129,7 +152,7 @@ export default function SignUpCompleteScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button disabled={!isReady || isPending} onPress={handleStartPartnerMatching}>
+          <Button disabled={isPending} onPress={handleStartPartnerMatching}>
             파트너 매칭 시작
           </Button>
         </View>
