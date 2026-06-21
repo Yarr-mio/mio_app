@@ -29,18 +29,20 @@ interface TermItem {
 }
 
 const TERM_ITEMS: TermItem[] = [
+  { id: 'age', label: '만 14세 이상 확인', required: true },
   { id: 'service', label: '서비스 이용약관', required: true },
   { id: 'privacy', label: '개인정보 처리방침', required: true },
-  { id: 'age', label: '만 14세 이상 확인', required: true },
+  { id: 'sensitive', label: '민감정보 수집 및 이용', required: true },
   { id: 'marketing', label: '마케팅 정보 수신 동의', required: false },
 ];
 
 const REQUIRED_TERM_IDS = TERM_ITEMS.filter((item) => item.required).map((item) => item.id);
 
 const INITIAL_CHECKED_STATE: Record<TermConsentId, boolean> = {
+  age: false,
   service: false,
   privacy: false,
-  age: false,
+  sensitive: false,
   marketing: false,
 };
 
@@ -136,9 +138,10 @@ export default function TermsOfServiceScreen() {
   const handleToggleAgreeAll = () => {
     const nextValue = !isAgreeAllChecked;
     setCheckedState({
+      age: nextValue,
       service: nextValue,
       privacy: nextValue,
-      age: nextValue,
+      sensitive: nextValue,
       marketing: nextValue,
     });
   };
