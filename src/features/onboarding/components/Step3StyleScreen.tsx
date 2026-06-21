@@ -13,13 +13,15 @@ import {
   PressableConfig,
   ScreenSpacing,
 } from '@/constants/theme';
+import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingStep3 } from '@/features/onboarding/hooks/useOnboarding';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 
 const ONBOARDING_CURRENT_STEP = 3;
 
@@ -76,10 +78,13 @@ function StyleOptionCard({
 
 export function Step3StyleScreen() {
   const router = useRouter();
-  const { preferred_style, setPreferredStyle, setCharacterId } = useOnboardingStore();
+  const { preferred_style, setPreferredStyle, setCharacterId, setCharacterRecommendations } =
+    useOnboardingStore();
+  const onboardingStep3 = useOnboardingStep3();
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
   const isStyleSelected = selectedStyle !== null;
+  const isPending = onboardingStep3.isPending;
 
   const handleSelectStyle = (
     styleId: OnboardingStyleType,
@@ -95,11 +100,27 @@ export function Step3StyleScreen() {
     router.push('/(auth)/onboarding/step4Character');
   };
 
-  const handleNext = () => {
-    if (!isStyleSelected) {
+  const handleNext = async () => {
+    if (!isStyleSelected || !selectedStyle) {
       return;
     }
-    router.push('/(auth)/onboarding/step4Character');
+
+    try {
+      const response = await onboardingStep3.mutateAsync({
+        preferred_style: selectedStyle,
+        responses: [{ question_id: 'q3', answer: selectedStyle }],
+      });
+      console.log('[온보딩 3단계] 응답값', response.data);
+      console.log('[온보딩 3단계] 캐릭터 추천 결과', response.data.character_recommendations);
+
+      if (response.data.character_recommendations.length > 0) {
+        setCharacterRecommendations(response.data.character_recommendations);
+      }
+
+      router.push('/(auth)/onboarding/step4Character');
+    } catch (error) {
+      Alert.alert('대화 방식', readApiErrorMessage(error));
+    }
   };
 
   return (
@@ -142,7 +163,7 @@ export function Step3StyleScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button disabled={!isStyleSelected} onPress={handleNext}>
+          <Button disabled={!isStyleSelected || isPending} onPress={handleNext}>
             다음
           </Button>
           <OnboardingSkipButton

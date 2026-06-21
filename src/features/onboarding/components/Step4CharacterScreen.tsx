@@ -13,14 +13,16 @@ import {
 } from '@/constants/characters';
 import type { OnboardingStyleType } from '@/constants/onboarding';
 import { OnboardingStyleCardLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
+import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingCharacter } from '@/features/onboarding/hooks/useOnboarding';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { getRecommendedCharacterIds } from '@/features/onboarding/utils/getRecommendedCharacterIds';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SeeMoreCharactersButtonProps {
@@ -103,6 +105,7 @@ export function Step4CharacterScreen() {
   const insets = useSafeAreaInsets();
   const { preferred_style, character_id, setCharacterId } = useOnboardingStore();
   const router = useRouter();
+  const onboardingCharacter = useOnboardingCharacter();
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
@@ -116,6 +119,7 @@ export function Step4CharacterScreen() {
     : ONBOARDING_STEP4_RECOMMENDED_TITLE;
 
   const isCharacterSelected = character_id !== null;
+  const isPending = onboardingCharacter.isPending;
 
   const handleSelectCharacter = (id: OnboardingCharacterId) => {
     setCharacterId(id);
@@ -125,13 +129,20 @@ export function Step4CharacterScreen() {
     setShowAllCharacters(true);
   };
 
-  const handleNext = () => {
-    if (!isCharacterSelected) {
+  const handleNext = async () => {
+    if (!character_id) {
       return;
     }
-    // 온보딩 마지막 API: POST /v1/onboarding/character -> signup_step = ONBOARDING_COMPLETED
-    // 이후 POST /v1/auth/signup/complete는 OnboardingCompleteScreen.handleStart에서 호출
-    router.push('/(auth)/onboarding/onboardingComplete');
+
+    try {
+      const response = await onboardingCharacter.mutateAsync({ character_id });
+      console.log('[온보딩 4단계] 응답값', response.data);
+      console.log('[온보딩 4단계] 선택된 캐릭터', response.data.preferred_character_id);
+      console.log('[온보딩 4단계] signup_step', response.data.signup_step);
+      router.push('/(auth)/onboarding/onboardingComplete');
+    } catch (error) {
+      Alert.alert('캐릭터 선택', readApiErrorMessage(error));
+    }
   };
 
   return (
@@ -178,7 +189,7 @@ export function Step4CharacterScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button disabled={!isCharacterSelected} onPress={handleNext}>
+          <Button disabled={!isCharacterSelected || isPending} onPress={handleNext}>
             다음
           </Button>
           {!showAllCharacters && <SeeMoreCharactersButton onPress={handleSeeMore} />}

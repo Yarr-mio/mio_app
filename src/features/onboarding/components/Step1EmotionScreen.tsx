@@ -6,21 +6,25 @@ import { EmotionIntensitySlider } from '@/components/ui/EmotionIntensitySlider';
 import { EmotionSelectBox } from '@/components/ui/EmotionSelectBox';
 import { ONBOARDING_DEFAULT_EMOJI_SCORE, ONBOARDING_TOTAL_STEPS } from '@/constants/onboarding';
 import { ScreenSpacing } from '@/constants/theme';
+import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingStep1 } from '@/features/onboarding/hooks/useOnboarding';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import type { EmotionType } from '@/types/checkin';
 import { cn } from '@/utils/cn';
 import { useRouter } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { Alert, ScrollView, View } from 'react-native';
 
 const ONBOARDING_CURRENT_STEP = 1;
 
 export function Step1EmotionScreen() {
   const router = useRouter();
   const { emotion_state, emoji_score, setEmotionState, setEmojiScore } = useOnboardingStore();
+  const onboardingStep1 = useOnboardingStep1();
 
   const isEmotionSelected = emotion_state !== null;
+  const isPending = onboardingStep1.isPending;
   const sliderValue = emoji_score ?? ONBOARDING_DEFAULT_EMOJI_SCORE;
 
   const handleEmotionChange = (emotion: EmotionType) => {
@@ -36,14 +40,28 @@ export function Step1EmotionScreen() {
     router.push('/(auth)/onboarding/step2Concern');
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!emotion_state) {
       return;
     }
     if (emoji_score === null) {
       setEmojiScore(ONBOARDING_DEFAULT_EMOJI_SCORE);
     }
-    router.push('/(auth)/onboarding/step2Concern');
+
+    try {
+      console.log('[온보딩 1단계] 요청 body:', {
+        emotion_state,
+        responses: [{ question_id: 'q1', answer: emotion_state }],
+      });
+      const response = await onboardingStep1.mutateAsync({
+        emotion_state,
+        responses: [{ question_id: 'q1', answer: emotion_state }],
+      });
+      console.log('[온보딩 1단계] 응답값', response.data);
+      router.push('/(auth)/onboarding/step2Concern');
+    } catch (error) {
+      Alert.alert('감정 상태', readApiErrorMessage(error));
+    }
   };
 
   return (
@@ -104,7 +122,7 @@ export function Step1EmotionScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button disabled={!isEmotionSelected} onPress={handleNext}>
+          <Button disabled={!isEmotionSelected || isPending} onPress={handleNext}>
             다음
           </Button>
           <OnboardingSkipButton

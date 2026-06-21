@@ -77,18 +77,6 @@ export const PARTNER_LIST: PartnerMeta[] = ONBOARDING_CHARACTERS.map((char) => (
 
 export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
 
-export type ApiPreferredStyle = 'empathetic' | 'analytical' | 'solution' | 'balanced';
-
-export const ONBOARDING_STYLE_TO_API_PREFERRED_STYLE: Record<
-  OnboardingStyleType,
-  ApiPreferredStyle
-> = {
-  empathy: 'empathetic',
-  realistic: 'analytical',
-  action: 'solution',
-  reflective: 'balanced',
-} as const;
-
 /** 전체 캐릭터 목록 표시 순서 */
 export const ONBOARDING_ALL_CHARACTER_IDS: OnboardingCharacterId[] = [
   'mio',
@@ -105,10 +93,10 @@ export const ONBOARDING_CHARACTER_RECOMMENDATIONS_BY_STYLE: Record<
   OnboardingStyleType | 'default',
   OnboardingCharacterId[]
 > = {
-  empathy: ['mio', 'momo', 'rumi'],
-  realistic: ['chichi', 'rumi', 'mio'],
-  action: ['bau', 'mio', 'chichi'],
-  reflective: ['rumi', 'mio', 'momo'],
+  empathetic: ['mio', 'momo', 'rumi'],
+  analytical: ['chichi', 'rumi', 'mio'],
+  solution: ['bau', 'mio', 'chichi'],
+  balanced: ['rumi', 'mio', 'momo'],
   default: ['mio', 'momo', 'rumi'],
 };
 

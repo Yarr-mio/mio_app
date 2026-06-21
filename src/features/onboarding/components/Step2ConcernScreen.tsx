@@ -8,12 +8,14 @@ import {
   ONBOARDING_TOTAL_STEPS,
 } from '@/constants/onboarding';
 import { FgColors, PressableConfig, ScreenSpacing } from '@/constants/theme';
+import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingStep2 } from '@/features/onboarding/hooks/useOnboarding';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ONBOARDING_CURRENT_STEP = 2;
@@ -52,9 +54,11 @@ export function Step2ConcernScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { concern_types, setConcernTypes } = useOnboardingStore();
+  const onboardingStep2 = useOnboardingStep2();
 
   const selectedConcerns = (concern_types ?? []) as OnboardingConcernType[];
   const isConcernSelected = selectedConcerns.length > 0;
+  const isPending = onboardingStep2.isPending;
 
   const toggleConcern = (id: OnboardingConcernType) => {
     const nextSelected = selectedConcerns.includes(id)
@@ -69,11 +73,21 @@ export function Step2ConcernScreen() {
     router.push('/(auth)/onboarding/step3Style');
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isConcernSelected) {
       return;
     }
-    router.push('/(auth)/onboarding/step3Style');
+
+    try {
+      const response = await onboardingStep2.mutateAsync({
+        concern_types: selectedConcerns,
+        responses: [{ question_id: 'q2', answer: selectedConcerns[0] }],
+      });
+      console.log('[온보딩 2단계] 응답값', response.data);
+      router.push('/(auth)/onboarding/step3Style');
+    } catch (error) {
+      Alert.alert('주요 고민', readApiErrorMessage(error));
+    }
   };
 
   return (
@@ -120,7 +134,7 @@ export function Step2ConcernScreen() {
         </ScrollView>
 
         <View className="pt-4">
-          <Button disabled={!isConcernSelected} onPress={handleNext}>
+          <Button disabled={!isConcernSelected || isPending} onPress={handleNext}>
             다음
           </Button>
           <OnboardingSkipButton
