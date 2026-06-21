@@ -47,7 +47,7 @@ export interface AuthSignupStatusData {
 
 export type AuthSignupStatusResponse = ApiResponse<AuthSignupStatusData>;
 
-export type ConsentType = 'terms' | 'privacy' | 'age_verification' | 'marketing';
+export type ConsentType = 'terms' | 'privacy' | 'age_verification' | 'sensitive_info' | 'marketing';
 
 export interface SignupConsent {
   type: ConsentType;
