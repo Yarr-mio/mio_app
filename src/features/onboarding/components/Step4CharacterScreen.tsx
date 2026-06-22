@@ -4,6 +4,7 @@ import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/Label';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import {
   getOnboardingCharacterById,
   ONBOARDING_ALL_CHARACTER_IDS,
@@ -21,9 +22,9 @@ import {
   ScreenSpacing,
 } from '@/constants/theme';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingCharacterRecommendations } from '@/features/onboarding/hooks/useOnboardingCharacterRecommendations';
 import { useOnboardingStep4Submit } from '@/features/onboarding/hooks/useOnboardingStep4Submit';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
-import { getRecommendedCharacterIds } from '@/features/onboarding/utils/getRecommendedCharacterIds';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useState } from 'react';
@@ -103,7 +104,7 @@ export function Step4CharacterScreen() {
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
-  const recommendedIds = getRecommendedCharacterIds(selectedStyle);
+  const { recommendedIds, isStatusLoading } = useOnboardingCharacterRecommendations(selectedStyle);
   const displayCharacterIds: OnboardingCharacterId[] = showAllCharacters
     ? ONBOARDING_ALL_CHARACTER_IDS
     : recommendedIds;
@@ -176,6 +177,7 @@ export function Step4CharacterScreen() {
           {!showAllCharacters && <SeeMoreCharactersButton onPress={handleSeeMore} />}
         </View>
       </ScreenContainer>
+      <LoadingOverlay visible={isStatusLoading} />
     </View>
   );
 }
