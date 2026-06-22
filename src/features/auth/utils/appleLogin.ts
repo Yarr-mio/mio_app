@@ -1,6 +1,7 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import Constants from 'expo-constants';
 
+import { IOS_BUNDLE_IDENTIFIER_FALLBACK } from '@/constants/config';
 import { decodeJwtPayload } from '@/utils/jwt';
 
 export type AppleSignInResult = { cancelled: true } | { cancelled: false; identityToken: string };
@@ -19,7 +20,8 @@ function logAppleIdentityTokenClaimsInDev(identityToken: string): void {
   const aud = payload.aud;
   const iss = payload.iss;
   const exp = typeof payload.exp === 'number' ? payload.exp : undefined;
-  const expectedBundleId = Constants.expoConfig?.ios?.bundleIdentifier ?? 'com.mio.yarr.dev';
+  const expectedBundleId =
+    Constants.expoConfig?.ios?.bundleIdentifier ?? IOS_BUNDLE_IDENTIFIER_FALLBACK;
   const audValue = Array.isArray(aud) ? aud.join(', ') : aud;
   const audMatchesExpectedBundleId =
     typeof aud === 'string'

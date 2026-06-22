@@ -2,6 +2,19 @@ import type { EmotionType } from '@/types/checkin';
 
 export const ONBOARDING_TOTAL_STEPS = 3;
 
+export const ONBOARDING_QUESTION_IDS = {
+  step1: 'q1',
+  step2: 'q2',
+  step3: 'q3',
+} as const;
+
+export const ONBOARDING_CURRENT_STEPS = {
+  step1: 1,
+  step2: 2,
+  step3: 3,
+  step4: 4,
+} as const;
+
 export const ONBOARDING_DEFAULT_EMOJI_SCORE = 3;
 
 export const ONBOARDING_INTENSITY_MIN = 1;
@@ -45,28 +58,28 @@ export const ONBOARDING_STYLE_OPTIONS = [
     title: '그냥 공감받고 싶어요',
     description: '내 마음을 있는 그대로\n들어주는 게 좋아요',
     characterId: 'mio',
-    characterImage: require('../../assets/images/characters/mio.png'),
+    characterImage: require('@/assets/images/characters/mio.png'),
   },
   {
     id: 'analytical',
     title: '현실적으로 정리하고 싶어요',
     description: '객관적으로 판단하고\n조언을 주는 게 좋아요',
     characterId: 'chichi',
-    characterImage: require('../../assets/images/characters/chichi.png'),
+    characterImage: require('@/assets/images/characters/chichi.png'),
   },
   {
     id: 'solution',
     title: '행동할 힘이 필요해요',
     description: '작은 실천을 함께\n계획하고 싶어요',
     characterId: 'bau',
-    characterImage: require('../../assets/images/characters/bau.png'),
+    characterImage: require('@/assets/images/characters/bau.png'),
   },
   {
     id: 'balanced',
     title: '차분히 생각을 정리하고 싶어요',
     description: '질문을 통해 스스로\n이해하고 싶어요',
     characterId: 'rumi',
-    characterImage: require('../../assets/images/characters/rumi.png'),
+    characterImage: require('@/assets/images/characters/rumi.png'),
   },
 ] as const;
 

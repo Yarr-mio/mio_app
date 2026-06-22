@@ -4,6 +4,9 @@ export const AUTH_ROUTES = {
   signupInfo: '/(auth)/signup/info',
   signupComplete: '/(auth)/signup/complete',
   onboardingStep1: '/(auth)/onboarding/step1Emotion',
+  onboardingStep2: '/(auth)/onboarding/step2Concern',
+  onboardingStep3: '/(auth)/onboarding/step3Style',
+  onboardingStep4: '/(auth)/onboarding/step4Character',
   onboardingComplete: '/(auth)/onboarding/onboardingComplete',
   home: '/(main)/home',
 } as const;

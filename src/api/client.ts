@@ -2,7 +2,7 @@ import axios, { create, type AxiosError, type InternalAxiosRequestConfig } from 
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-import { API_BASE_URL, HTTP_STATUS } from '@/constants/config';
+import { API_BASE_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import type { AuthRefreshResponse } from '@/types/auth';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
@@ -22,7 +22,7 @@ declare module 'axios' {
 
 const apiClient = create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -170,7 +170,7 @@ async function refreshAccessToken(): Promise<string> {
         'X-App-Version': getAppVersion(),
         'X-Platform': Platform.OS,
       },
-      timeout: 10000,
+      timeout: API_TIMEOUT_MS,
     }
   );
 
