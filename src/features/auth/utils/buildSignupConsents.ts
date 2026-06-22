@@ -16,7 +16,7 @@ const TERM_TO_CONSENT_TYPE: Record<TermConsentId, ConsentType> = {
 export function buildSignupConsents(checkedState: Record<TermConsentId, boolean>): SignupConsent[] {
   return TERM_CONSENT_ORDER.map((id) => ({
     type: TERM_TO_CONSENT_TYPE[id],
-    agreed: id === 'sensitive' || id === 'marketing' ? checkedState[id] : true,
+    agreed: checkedState[id],
     version: AUTH_CONSENT_VERSION,
   }));
 }
