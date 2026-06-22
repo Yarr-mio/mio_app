@@ -3,6 +3,7 @@ import { Platform, Text, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { AuthTextClasses, ScreenSpacing } from '@/constants/theme';
 import SocialLoginButton from '@/features/auth/components/SocialLoginButton';
 import { useAppleLogin } from '@/features/auth/hooks/useAppleLogin';
@@ -54,6 +55,7 @@ export default function LoginScreen() {
           ) : null}
         </View>
       </ScreenContainer>
+      <LoadingOverlay visible={isLoginPending} />
     </View>
   );
 }
