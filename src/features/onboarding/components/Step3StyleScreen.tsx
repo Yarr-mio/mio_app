@@ -1,29 +1,31 @@
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import {
+  ONBOARDING_CURRENT_STEPS,
   ONBOARDING_STYLE_OPTIONS,
   ONBOARDING_TOTAL_STEPS,
   type OnboardingStyleType,
 } from '@/constants/onboarding';
+import { AUTH_ROUTES } from '@/constants/routes';
 import {
   OnboardingStyleCardClasses,
   OnboardingStyleCardLayout,
   PressableConfig,
   ScreenSpacing,
 } from '@/constants/theme';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
-import { useOnboardingStep3 } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboardingStep3Submit } from '@/features/onboarding/hooks/useOnboardingStep3Submit';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
-const ONBOARDING_CURRENT_STEP = 3;
+const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step3;
 
 interface StyleOptionCardProps {
   title: string;
@@ -78,18 +80,17 @@ function StyleOptionCard({
 
 export function Step3StyleScreen() {
   const router = useRouter();
-  const { preferred_style, setPreferredStyle, setCharacterId, setCharacterRecommendations } =
-    useOnboardingStore();
-  const onboardingStep3 = useOnboardingStep3();
+  const { preferred_style, setPreferredStyle, setCharacterId } = useOnboardingStore();
+  const { submit, isPending, error, clearError } = useOnboardingStep3Submit();
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
   const isStyleSelected = selectedStyle !== null;
-  const isPending = onboardingStep3.isPending;
 
   const handleSelectStyle = (
     styleId: OnboardingStyleType,
     characterId: (typeof ONBOARDING_STYLE_OPTIONS)[number]['characterId']
   ) => {
+    clearError();
     setPreferredStyle(styleId);
     setCharacterId(characterId);
   };
@@ -97,30 +98,15 @@ export function Step3StyleScreen() {
   const handleSkip = () => {
     setPreferredStyle(null);
     setCharacterId(null);
-    router.push('/(auth)/onboarding/step4Character');
+    router.push(AUTH_ROUTES.onboardingStep4);
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!isStyleSelected || !selectedStyle) {
       return;
     }
 
-    try {
-      const response = await onboardingStep3.mutateAsync({
-        preferred_style: selectedStyle,
-        responses: [{ question_id: 'q3', answer: selectedStyle }],
-      });
-      console.log('[온보딩 3단계] 응답값', response.data);
-      console.log('[온보딩 3단계] 캐릭터 추천 결과', response.data.character_recommendations);
-
-      if (response.data.character_recommendations.length > 0) {
-        setCharacterRecommendations(response.data.character_recommendations);
-      }
-
-      router.push('/(auth)/onboarding/step4Character');
-    } catch (error) {
-      Alert.alert('대화 방식', readApiErrorMessage(error));
-    }
+    void submit(selectedStyle);
   };
 
   return (
@@ -162,7 +148,8 @@ export function Step3StyleScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
+        <View className="pt-4 gap-2">
+          {error ? <ErrorState message={error} /> : null}
           <Button disabled={!isStyleSelected || isPending} onPress={handleNext}>
             다음
           </Button>

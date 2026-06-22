@@ -1,18 +1,18 @@
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { HTTP_STATUS } from '@/constants/config';
-import { AUTH_ROUTES } from '@/constants/routes';
 import {
+  EditNicknameLayout,
   InputColors,
   NicknameDuplicateCheckClasses,
   ScreenSpacing,
+  SignupFlowLayout,
   SignupInfoLayout,
 } from '@/constants/theme';
 import {
@@ -20,19 +20,15 @@ import {
   type NicknameDuplicateCheckStatus,
 } from '@/features/auth/components/NicknameDuplicateCheckButton';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useNicknameDuplicateCheck, useSignupProfile } from '@/features/auth/hooks/useAuth';
-import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
-import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
-import { useUserStore } from '@/store/userStore';
+import { useSignupInfoSubmit } from '@/features/auth/hooks/useSignupInfoSubmit';
 import type { UserAgeRange, UserGender } from '@/types/user';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
-const SIGNUP_STEP_COUNT = 4;
-const SIGNUP_CURRENT_STEP = 3;
-const PROFILE_IMAGE_SIZE = 107;
+const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
+const SIGNUP_CURRENT_STEP = SignupFlowLayout.infoCurrentStep;
+const PROFILE_IMAGE_SIZE = EditNicknameLayout.avatarSize;
 const NICKNAME_MAX_LENGTH = SignupInfoLayout.nicknameMaxLength;
 const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
 const NICKNAME_HINT_DEFAULT = `닉네임은 ${NICKNAME_MIN_LENGTH}자 이상, 최대 ${NICKNAME_MAX_LENGTH}자까지 가능해요`;
@@ -97,10 +93,15 @@ function SelectableField({ label, children }: SelectableFieldProps) {
 }
 
 export default function SignUpInfoScreen() {
-  const router = useRouter();
-  const signupProfile = useSignupProfile();
-  const nicknameDuplicateCheck = useNicknameDuplicateCheck();
-  const { setSignupInfo } = useUserStore();
+  const {
+    checkDuplicate,
+    submit,
+    isDuplicateCheckPending,
+    isSubmitPending,
+    duplicateCheckError,
+    submitError,
+    clearErrors,
+  } = useSignupInfoSubmit();
   const [nickname, setNickname] = useState('');
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [gender, setGender] = useState<GenderOption | null>(null);
@@ -114,40 +115,22 @@ export default function SignUpInfoScreen() {
   const canContinue = isNicknameValid && duplicateCheckStatus === 'available';
   const isNicknameActive = isNicknameFocused || nickname.length > 0;
   const isDuplicateCheckDisabled =
-    !isNicknameValid || nicknameDuplicateCheck.isPending || duplicateCheckStatus !== 'idle';
+    !isNicknameValid || isDuplicateCheckPending || duplicateCheckStatus !== 'idle';
 
   const handleNicknameChange = (text: string) => {
+    clearErrors();
     setNickname(text.slice(0, NICKNAME_MAX_LENGTH));
     setDuplicateCheckStatus('idle');
   };
 
   const handleDuplicateCheck = async () => {
-    if (!isNicknameValid || nicknameDuplicateCheck.isPending) {
+    if (!isNicknameValid || isDuplicateCheckPending) {
       return;
     }
 
-    try {
-      const response = await nicknameDuplicateCheck.mutateAsync(trimmedNickname);
-      setDuplicateCheckStatus(response.data.duplicate ? 'unavailable' : 'available');
-    } catch (error) {
-      const status = readApiHttpStatus(error);
-      const errorCode = readApiErrorCode(error);
-
-      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
-        await handleSignupStepInvalid(router);
-        return;
-      }
-
-      if (status === HTTP_STATUS.CONFLICT) {
-        setDuplicateCheckStatus('unavailable');
-        return;
-      }
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : '닉네임 중복 확인에 실패했습니다. 다시 시도해 주세요.';
-      Alert.alert('닉네임 확인', message);
+    const status = await checkDuplicate(trimmedNickname);
+    if (status) {
+      setDuplicateCheckStatus(status);
     }
   };
 
@@ -157,47 +140,14 @@ export default function SignUpInfoScreen() {
     }
 
     const normalizedGender = gender === 'none' ? null : gender;
+    const result = await submit({
+      nickname: trimmedNickname,
+      gender: normalizedGender,
+      ageRange: age,
+    });
 
-    try {
-      const response = await signupProfile.mutateAsync(
-        mapSignupProfileInput({
-          nickname: trimmedNickname,
-          gender: normalizedGender,
-          ageRange: age,
-        })
-      );
-
-      if (response.data.signup_step !== 'PROFILE_COMPLETED') {
-        throw new Error('프로필 저장에 실패했습니다. 다시 시도해 주세요.');
-      }
-
-      setSignupInfo({
-        nickname: trimmedNickname,
-        gender: normalizedGender,
-        ageRange: age,
-      });
-
-      router.push({
-        pathname: AUTH_ROUTES.signupComplete,
-        params: { nickname: trimmedNickname },
-      });
-    } catch (error) {
-      const status = readApiHttpStatus(error);
-      const errorCode = readApiErrorCode(error);
-
-      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
-        await handleSignupStepInvalid(router);
-        return;
-      }
-
-      if (status === HTTP_STATUS.CONFLICT) {
-        setDuplicateCheckStatus('unavailable');
-        return;
-      }
-
-      const message =
-        error instanceof Error ? error.message : '프로필 저장에 실패했습니다. 다시 시도해 주세요.';
-      Alert.alert('프로필 설정', message);
+    if (result?.conflict) {
+      setDuplicateCheckStatus('unavailable');
     }
   };
 
@@ -262,19 +212,23 @@ export default function SignUpInfoScreen() {
                   onPress={handleDuplicateCheck}
                 />
               </View>
-              <ThemedText
-                type="smallRegular"
-                className={cn(
-                  'ml-2',
-                  duplicateCheckStatus === 'unavailable'
-                    ? NicknameDuplicateCheckClasses.errorHint
-                    : 'text-label'
-                )}
-              >
-                {duplicateCheckStatus === 'unavailable'
-                  ? NICKNAME_HINT_DUPLICATE
-                  : NICKNAME_HINT_DEFAULT}
-              </ThemedText>
+              {duplicateCheckError ? (
+                <ErrorState message={duplicateCheckError} className="ml-2 text-left" />
+              ) : (
+                <ThemedText
+                  type="smallRegular"
+                  className={cn(
+                    'ml-2',
+                    duplicateCheckStatus === 'unavailable'
+                      ? NicknameDuplicateCheckClasses.errorHint
+                      : 'text-label'
+                  )}
+                >
+                  {duplicateCheckStatus === 'unavailable'
+                    ? NICKNAME_HINT_DUPLICATE
+                    : NICKNAME_HINT_DEFAULT}
+                </ThemedText>
+              )}
             </View>
 
             <SelectableField label="성별 (선택)">
@@ -284,9 +238,10 @@ export default function SignUpInfoScreen() {
                     key={option.value}
                     label={option.label}
                     selected={gender === option.value}
-                    onPress={() =>
-                      setGender((prev) => (prev === option.value ? null : option.value))
-                    }
+                    onPress={() => {
+                      clearErrors();
+                      setGender((prev) => (prev === option.value ? null : option.value));
+                    }}
                   />
                 ))}
               </View>
@@ -299,7 +254,10 @@ export default function SignUpInfoScreen() {
                     key={option.value}
                     label={option.label}
                     selected={age === option.value}
-                    onPress={() => setAge((prev) => (prev === option.value ? null : option.value))}
+                    onPress={() => {
+                      clearErrors();
+                      setAge((prev) => (prev === option.value ? null : option.value));
+                    }}
                   />
                 ))}
               </View>
@@ -307,8 +265,9 @@ export default function SignUpInfoScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
-          <Button disabled={!canContinue || signupProfile.isPending} onPress={handleContinue}>
+        <View className="pt-4 gap-2">
+          {submitError ? <ErrorState message={submitError} /> : null}
+          <Button disabled={!canContinue || isSubmitPending} onPress={handleContinue}>
             다음
           </Button>
         </View>

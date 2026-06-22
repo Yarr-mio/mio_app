@@ -1,24 +1,26 @@
 import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
+import { ErrorState } from '@/components/feedback/ErrorState';
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import {
   type OnboardingConcernType,
   ONBOARDING_CONCERN_OPTIONS,
+  ONBOARDING_CURRENT_STEPS,
   ONBOARDING_TOTAL_STEPS,
 } from '@/constants/onboarding';
-import { FgColors, PressableConfig, ScreenSpacing } from '@/constants/theme';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
+import { AUTH_ROUTES } from '@/constants/routes';
+import { FgColors, HomeLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
-import { useOnboardingStep2 } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboardingStep2Submit } from '@/features/onboarding/hooks/useOnboardingStep2Submit';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, View } from 'react-native';
 
-const ONBOARDING_CURRENT_STEP = 2;
+const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step2;
 
 interface ConcernButtonProps {
   label: string;
@@ -41,7 +43,13 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
       hitSlop={PressableConfig.hitSlop}
     >
       <View className={cn('flex-row items-center', selected && 'gap-2')}>
-        {selected && <CheckboxCheckIcon width={12} height={9} color={FgColors.onDefault} />}
+        {selected && (
+          <CheckboxCheckIcon
+            width={HomeLayout.checkboxCheckWidth}
+            height={HomeLayout.checkboxCheckHeight}
+            color={FgColors.onDefault}
+          />
+        )}
         <ThemedText type="default" className={selected ? 'text-fg-default' : 'text-label'}>
           {label}
         </ThemedText>
@@ -51,16 +59,15 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
 }
 
 export function Step2ConcernScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { concern_types, setConcernTypes } = useOnboardingStore();
-  const onboardingStep2 = useOnboardingStep2();
+  const { submit, isPending, error, clearError } = useOnboardingStep2Submit();
 
   const selectedConcerns = (concern_types ?? []) as OnboardingConcernType[];
   const isConcernSelected = selectedConcerns.length > 0;
-  const isPending = onboardingStep2.isPending;
 
   const toggleConcern = (id: OnboardingConcernType) => {
+    clearError();
     const nextSelected = selectedConcerns.includes(id)
       ? selectedConcerns.filter((item) => item !== id)
       : [...selectedConcerns, id];
@@ -70,36 +77,21 @@ export function Step2ConcernScreen() {
 
   const handleSkip = () => {
     setConcernTypes(null);
-    router.push('/(auth)/onboarding/step3Style');
+    router.push(AUTH_ROUTES.onboardingStep3);
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!isConcernSelected) {
       return;
     }
 
-    try {
-      const response = await onboardingStep2.mutateAsync({
-        concern_types: selectedConcerns,
-        responses: [{ question_id: 'q2', answer: selectedConcerns[0] }],
-      });
-      console.log('[온보딩 2단계] 응답값', response.data);
-      router.push('/(auth)/onboarding/step3Style');
-    } catch (error) {
-      Alert.alert('주요 고민', readApiErrorMessage(error));
-    }
+    void submit(selectedConcerns);
   };
 
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{
-          paddingTop: insets.top,
-          paddingBottom: Math.max(insets.bottom, ScreenSpacing.bottomInsetMin),
-        }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <OnboardingHeader
             currentStep={ONBOARDING_CURRENT_STEP}
@@ -133,7 +125,8 @@ export function Step2ConcernScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
+        <View className="pt-4 gap-2">
+          {error ? <ErrorState message={error} /> : null}
           <Button disabled={!isConcernSelected || isPending} onPress={handleNext}>
             다음
           </Button>
@@ -143,7 +136,7 @@ export function Step2ConcernScreen() {
             className="items-center py-4"
           />
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }

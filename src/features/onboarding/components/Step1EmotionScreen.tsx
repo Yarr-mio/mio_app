@@ -1,33 +1,38 @@
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { EmotionIntensitySlider } from '@/components/ui/EmotionIntensitySlider';
 import { EmotionSelectBox } from '@/components/ui/EmotionSelectBox';
-import { ONBOARDING_DEFAULT_EMOJI_SCORE, ONBOARDING_TOTAL_STEPS } from '@/constants/onboarding';
+import {
+  ONBOARDING_CURRENT_STEPS,
+  ONBOARDING_DEFAULT_EMOJI_SCORE,
+  ONBOARDING_TOTAL_STEPS,
+} from '@/constants/onboarding';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { ScreenSpacing } from '@/constants/theme';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
-import { useOnboardingStep1 } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboardingStep1Submit } from '@/features/onboarding/hooks/useOnboardingStep1Submit';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import type { EmotionType } from '@/types/checkin';
 import { cn } from '@/utils/cn';
 import { useRouter } from 'expo-router';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
-const ONBOARDING_CURRENT_STEP = 1;
+const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step1;
 
 export function Step1EmotionScreen() {
   const router = useRouter();
   const { emotion_state, emoji_score, setEmotionState, setEmojiScore } = useOnboardingStore();
-  const onboardingStep1 = useOnboardingStep1();
+  const { submit, isPending, error, clearError } = useOnboardingStep1Submit();
 
   const isEmotionSelected = emotion_state !== null;
-  const isPending = onboardingStep1.isPending;
   const sliderValue = emoji_score ?? ONBOARDING_DEFAULT_EMOJI_SCORE;
 
   const handleEmotionChange = (emotion: EmotionType) => {
+    clearError();
     setEmotionState(emotion);
     if (emoji_score === null) {
       setEmojiScore(ONBOARDING_DEFAULT_EMOJI_SCORE);
@@ -37,30 +42,17 @@ export function Step1EmotionScreen() {
   const handleSkip = () => {
     setEmotionState(null);
     setEmojiScore(null);
-    router.push('/(auth)/onboarding/step2Concern');
+    router.push(AUTH_ROUTES.onboardingStep2);
   };
 
   const handleNext = async () => {
     if (!emotion_state) {
       return;
     }
-    if (emoji_score === null) {
-      setEmojiScore(ONBOARDING_DEFAULT_EMOJI_SCORE);
-    }
 
-    try {
-      console.log('[온보딩 1단계] 요청 body:', {
-        emotion_state,
-        responses: [{ question_id: 'q1', answer: emotion_state }],
-      });
-      const response = await onboardingStep1.mutateAsync({
-        emotion_state,
-        responses: [{ question_id: 'q1', answer: emotion_state }],
-      });
-      console.log('[온보딩 1단계] 응답값', response.data);
-      router.push('/(auth)/onboarding/step2Concern');
-    } catch (error) {
-      Alert.alert('감정 상태', readApiErrorMessage(error));
+    const result = await submit(emotion_state, emoji_score);
+    if (result && emoji_score === null) {
+      setEmojiScore(result.emojiScore);
     }
   };
 
@@ -110,18 +102,22 @@ export function Step1EmotionScreen() {
             </View>
             {/*
               슬라이더 너비: 박스 p-6 안에서 w-full이면 제목과 동일 너비.
-              더 좁히려면 mx-4·w-[90%] 등 className 추가 / 더 넓히려면 박스 p-6 축소.
+              더 좁히려면 mx-4, w-[90%] 등 className 추가. 더 넓히려면 박스 p-6 축소.
             */}
             <EmotionIntensitySlider
               className="mt-4"
               value={sliderValue}
-              onChange={setEmojiScore}
+              onChange={(score) => {
+                clearError();
+                setEmojiScore(score);
+              }}
               disabled={!isEmotionSelected}
             />
           </View>
         </ScrollView>
 
-        <View className="pt-4">
+        <View className="pt-4 gap-2">
+          {error ? <ErrorState message={error} /> : null}
           <Button disabled={!isEmotionSelected || isPending} onPress={handleNext}>
             다음
           </Button>

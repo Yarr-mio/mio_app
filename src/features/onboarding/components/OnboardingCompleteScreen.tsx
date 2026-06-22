@@ -1,3 +1,4 @@
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
@@ -5,51 +6,47 @@ import {
   getOnboardingCharacterById,
   ONBOARDING_DEFAULT_CHARACTER_ID,
 } from '@/constants/characters';
-import { AUTH_ROUTES } from '@/constants/routes';
 import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
-import { useSignupComplete } from '@/features/auth/hooks/useAuth';
 import { usePartnerStore } from '@/features/mypage/store/partnerStore';
+import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { userStoreUtils, useUserStore } from '@/store/userStore';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function OnboardingCompleteScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-
   const { character_id, emotion_state, emoji_score, concern_types, preferred_style } =
     useOnboardingStore();
   const { setOnboardingResult } = useUserStore();
   const setSelectedPartner = usePartnerStore((state) => state.setSelectedPartner);
-  const signupComplete = useSignupComplete();
+  const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit();
   const selectedCharacterId = character_id ?? ONBOARDING_DEFAULT_CHARACTER_ID;
   const character = getOnboardingCharacterById(selectedCharacterId);
 
-  const handleStart = async () => {
+  const handleStart = () => {
+    clearError();
+
     const emotionSelection =
       emotion_state && emoji_score ? { emotion: emotion_state, intensity: emoji_score } : null;
 
-    setOnboardingResult({
-      emotionSelection,
-      concernTypes: userStoreUtils.normalizeConcernTypes(concern_types),
+    void submit({
+      emotionState: emotion_state,
+      emojiScore: emoji_score,
+      concernTypes: concern_types,
       preferredStyle: preferred_style,
       characterId: selectedCharacterId,
+      onBeforeNavigate: () => {
+        setOnboardingResult({
+          emotionSelection,
+          concernTypes: userStoreUtils.normalizeConcernTypes(concern_types),
+          preferredStyle: preferred_style,
+          characterId: selectedCharacterId,
+        });
+        setSelectedPartner(selectedCharacterId);
+      },
     });
-    setSelectedPartner(selectedCharacterId);
-
-    try {
-      await signupComplete.mutateAsync();
-      router.replace(AUTH_ROUTES.home);
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : '가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
-      Alert.alert('가입 완료', message);
-    }
   };
 
   return (
@@ -93,8 +90,9 @@ export function OnboardingCompleteScreen() {
           </View>
         </View>
 
-        <View className="pt-4">
-          <Button disabled={signupComplete.isPending} onPress={handleStart}>
+        <View className="pt-4 gap-2">
+          {error ? <ErrorState message={error} /> : null}
+          <Button disabled={isPending} onPress={handleStart}>
             {character.name}와 시작하기
           </Button>
         </View>

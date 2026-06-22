@@ -1,24 +1,27 @@
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, ScrollView, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { ScrollView, View } from 'react-native';
 
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { HTTP_STATUS } from '@/constants/config';
-import { AUTH_ROUTES } from '@/constants/routes';
-import { ScreenSpacing } from '@/constants/theme';
+import {
+  ScreenSpacing,
+  SignupCompleteClasses,
+  SignupCompleteLayout,
+  SignupFlowLayout,
+} from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useSignupComplete, useSignupStatus } from '@/features/auth/hooks/useAuth';
-import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
+import { useSignupCompleteSubmit } from '@/features/auth/hooks/useSignupCompleteSubmit';
+import { cn } from '@/utils/cn';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
-const SIGNUP_STEP_COUNT = 4;
-const SIGNUP_CURRENT_STEP = 4;
-const PROFILE_IMAGE_SIZE = 107;
+const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
+const SIGNUP_CURRENT_STEP = SignupFlowLayout.completeCurrentStep;
+const PROFILE_IMAGE_SIZE = SignupCompleteLayout.profileImageSize;
 
 const MOCK_SIGNUP_USER = {
   nickname: '하늘',
@@ -65,48 +68,17 @@ function FeatureHighlightCard({ emoji, lines }: FeatureHighlightCardProps) {
 }
 
 export default function SignUpCompleteScreen() {
-  const router = useRouter();
   const { nickname: nicknameParam } = useLocalSearchParams<{ nickname?: string }>();
   const nickname = resolveNickname(nicknameParam);
-  const signupComplete = useSignupComplete();
-  const signupStatus = useSignupStatus();
-  const isPending = signupComplete.isPending || signupStatus.isPending;
+  const { submit, isPending, error, clearError } = useSignupCompleteSubmit();
 
-  const handleStartPartnerMatching = async () => {
+  const handleStartPartnerMatching = () => {
     if (isPending) {
       return;
     }
 
-    try {
-      const statusResponse = await signupStatus.mutateAsync();
-
-      if (statusResponse.data.signup_step === 'ONBOARDING_COMPLETED') {
-        const response = await signupComplete.mutateAsync();
-
-        if (response.data.signup_step !== 'COMPLETED' || response.data.status !== 'ACTIVE') {
-          throw new Error('회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.');
-        }
-
-        router.replace(AUTH_ROUTES.home);
-        return;
-      }
-
-      router.push(AUTH_ROUTES.onboardingStep1);
-    } catch (error) {
-      const status = readApiHttpStatus(error);
-      const errorCode = readApiErrorCode(error);
-
-      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
-        await handleSignupStepInvalid(router);
-        return;
-      }
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : '회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
-      Alert.alert('회원가입 완료', message);
-    }
+    clearError();
+    void submit();
   };
 
   return (
@@ -122,7 +94,7 @@ export default function SignUpCompleteScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerClassName="grow pb-4"
         >
-          <View className="mt-[101px] items-center">
+          <View className={cn('items-center', SignupCompleteClasses.profileTop)}>
             <Image
               source={SIGNUP_USER_PROFILE_IMAGE}
               contentFit="contain"
@@ -130,7 +102,7 @@ export default function SignUpCompleteScreen() {
             />
           </View>
 
-          <View className="mt-[56px] items-center">
+          <View className={cn('items-center', SignupCompleteClasses.titleTop)}>
             <ThemedText type="title" className="text-center text-fg">
               {nickname} 님,{'\n'}미오가 기다리고 있었어요
             </ThemedText>
@@ -140,7 +112,7 @@ export default function SignUpCompleteScreen() {
             </ThemedText>
           </View>
 
-          <View className="mt-[119px] flex-row gap-2">
+          <View className={cn('flex-row gap-2', SignupCompleteClasses.highlightsTop)}>
             {FEATURE_HIGHLIGHTS.map((feature) => (
               <FeatureHighlightCard
                 key={feature.emoji}
@@ -151,7 +123,8 @@ export default function SignUpCompleteScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
+        <View className="pt-4 gap-2">
+          {error ? <ErrorState message={error} /> : null}
           <Button disabled={isPending} onPress={handleStartPartnerMatching}>
             파트너 매칭 시작
           </Button>

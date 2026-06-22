@@ -1,3 +1,5 @@
+import { ErrorState } from '@/components/feedback/ErrorState';
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
@@ -12,18 +14,20 @@ import {
   type OnboardingCharacterId,
 } from '@/constants/characters';
 import type { OnboardingStyleType } from '@/constants/onboarding';
-import { OnboardingStyleCardLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
+import {
+  OnboardingStyleCardClasses,
+  OnboardingStyleCardLayout,
+  PressableConfig,
+  ScreenSpacing,
+} from '@/constants/theme';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
-import { useOnboardingCharacter } from '@/features/onboarding/hooks/useOnboarding';
+import { useOnboardingStep4Submit } from '@/features/onboarding/hooks/useOnboardingStep4Submit';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { getRecommendedCharacterIds } from '@/features/onboarding/utils/getRecommendedCharacterIds';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, View } from 'react-native';
 
 interface SeeMoreCharactersButtonProps {
   onPress: () => void;
@@ -56,8 +60,8 @@ function CharacterOptionCard({
   selected,
   onPress,
 }: CharacterOptionCardProps) {
-  const { iconSlotSize, iconRenderScale } = OnboardingStyleCardLayout;
-  const iconRenderSize = iconSlotSize * iconRenderScale;
+  const { iconRenderScale } = OnboardingStyleCardLayout;
+  const iconRenderSize = OnboardingStyleCardLayout.iconSlotSize * iconRenderScale;
 
   return (
     <Pressable
@@ -73,15 +77,7 @@ function CharacterOptionCard({
       )}
       hitSlop={PressableConfig.hitSlop}
     >
-      <View
-        style={{
-          width: iconSlotSize,
-          height: iconSlotSize,
-          overflow: 'hidden',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      <View className={OnboardingStyleCardClasses.iconSlot}>
         <Image
           source={characterImage}
           style={{ width: iconRenderSize, height: iconRenderSize }}
@@ -102,10 +98,8 @@ function CharacterOptionCard({
 }
 
 export function Step4CharacterScreen() {
-  const insets = useSafeAreaInsets();
   const { preferred_style, character_id, setCharacterId } = useOnboardingStore();
-  const router = useRouter();
-  const onboardingCharacter = useOnboardingCharacter();
+  const { submit, isPending, error, clearError } = useOnboardingStep4Submit();
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
@@ -119,9 +113,9 @@ export function Step4CharacterScreen() {
     : ONBOARDING_STEP4_RECOMMENDED_TITLE;
 
   const isCharacterSelected = character_id !== null;
-  const isPending = onboardingCharacter.isPending;
 
   const handleSelectCharacter = (id: OnboardingCharacterId) => {
+    clearError();
     setCharacterId(id);
   };
 
@@ -129,32 +123,18 @@ export function Step4CharacterScreen() {
     setShowAllCharacters(true);
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!character_id) {
       return;
     }
 
-    try {
-      const response = await onboardingCharacter.mutateAsync({ character_id });
-      console.log('[온보딩 4단계] 응답값', response.data);
-      console.log('[온보딩 4단계] 선택된 캐릭터', response.data.preferred_character_id);
-      console.log('[온보딩 4단계] signup_step', response.data.signup_step);
-      router.push('/(auth)/onboarding/onboardingComplete');
-    } catch (error) {
-      Alert.alert('캐릭터 선택', readApiErrorMessage(error));
-    }
+    void submit(character_id);
   };
 
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8 mt-6"
-        style={{
-          paddingTop: insets.top,
-          paddingBottom: Math.max(insets.bottom, ScreenSpacing.bottomInsetMin),
-        }}
-      >
+      <ScreenContainer className="flex-1 px-8 mt-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <ScrollView
           className="flex-1"
           showsVerticalScrollIndicator={false}
@@ -188,13 +168,14 @@ export function Step4CharacterScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
+        <View className="pt-4 gap-2">
+          {error ? <ErrorState message={error} /> : null}
           <Button disabled={!isCharacterSelected || isPending} onPress={handleNext}>
             다음
           </Button>
           {!showAllCharacters && <SeeMoreCharactersButton onPress={handleSeeMore} />}
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }
