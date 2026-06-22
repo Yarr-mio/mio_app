@@ -1,7 +1,6 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
 import type { OnboardingStyleType } from '@/constants/onboarding';
 import type { EmotionType } from '@/types/checkin';
-import type { OnboardingCharacterRecommendation } from '@/types/onboarding';
 import { create } from 'zustand';
 
 interface OnboardingState {
@@ -10,15 +9,11 @@ interface OnboardingState {
   concern_types: string[] | null;
   preferred_style: OnboardingStyleType | null;
   character_id: OnboardingCharacterId | null;
-  character_recommendations: OnboardingCharacterRecommendation[] | null;
   setEmotionState: (emotion: EmotionType | null) => void;
   setEmojiScore: (score: number | null) => void;
   setConcernTypes: (types: string[] | null) => void;
   setPreferredStyle: (style: OnboardingStyleType | null) => void;
   setCharacterId: (id: OnboardingCharacterId | null) => void;
-  setCharacterRecommendations: (
-    recommendations: OnboardingCharacterRecommendation[] | null
-  ) => void;
   reset: () => void;
 }
 
@@ -28,7 +23,6 @@ const INITIAL_STATE = {
   concern_types: null,
   preferred_style: null,
   character_id: null,
-  character_recommendations: null,
 } as const;
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
@@ -41,7 +35,5 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   setConcernTypes: (types) => set({ concern_types: types }),
   setPreferredStyle: (style) => set({ preferred_style: style }),
   setCharacterId: (id) => set({ character_id: id }),
-  setCharacterRecommendations: (recommendations) =>
-    set({ character_recommendations: recommendations }),
   reset: () => set({ ...INITIAL_STATE }),
 }));
