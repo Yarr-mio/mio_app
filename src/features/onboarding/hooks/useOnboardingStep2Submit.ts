@@ -3,12 +3,15 @@ import { useState } from 'react';
 
 import { ONBOARDING_QUESTION_IDS, type OnboardingConcernType } from '@/constants/onboarding';
 import { AUTH_ROUTES } from '@/constants/routes';
+import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
+import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStep2 } from '@/features/onboarding/hooks/useOnboarding';
 
 export function useOnboardingStep2Submit() {
   const router = useRouter();
   const onboardingStep2 = useOnboardingStep2();
+  const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => {
@@ -25,6 +28,11 @@ export function useOnboardingStep2Submit() {
       });
       router.push(AUTH_ROUTES.onboardingStep3);
     } catch (submitError) {
+      if (isSignupStepInvalidError(submitError)) {
+        await handleSignupStepInvalid();
+        return;
+      }
+
       setError(readApiErrorMessage(submitError));
     }
   };
