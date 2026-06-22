@@ -39,8 +39,8 @@ export function useKakaoLogin() {
 
       const res = await socialLogin.mutateAsync({
         provider: 'kakao',
-        accessToken,
-        idToken: null,
+        access_token: accessToken,
+        id_token: null,
       });
 
       const { signup_step, is_new_user } = res.data;

@@ -26,8 +26,8 @@ import { storage } from '@/utils/storage';
 
 interface SocialLoginInput {
   provider: SocialProvider;
-  idToken: string | null;
-  accessToken: string | null;
+  id_token: string | null;
+  access_token: string | null;
 }
 
 // 카카오/애플 로그인

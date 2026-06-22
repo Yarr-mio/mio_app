@@ -10,8 +10,8 @@ import { signInWithApple } from '@/features/auth/utils/appleLogin';
 interface AppleLoginFlowInput {
   socialLogin: (input: {
     provider: 'apple';
-    idToken: string;
-    accessToken: null;
+    id_token: string;
+    access_token: null;
   }) => Promise<AuthLoginResponse>;
   fetchSignupStatus: () => Promise<AuthSignupStatusResponse>;
   replaceRoute: (route: AuthRoute) => void;
@@ -30,8 +30,8 @@ export async function runAppleLoginFlow({
 
   const res = await socialLogin({
     provider: 'apple',
-    idToken: result.identityToken,
-    accessToken: null,
+    id_token: result.identityToken,
+    access_token: null,
   });
 
   const { signup_step, is_new_user } = res.data;

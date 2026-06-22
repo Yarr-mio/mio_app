@@ -22,9 +22,9 @@ export interface AuthUser {
 
 export interface AuthLoginRequest {
   provider: SocialProvider;
-  idToken: string | null;
-  accessToken: string | null;
-  deviceId: string;
+  id_token: string | null;
+  access_token: string | null;
+  device_id: string;
 }
 
 export interface AuthLoginData {
@@ -70,7 +70,7 @@ export type Gender = 'male' | 'female' | 'other';
 
 export interface AuthSignupProfileRequest {
   nickname: string;
-  ageRange?: AgeRange;
+  age_range?: AgeRange;
   gender?: Gender;
 }
 
@@ -107,7 +107,7 @@ export interface AuthRefreshData {
 export type AuthRefreshResponse = ApiResponse<AuthRefreshData>;
 
 export interface AuthLogoutRequest {
-  deviceId: string;
+  device_id: string;
 }
 
 export interface AuthLogoutData {

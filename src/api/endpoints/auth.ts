@@ -30,10 +30,10 @@ function setMockSignupStep(step: SignupStep): void {
 }
 
 export async function postAuthLogin(
-  input: Omit<AuthLoginRequest, 'deviceId'>
+  input: Omit<AuthLoginRequest, 'device_id'>
 ): Promise<AuthLoginResponse> {
-  const deviceId = await getOrCreateDeviceId();
-  const body: AuthLoginRequest = { ...input, deviceId };
+  const device_id = await getOrCreateDeviceId();
+  const body: AuthLoginRequest = { ...input, device_id };
 
   /**
    * POST /v1/auth/login
@@ -58,9 +58,9 @@ export async function postAuthLogin(
 
   const apiBody = {
     provider: body.provider,
-    deviceId: body.deviceId,
-    ...(body.idToken ? { idToken: body.idToken } : {}),
-    ...(body.accessToken ? { accessToken: body.accessToken } : {}),
+    device_id: body.device_id,
+    ...(body.id_token ? { id_token: body.id_token } : {}),
+    ...(body.access_token ? { access_token: body.access_token } : {}),
   };
 
   const { data } = await apiClient.post<AuthLoginResponse>('/v1/auth/login', apiBody, {
@@ -208,14 +208,14 @@ export async function postAuthRefresh(body: AuthRefreshRequest): Promise<AuthRef
 /**
  * POST /v1/auth/logout
  *
- * - 명세상 body에는 deviceId가 필요하므로
- * - 현재 디바이스의 deviceId를 내부에서 가져와 항상 포함시키도록!
+ * - 명세상 body에는 device_id가 필요하므로
+ * - 현재 디바이스의 device_id를 내부에서 가져와 항상 포함시키도록!
  */
 export async function postAuthLogout(
   _body?: Partial<AuthLogoutRequest>
 ): Promise<AuthLogoutResponse> {
-  const deviceId = await getOrCreateDeviceId();
-  const body: AuthLogoutRequest = { deviceId };
+  const device_id = await getOrCreateDeviceId();
+  const body: AuthLogoutRequest = { device_id };
 
   if (USE_MOCK) {
     setMockSignupStep('SOCIAL_AUTHENTICATED');
