@@ -1,8 +1,7 @@
 import { getAuthSignupStatus } from '@/api/endpoints/auth';
 import { AUTH_ROUTES, type AuthRoute } from '@/constants/routes';
-import type { SignupStep } from '@/types/auth';
-
 import { routeForSignupStep } from '@/features/auth/utils/routeForSignupStep';
+import type { SignupStep } from '@/types/auth';
 
 export function shouldFetchSignupStatus(signupStep: SignupStep, isNewUser: boolean): boolean {
   return isNewUser || signupStep !== 'COMPLETED';
@@ -15,6 +14,9 @@ function getScreenNameForAuthRoute(route: AuthRoute): string {
     [AUTH_ROUTES.signupInfo]: 'SignupInfoScreen',
     [AUTH_ROUTES.signupComplete]: 'SignupCompleteScreen',
     [AUTH_ROUTES.onboardingStep1]: 'OnboardingStep1Screen',
+    [AUTH_ROUTES.onboardingStep2]: 'OnboardingStep2Screen',
+    [AUTH_ROUTES.onboardingStep3]: 'OnboardingStep3Screen',
+    [AUTH_ROUTES.onboardingStep4]: 'OnboardingStep4Screen',
     [AUTH_ROUTES.onboardingComplete]: 'OnboardingCompleteScreen',
     [AUTH_ROUTES.home]: '홈 화면',
   };
@@ -26,14 +28,11 @@ function logSignupStatusNavigation(signupStep: SignupStep, route: AuthRoute): vo
   console.log(
     '[AUTH] signup status:',
     { signup_step: signupStep },
-    '→',
+    'to',
     getScreenNameForAuthRoute(route)
   );
 }
 
-/**
- * 세션 복구 시 signup_step 기준 라우팅 (스플래시, 포그라운드 복귀)
- */
 export async function resolveRouteFromSignupStatus(): Promise<AuthRoute> {
   const status = await getAuthSignupStatus();
   const signupStep = status.data.signup_step;
@@ -42,12 +41,6 @@ export async function resolveRouteFromSignupStatus(): Promise<AuthRoute> {
   return route;
 }
 
-/**
- * 로그인 성공 후 signup_step / is_new_user 기준 라우팅
- *
- * - is_new_user: false + signup_step: COMPLETED일 경우 홈
- * - is_new_user: true 또는 signup_step이 COMPLETED가 아닐 경우 GET /v1/auth/signup/status 후 분기
- */
 export function resolveSignupRoute(
   signupStep: SignupStep,
   isNewUser: boolean,

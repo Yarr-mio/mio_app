@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { useSignupStatus, useSocialLogin } from '@/features/auth/hooks/useAuth';
-import { signInWithKakao } from '@/features/auth/utils/kakaoLogin';
 import {
   resolveSignupRoute,
   shouldFetchSignupStatus,
-} from '@/features/auth/utils/navigateAfterLogin';
+} from '@/features/auth/services/signupNavigation';
+import { signInWithKakao } from '@/features/auth/utils/kakaoLogin';
 import type { SignupStep } from '@/types/auth';
 
 function getLoginErrorMessage(error: unknown): string {
@@ -16,12 +16,6 @@ function getLoginErrorMessage(error: unknown): string {
   return '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.';
 }
 
-/**
- * 카카오 로그인 플로우
- *
- * useSocialLogin(토큰 저장 side effect 포함)을 기반으로
- * SDK 로그인 -> API 로그인 -> 라우팅
- */
 export function useKakaoLogin() {
   const router = useRouter();
   const socialLogin = useSocialLogin();
