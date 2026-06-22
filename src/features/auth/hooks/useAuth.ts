@@ -81,12 +81,14 @@ export function useSignupComplete() {
 // 로그아웃
 export function useLogout() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const onAuthInvalid = useAuthStore((s) => s.onAuthInvalid);
 
   return useMutation({
     mutationFn: () => postAuthLogout(),
-    onSuccess: async () => {
+    onSettled: async () => {
       setAccessToken(null);
       await storage.refreshToken.delete();
+      onAuthInvalid?.();
     },
   });
 }
