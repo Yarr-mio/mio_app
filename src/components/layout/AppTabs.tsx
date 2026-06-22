@@ -2,13 +2,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  CategoryIcon,
-  HomeIcon,
-  HomeTrendUpIcon,
-  MessageTextIcon,
-  SecurityUserIcon,
-} from '@/assets/icons';
+import { CategoryIcon, HomeIcon, HomeTrendUpIcon, MessageTextIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { TabBarColors, TabBarShadowStyle } from '@/constants/theme';
 import { cn } from '@/utils/cn';
@@ -17,7 +11,6 @@ const TAB_ICONS = {
   home: HomeIcon,
   chat: MessageTextIcon,
   report: HomeTrendUpIcon,
-  my: SecurityUserIcon,
   explore: CategoryIcon,
 } as const;
 
