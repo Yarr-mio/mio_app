@@ -6,11 +6,13 @@ import {
   postOnboardingStep1,
   postOnboardingStep2,
   postOnboardingStep3,
+  postOnboardingStepSkip,
 } from '@/api/endpoints/onboarding';
 import { queryKeys } from '@/api/queryKeys';
 import type {
   OnboardingCharacterRequest,
   OnboardingCharacterResponse,
+  OnboardingSkippableStep,
   OnboardingStatusResponse,
   OnboardingStep1Request,
   OnboardingStep1Response,
@@ -18,6 +20,7 @@ import type {
   OnboardingStep2Response,
   OnboardingStep3Request,
   OnboardingStep3Response,
+  OnboardingStepSkipResponse,
 } from '@/types/onboarding';
 
 export function useOnboardingStep1() {
@@ -35,6 +38,12 @@ export function useOnboardingStep2() {
 export function useOnboardingStep3() {
   return useMutation<OnboardingStep3Response, Error, OnboardingStep3Request>({
     mutationFn: (body) => postOnboardingStep3(body),
+  });
+}
+
+export function useOnboardingStepSkipMutation() {
+  return useMutation<OnboardingStepSkipResponse, Error, OnboardingSkippableStep>({
+    mutationFn: (stepNumber) => postOnboardingStepSkip(stepNumber),
   });
 }
 

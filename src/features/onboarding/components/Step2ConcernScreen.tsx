@@ -10,17 +10,17 @@ import {
   ONBOARDING_CURRENT_STEPS,
   ONBOARDING_TOTAL_STEPS,
 } from '@/constants/onboarding';
-import { AUTH_ROUTES } from '@/constants/routes';
 import { FgColors, HomeLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingStep2Submit } from '@/features/onboarding/hooks/useOnboardingStep2Submit';
+import { useOnboardingStepSkip } from '@/features/onboarding/hooks/useOnboardingStepSkip';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
-import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step2;
+const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step2 as OnboardingSkippableStep;
 
 interface ConcernButtonProps {
   label: string;
@@ -59,15 +59,28 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
 }
 
 export function Step2ConcernScreen() {
-  const router = useRouter();
   const { concern_types, setConcernTypes } = useOnboardingStore();
   const { submit, isPending, error, clearError } = useOnboardingStep2Submit();
+  const {
+    skip,
+    isPending: isSkipPending,
+    error: skipError,
+    clearError: clearSkipError,
+  } = useOnboardingStepSkip();
+
+  const isActionPending = isPending || isSkipPending;
+  const actionError = error ?? skipError;
 
   const selectedConcerns = (concern_types ?? []) as OnboardingConcernType[];
   const isConcernSelected = selectedConcerns.length > 0;
 
-  const toggleConcern = (id: OnboardingConcernType) => {
+  const clearActionError = () => {
     clearError();
+    clearSkipError();
+  };
+
+  const toggleConcern = (id: OnboardingConcernType) => {
+    clearActionError();
     const nextSelected = selectedConcerns.includes(id)
       ? selectedConcerns.filter((item) => item !== id)
       : [...selectedConcerns, id];
@@ -75,9 +88,11 @@ export function Step2ConcernScreen() {
     setConcernTypes(nextSelected.length === 0 ? null : nextSelected);
   };
 
-  const handleSkip = () => {
-    setConcernTypes(null);
-    router.push(AUTH_ROUTES.onboardingStep3);
+  const handleSkip = async () => {
+    const success = await skip(ONBOARDING_CURRENT_STEP);
+    if (success) {
+      setConcernTypes(null);
+    }
   };
 
   const handleNext = () => {
@@ -126,13 +141,14 @@ export function Step2ConcernScreen() {
         </ScrollView>
 
         <View className="pt-4 gap-2">
-          {error ? <ErrorState message={error} /> : null}
-          <Button disabled={!isConcernSelected || isPending} onPress={handleNext}>
+          {actionError ? <ErrorState message={actionError} /> : null}
+          <Button disabled={!isConcernSelected || isActionPending} onPress={handleNext}>
             다음
           </Button>
           <OnboardingSkipButton
             label="건너뛰기"
             onPress={handleSkip}
+            disabled={isActionPending}
             className="items-center py-4"
           />
         </View>

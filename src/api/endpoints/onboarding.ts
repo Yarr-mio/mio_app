@@ -7,6 +7,7 @@ import type {
   OnboardingCharacterRequest,
   OnboardingCharacterResponse,
   OnboardingProgressStep,
+  OnboardingSkippableStep,
   OnboardingStatusResponse,
   OnboardingStep1Request,
   OnboardingStep1Response,
@@ -14,6 +15,7 @@ import type {
   OnboardingStep2Response,
   OnboardingStep3Request,
   OnboardingStep3Response,
+  OnboardingStepSkipResponse,
 } from '@/types/onboarding';
 
 function createMockMeta(): ApiMeta {
@@ -98,6 +100,26 @@ export async function postOnboardingStep3(
   }
 
   const { data } = await apiClient.post<OnboardingStep3Response>('/v1/onboarding/step/3', body);
+  return data;
+}
+
+/**
+ * 온보딩 단계 건너뛰기
+ */
+export async function postOnboardingStepSkip(
+  stepNumber: OnboardingSkippableStep
+): Promise<OnboardingStepSkipResponse> {
+  if (USE_MOCK) {
+    setMockOnboardingStep(stepNumber);
+    return {
+      data: { onboarding_step: stepNumber },
+      meta: createMockMeta(),
+    };
+  }
+
+  const { data } = await apiClient.post<OnboardingStepSkipResponse>(
+    `/v1/onboarding/step/${stepNumber}/skip`
+  );
   return data;
 }
 

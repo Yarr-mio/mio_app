@@ -21,6 +21,8 @@ export type OnboardingCharacterId = 'mio' | 'bau' | 'rumi' | 'momo' | 'chichi';
 
 export type OnboardingProgressStep = 0 | 1 | 2 | 3;
 
+export type OnboardingSkippableStep = 1 | 2 | 3;
+
 export interface OnboardingResponseItem {
   question_id: string;
   answer: string;
@@ -66,6 +68,12 @@ export interface OnboardingStep3Data {
 }
 
 export type OnboardingStep3Response = ApiResponse<OnboardingStep3Data>;
+
+export interface OnboardingStepSkipData {
+  onboarding_step: OnboardingSkippableStep;
+}
+
+export type OnboardingStepSkipResponse = ApiResponse<OnboardingStepSkipData>;
 
 export interface OnboardingCharacterRequest {
   character_id: OnboardingCharacterId;

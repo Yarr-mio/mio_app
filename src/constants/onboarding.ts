@@ -1,4 +1,7 @@
+import type { AuthRoute } from '@/constants/routes';
+import { AUTH_ROUTES } from '@/constants/routes';
 import type { EmotionType } from '@/types/checkin';
+import type { OnboardingSkippableStep } from '@/types/onboarding';
 
 export const ONBOARDING_TOTAL_STEPS = 3;
 
@@ -14,6 +17,12 @@ export const ONBOARDING_CURRENT_STEPS = {
   step3: 3,
   step4: 4,
 } as const;
+
+export const ONBOARDING_SKIP_NEXT_ROUTES: Record<OnboardingSkippableStep, AuthRoute> = {
+  [ONBOARDING_CURRENT_STEPS.step1]: AUTH_ROUTES.onboardingStep2,
+  [ONBOARDING_CURRENT_STEPS.step2]: AUTH_ROUTES.onboardingStep3,
+  [ONBOARDING_CURRENT_STEPS.step3]: AUTH_ROUTES.onboardingStep4,
+};
 
 export const ONBOARDING_DEFAULT_EMOJI_SCORE = 3;
 
