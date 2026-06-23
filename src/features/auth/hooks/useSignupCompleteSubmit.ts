@@ -25,6 +25,11 @@ export function useSignupCompleteSubmit() {
     try {
       const statusResponse = await signupStatus.mutateAsync();
 
+      if (statusResponse.data.signup_step === 'COMPLETED') {
+        router.replace(AUTH_ROUTES.home);
+        return;
+      }
+
       if (statusResponse.data.signup_step === 'ONBOARDING_COMPLETED') {
         const response = await signupComplete.mutateAsync();
 

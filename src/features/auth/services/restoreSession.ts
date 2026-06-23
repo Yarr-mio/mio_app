@@ -33,8 +33,8 @@ export async function restoreSession({
     const route = await resolveRoute();
     console.log('[스플래시] 이동할 라우트:', route);
     replaceRoute(route);
-  } catch (error) {
-    console.log('[스플래시] 오류 발생, 로그인으로 이동:', error);
+  } catch {
+    console.log('[스플래시] 오류 발생, 로그인으로 이동');
     await clearAuthSession();
     redirectToLogin();
   }

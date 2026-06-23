@@ -17,10 +17,6 @@ export function RootAppContent() {
     setSplashDone(true);
   };
 
-  if (!splashDone) {
-    return <SplashScreen onFinish={handleSplashFinish} />;
-  }
-
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <View className="flex-1 font-sans">
@@ -30,6 +26,11 @@ export function RootAppContent() {
           <Stack.Screen name="mindExplore" options={{ presentation: 'modal' }} />
           <Stack.Screen name="+not-found" />
         </Stack>
+        {!splashDone ? (
+          <View className="absolute inset-0 z-10">
+            <SplashScreen onFinish={handleSplashFinish} />
+          </View>
+        ) : null}
       </View>
     </ThemeProvider>
   );
