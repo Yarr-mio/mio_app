@@ -1,6 +1,6 @@
 # 07. 세션 요약 화면 재구성
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/07-session-summary-redesign.md](../../logs/07-session-summary-redesign.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §7](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 3-1](../CHAT_SERVER_GAP_ANALYSIS.md#3-1-세션-요약-구조-전체가-다름-가장-큰-차이)
 > 백엔드 요청 중: [CHAT_BACKEND_QUESTIONS §8](../CHAT_BACKEND_QUESTIONS.md#8-세션-요약-구조화-필드-추가-요청) (구조화 필드 추가)

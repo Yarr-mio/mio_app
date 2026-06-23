@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { OnboardingCharacterId } from '@/constants/characters';
-import type { ChatMessage, ChatSummary } from '@/types/chat';
+import type { ChatMessage } from '@/types/chat';
 
 export type SessionPhase = 'idle' | 'active' | 'ended';
 
@@ -15,7 +15,6 @@ interface ChatState {
   isAiTyping: boolean;
   emotionScoringActive: boolean;
   pendingEmotionScore: number;
-  summary: ChatSummary | null;
 }
 
 interface ChatActions {
@@ -33,7 +32,6 @@ interface ChatActions {
   setPendingEmotionScore: (score: number) => void;
   deactivateEmotionScoring: () => void;
   endSession: () => void;
-  setSummary: (summary: ChatSummary) => void;
   reset: () => void;
 }
 
@@ -47,7 +45,6 @@ const initialState: ChatState = {
   isAiTyping: false,
   emotionScoringActive: false,
   pendingEmotionScore: 50,
-  summary: null,
 };
 
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
@@ -103,8 +100,6 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
   deactivateEmotionScoring: () => set({ emotionScoringActive: false, streamingMessageId: null }),
 
   endSession: () => set({ sessionPhase: 'ended', isAiTyping: false }),
-
-  setSummary: (summary) => set({ summary }),
 
   reset: () => set(initialState),
 }));

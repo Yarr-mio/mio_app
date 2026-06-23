@@ -1,8 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { queryKeys } from '@/api/queryKeys';
-import { endSession, fetchActiveSession, startSession } from '@/api/endpoints/chat';
+import {
+  endSession,
+  fetchActiveSession,
+  fetchSessionSummary,
+  startSession,
+} from '@/api/endpoints/chat';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { SESSION_SUMMARY_POLL_INTERVAL_MS } from '@/constants/config';
 import type { ActiveSessionResponse } from '@/types/chat';
 
 export function useActiveSession() {
@@ -37,22 +43,21 @@ export function useEndChatSession() {
   return useMutation({
     mutationFn: (sessionId: string) => endSession(sessionId),
     onSuccess: () => {
-      const store = useChatStore.getState();
-      store.endSession();
-
-      // TODO mock: Memory 도메인 폴링 전략 미결 — 실제 연동 시 summary 폴링 후 setSummary 호출
-      store.setSummary({
-        primaryEmotion: { emotionType: 'anxious', intensity: 6, percentChange: -20 },
-        keyPoints: [
-          '일에 대한 부담감이 주요 스트레스 원인이었어요',
-          '작은 실수에 과도하게 반응하는 경향이 있었어요',
-        ],
-        newThoughts: ['실수는 성장의 일부예요', '내가 할 수 있는 것에 집중해 볼게요'],
-        recommendedActions: ['5분 호흡 명상', '오늘 잘한 일 3가지 적기', '가벼운 산책'],
-      });
-
+      useChatStore.getState().endSession();
       router.push('/(main)/chat/summary');
     },
+  });
+}
+
+// summary_status==='pending'이면 일정 주기로 재조회, done/viewed/failed면 멈춤.
+// sessionId는 chatStore.sessionId뿐 아니라 라우트로 받은 last_ended_session_id로도 호출 가능 (05번 작업의 재진입 리다이렉트)
+export function useSessionSummary(sessionId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.chat.session(sessionId ?? 'none'),
+    queryFn: () => fetchSessionSummary(sessionId as string),
+    enabled: !!sessionId,
+    refetchInterval: (query) =>
+      query.state.data?.summary_status === 'pending' ? SESSION_SUMMARY_POLL_INTERVAL_MS : false,
   });
 }
 

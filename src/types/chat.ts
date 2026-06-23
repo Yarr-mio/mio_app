@@ -1,4 +1,3 @@
-import type { EmotionType } from '@/types/checkin';
 import type { OnboardingCharacterId } from '@/constants/characters';
 
 export type ChatMessageRole = 'user' | 'ai';
@@ -81,15 +80,15 @@ export interface EndSessionResponse {
   summary_status: SummaryStatus;
 }
 
-export interface ChatSummaryEmotion {
-  emotionType: EmotionType;
-  intensity: number;
-  percentChange: number;
-}
-
-export interface ChatSummary {
-  primaryEmotion: ChatSummaryEmotion;
-  keyPoints: string[];
-  newThoughts: string[];
-  recommendedActions: string[];
+export interface SessionSummaryResponse {
+  session_id: string;
+  summary_status: SummaryStatus;
+  ended_at: string;
+  duration_seconds: number;
+  message_count: number;
+  summary: string | null;
+  avg_emotion_score: number | null;
+  // 인지왜곡 유형 — 구분자 포맷 불명 (CHAT_BACKEND_QUESTIONS §8 확인 전까지 raw 문자열 그대로 표시)
+  bias_types_detected: string | null;
+  cbt_intervened: boolean | null;
 }

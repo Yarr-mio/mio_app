@@ -40,3 +40,6 @@ export const HTTP_STATUS = {
 
 /** 스플래시 화면이 표시되는 기본 시간(ms)*/
 export const SPLASH_DURATION_MS = 2500;
+
+/** 세션 요약이 summary_status='pending'일 때 재조회 주기(ms) */
+export const SESSION_SUMMARY_POLL_INTERVAL_MS = 3000;
