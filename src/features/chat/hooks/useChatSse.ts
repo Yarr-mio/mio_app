@@ -26,8 +26,6 @@ export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   // 실제 SSE 연동 시 진행 중인 fetch 요청을 취소할 AbortController 보관용 (현재는 mock이라 미할당)
   const abortRef = useRef<AbortController | null>(null);
-  // 소크라테스 질문에 대한 텍스트 답변 전송 직후 → 감정 강도 슬라이드 노출 → 슬라이드 확인 시점에 응답 전송
-  const awaitingSocraticScoreRef = useRef(false);
   const mockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -58,7 +56,6 @@ export function useChatSse(sessionId: string | null) {
     });
 
     if (isSocraticReply) {
-      awaitingSocraticScoreRef.current = true;
       store.activateEmotionScoring(50);
       return;
     }
@@ -74,21 +71,10 @@ export function useChatSse(sessionId: string | null) {
     }
   }
 
-  function confirmEmotionScore(score: number) {
-    const store = useChatStore.getState();
-    store.deactivateEmotionScoring();
-
-    if (awaitingSocraticScoreRef.current) {
-      awaitingSocraticScoreRef.current = false;
-      // TODO: 점수 제출 엔드포인트 미명세 — 백엔드 확인 필요. 현재는 텍스트 답변 + 감정 점수를 함께 제출했다고 가정하고
-      // 소크라테스식 답변에 어울리는 mock 응답을 트리거 (일반 답변용 mockText와 분리)
-      void score;
-      store.setAiTyping(true);
-      setIsStreaming(true);
-      runMock(
-        '그렇게 느끼고 계셨군요. 그 감정을 알아차린 것만으로도 의미 있는 한 걸음이에요. 잠시 그 마음에 함께 머물러볼까요?'
-      );
-    }
+  // TODO: 백엔드 emotion-score 제출 엔드포인트 추가되면 연동 (CHAT_BACKEND_QUESTIONS §6)
+  // emotion_score는 서버→클라 단방향 신호라 제출 API가 없음 — 점수는 버리고 패널만 닫는다
+  function confirmEmotionScore(_score: number) {
+    useChatStore.getState().deactivateEmotionScoring();
   }
 
   // TODO: 서버 연동 시 아래 mock을 실제 SSE fetch로 교체

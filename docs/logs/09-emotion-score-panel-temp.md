@@ -5,4 +5,6 @@
 
 ## 기록
 
-(아직 작업 시작 전)
+- `confirmEmotionScore()`에서 후속 mock 응답 트리거(소크라테스 답변용 follow-up) 제거 — `deactivateEmotionScoring()`만 호출.
+- `awaitingSocraticScoreRef`가 더 이상 읽히는 곳이 없어(쓰기만 하던 죽은 상태) 함께 제거. `sendMessage`의 소크라테스 분기는 `activateEmotionScoring(50)` 호출만 남음.
+- 패널이 닫힌 뒤 흐름 확인: 소크라테스 분기에서는 `setIsStreaming(true)`를 호출하지 않으므로 `isStreaming`이 계속 `false`로 유지됨 → 패널이 닫히면 `ChatMain`이 `ChatInputBar`를 `disabled=false`로 바로 보여줘서 다음 메시지 입력으로 자연스럽게 이어짐 (코드 경로로 확인, 백엔드가 없어 실기기 동작 확인은 보류).
