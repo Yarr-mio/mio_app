@@ -60,13 +60,3 @@ export function useSessionSummary(sessionId: string | null | undefined) {
       query.state.data?.summary_status === 'pending' ? SESSION_SUMMARY_POLL_INTERVAL_MS : false,
   });
 }
-
-export function useSaveChatSession() {
-  return useMutation({
-    // TODO mock: 즉시 성공 응답 — 실제 연동 시 Memory API 호출로 교체
-    mutationFn: async (_sessionId: string) => {},
-    onSuccess: () => {
-      router.push('/(main)/chat/end');
-    },
-  });
-}

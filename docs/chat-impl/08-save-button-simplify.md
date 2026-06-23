@@ -1,6 +1,6 @@
 # 08. "기록 저장하기" 버튼 단순화
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/08-save-button-simplify.md](../../logs/08-save-button-simplify.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §8](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 3-4](../CHAT_SERVER_GAP_ANALYSIS.md#3-4-기록-저장하기-버튼에-대응하는-api가-없다)
 

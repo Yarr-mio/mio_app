@@ -5,4 +5,5 @@
 
 ## 기록
 
-(아직 작업 시작 전)
+- `useSaveChatSession` 제거 (대응 백엔드 API 없음 — `POST /sessions/{id}/end`가 이미 SessionConsolidator를 트리거함).
+- `SessionSummary.tsx`의 "기록 저장하기" 버튼을 `router.push('/(main)/chat/end')` 단순 네비게이션으로 교체, `isPending` 기반 로딩/비활성화 로직 제거.

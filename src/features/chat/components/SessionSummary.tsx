@@ -4,9 +4,9 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { PrimaryColors } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
-import { useSaveChatSession, useSessionSummary } from '@/features/chat/hooks/useChat';
+import { useSessionSummary } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -29,7 +29,6 @@ export function SessionSummary() {
 
   const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
   const { data: previousSummary } = useSessionSummary(previousSessionId);
-  const { mutate: saveSession, isPending } = useSaveChatSession();
 
   if (!sessionId) {
     return null;
@@ -124,15 +123,7 @@ export function SessionSummary() {
             </SectionCard>
           )}
 
-          <Button
-            variant="primary"
-            size="lg"
-            loading={isPending}
-            onPress={() => {
-              if (isPending) return;
-              saveSession(sessionId);
-            }}
-          >
+          <Button variant="primary" size="lg" onPress={() => router.push('/(main)/chat/end')}>
             기록 저장하기
           </Button>
         </ScrollView>

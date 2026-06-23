@@ -15,7 +15,7 @@
 | 5   | `GET /sessions/active` 응답 모델 교체         | fix       | [05-active-session-response.md](./05-active-session-response.md)           | [log](../logs/05-active-session-response.md)      | ✅   |
 | 6   | `summary_status` viewed/failed 케이스 처리    | fix       | [06-summary-status-handling.md](./06-summary-status-handling.md)           | [log](../logs/06-summary-status-handling.md)      | ✅   |
 | 7   | 세션 요약 화면 재구성                         | feature   | [07-session-summary-redesign.md](./07-session-summary-redesign.md)         | [log](../logs/07-session-summary-redesign.md)     | ✅   |
-| 8   | "기록 저장하기" 버튼 단순화                   | refactor  | [08-save-button-simplify.md](./08-save-button-simplify.md)                 | [log](../logs/08-save-button-simplify.md)         | ⬜   |
+| 8   | "기록 저장하기" 버튼 단순화                   | refactor  | [08-save-button-simplify.md](./08-save-button-simplify.md)                 | [log](../logs/08-save-button-simplify.md)         | ✅   |
 | 9   | EmotionScorePanel 제출 동작 임시 단순화       | fix       | [09-emotion-score-panel-temp.md](./09-emotion-score-panel-temp.md)         | [log](../logs/09-emotion-score-panel-temp.md)     | ⬜   |
 | 10  | 세션 시작 실패 에러 코드별 분기 처리          | feature   | [10-session-start-error-handling.md](./10-session-start-error-handling.md) | [log](../logs/10-session-start-error-handling.md) | ⬜   |
 | 11  | 채팅 SSE 실제 서버 연동 (mock 제거)           | feature   | [11-real-sse-integration.md](./11-real-sse-integration.md)                 | [log](../logs/11-real-sse-integration.md)         | ⬜   |
