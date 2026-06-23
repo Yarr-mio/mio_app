@@ -21,6 +21,11 @@ export function useOnboardingStep2Submit() {
   const submit = async (selectedConcerns: OnboardingConcernType[]) => {
     setError(null);
 
+    if (selectedConcerns.length === 0) {
+      setError('최소 1개의 고민을 선택해 주세요.');
+      return;
+    }
+
     try {
       await onboardingStep2.mutateAsync({
         concern_types: selectedConcerns,

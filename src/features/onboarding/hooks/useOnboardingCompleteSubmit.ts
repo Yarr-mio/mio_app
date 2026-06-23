@@ -37,11 +37,7 @@ export function useOnboardingCompleteSubmit() {
       await signupComplete.mutateAsync();
       router.replace(AUTH_ROUTES.home);
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : readApiErrorMessage(submitError, ONBOARDING_COMPLETE_ERROR_MESSAGE);
-      setError(message);
+      setError(readApiErrorMessage(submitError, ONBOARDING_COMPLETE_ERROR_MESSAGE));
     }
   };
 
