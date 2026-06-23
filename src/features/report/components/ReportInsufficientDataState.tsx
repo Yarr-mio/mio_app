@@ -36,6 +36,7 @@ interface ReportInsufficientDataStateProps {
   period: ReportPeriod;
   checkinCount: number;
   requiredCount?: number;
+  message?: string;
 }
 
 interface InsufficientDataGuideItemProps {
@@ -75,6 +76,7 @@ export function ReportInsufficientDataState({
   period,
   checkinCount,
   requiredCount,
+  message,
 }: ReportInsufficientDataStateProps) {
   const onboardingResult = useUserStore((state) => state.onboardingResult);
   const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
@@ -83,7 +85,7 @@ export function ReportInsufficientDataState({
 
   const resolvedRequiredCount = requiredCount ?? REPORT_REQUIRED_CHECKIN_COUNT;
   const checkinCardTitle = REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE[period];
-  const subtitle = formatInsufficientDataSubtitle(period, resolvedRequiredCount);
+  const subtitle = message?.trim() || formatInsufficientDataSubtitle(period, resolvedRequiredCount);
 
   const handleCharacterImageError = () => {
     setImageSource(REPORT_CHARACTER_DATA_FALLBACK_IMAGE);

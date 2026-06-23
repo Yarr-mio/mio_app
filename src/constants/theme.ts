@@ -607,6 +607,10 @@ export const ReportPendingStateClasses = {
   container: 'mt-6 min-h-[200px] items-center justify-center gap-3',
 } as const;
 
+export const ReportFetchingOverlayClasses = {
+  overlay: 'absolute inset-0 z-10 items-center justify-center bg-midnight/60',
+} as const;
+
 /** ScoreSlider 값 범위 및 눈금 */
 export const ScoreSliderRange = {
   min: 0,

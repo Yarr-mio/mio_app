@@ -6,27 +6,40 @@ import {
   getOnboardingCharacterById,
   ONBOARDING_DEFAULT_CHARACTER_ID,
 } from '@/constants/characters';
+import { HTTP_STATUS } from '@/constants/config';
 import {
   formatReportChatButtonLabel,
   REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD,
+  REPORT_SERVER_ERROR_MESSAGE,
   REPORT_STATUS,
   REPORT_TITLE,
   type ReportPeriod,
 } from '@/constants/report';
 import { MAIN_ROUTES } from '@/constants/routes';
-import { ReportDividerClasses, ReportSectionClasses, ReportTextClasses } from '@/constants/theme';
+import {
+  ButtonColors,
+  ReportDividerClasses,
+  ReportFetchingOverlayClasses,
+  ReportSectionClasses,
+  ReportTextClasses,
+} from '@/constants/theme';
+import {
+  readApiErrorCode,
+  readApiErrorMessage,
+  readApiHttpStatus,
+} from '@/features/auth/utils/readApiError';
 import { AverageEmotionScoreCard } from '@/features/report/components/AverageEmotionScoreCard';
 import { CharacterStoryCard } from '@/features/report/components/CharacterStoryCard';
 import { DistortionTop3Section } from '@/features/report/components/DistortionTop3Section';
 import { EmotionConstellation } from '@/features/report/components/EmotionConstellation';
 import { ReportCoachingSection } from '@/features/report/components/ReportCoachingSection';
 import { ReportDateNavigator } from '@/features/report/components/ReportDateNavigator';
+import { ReportErrorState } from '@/features/report/components/ReportErrorState';
 import { ReportInsufficientDataState } from '@/features/report/components/ReportInsufficientDataState';
-import { ReportNarrativeSection } from '@/features/report/components/ReportNarrativeSection';
 import { ReportPendingState } from '@/features/report/components/ReportPendingState';
 import { ReportPeriodTabs } from '@/features/report/components/ReportPeriodTabs';
 import { TodoSummaryCard } from '@/features/report/components/TodoSummaryCard';
-import { useReportMock } from '@/features/report/hooks/useReportMock';
+import { useReport } from '@/features/report/hooks/useReport';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import {
@@ -39,7 +52,14 @@ import {
 } from '@/utils/date';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
+
+function isReportServerError(error: unknown): boolean {
+  return (
+    readApiHttpStatus(error) === HTTP_STATUS.INTERNAL_SERVER_ERROR ||
+    readApiErrorCode(error) === 'SERVER_ERROR'
+  );
+}
 
 export function GrowthReportScreen() {
   const [period, setPeriod] = useState<ReportPeriod>('week');
@@ -55,7 +75,12 @@ export function GrowthReportScreen() {
     period === 'week' ? weekAnchorDate : toKstDate(getMonthRange(monthAnchorDate).start);
   const dateRange =
     period === 'week' ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
-  const { report } = useReportMock(period, anchorDate);
+  const { report, isPending, isFetching, isPlaceholderData, isError, error, refetch } = useReport({
+    period,
+    anchorDate,
+  });
+
+  const showFetchingOverlay = !isPending && isFetching && isPlaceholderData;
 
   const handlePrevious = () => {
     if (period === 'week') {
@@ -95,6 +120,22 @@ export function GrowthReportScreen() {
   };
 
   const renderReportContent = () => {
+    if (isPending) {
+      return <ReportPendingState />;
+    }
+
+    if (isError) {
+      const errorMessage = isReportServerError(error)
+        ? REPORT_SERVER_ERROR_MESSAGE
+        : readApiErrorMessage(error);
+
+      return <ReportErrorState message={errorMessage} onRetry={refetch} />;
+    }
+
+    if (!report) {
+      return <ReportPendingState />;
+    }
+
     if (report.status === REPORT_STATUS.PENDING) {
       return <ReportPendingState />;
     }
@@ -105,6 +146,7 @@ export function GrowthReportScreen() {
           period={period}
           checkinCount={report.checkin_count}
           requiredCount={report.required_count}
+          message={report.message}
         />
       );
     }
@@ -121,12 +163,14 @@ export function GrowthReportScreen() {
           <DistortionTop3Section distortionTop3={report.distortion_top3} />
           <TodoSummaryCard period={period} todoSummary={report.todo_summary} />
         </View>
-        <CharacterStoryCard
-          period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
-          anchorDate={anchorDate}
-          characterId={characterId}
-        />
-        {report.narrative ? <ReportNarrativeSection narrative={report.narrative} /> : null}
+        {report.narrative ? (
+          <CharacterStoryCard
+            period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
+            anchorDate={anchorDate}
+            characterId={characterId}
+            storyText={report.narrative}
+          />
+        ) : null}
         {report.coaching_direction ? (
           <ReportCoachingSection coachingDirection={report.coaching_direction} />
         ) : null}
@@ -176,6 +220,11 @@ export function GrowthReportScreen() {
           <Button onPress={handleGoToChat}>{formatReportChatButtonLabel(character.name)}</Button>
         </View>
       </ScreenContainer>
+      {showFetchingOverlay ? (
+        <View className={ReportFetchingOverlayClasses.overlay}>
+          <ActivityIndicator color={ButtonColors.spinnerLight} />
+        </View>
+      ) : null}
     </View>
   );
 }

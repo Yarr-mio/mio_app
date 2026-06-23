@@ -17,7 +17,6 @@ import {
   ReportDividerClasses,
   ReportTextClasses,
 } from '@/constants/theme';
-import { getCharacterStoryMock } from '@/features/report/data/characterStoryMock';
 import {
   formatCharacterStoryMonthlyDateLabel,
   formatCharacterStoryWeeklyDateLabel,
@@ -29,13 +28,18 @@ interface CharacterStoryCardProps {
   period: CharacterStoryPeriod;
   anchorDate: Date;
   characterId: OnboardingCharacterId;
+  storyText: string;
 }
 
-export function CharacterStoryCard({ period, anchorDate, characterId }: CharacterStoryCardProps) {
+export function CharacterStoryCard({
+  period,
+  anchorDate,
+  characterId,
+  storyText,
+}: CharacterStoryCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const character = getOnboardingCharacterById(characterId);
-  const storyText = getCharacterStoryMock(characterId, period);
   const title = formatCharacterStoryCardTitle(character.name, period);
   const dateLabel =
     period === 'weekly'
