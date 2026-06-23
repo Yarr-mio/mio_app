@@ -20,5 +20,5 @@ export interface UserOnboardingSelectionResult {
   emotionSelection: UserOnboardingEmotionSelection | null;
   concernTypes: OnboardingConcernType[] | null;
   preferredStyle: OnboardingStyleType | null;
-  characterId: OnboardingCharacterId;
+  characterId: OnboardingCharacterId | null;
 }
