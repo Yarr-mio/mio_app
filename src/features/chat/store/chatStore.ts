@@ -20,6 +20,7 @@ interface ChatActions {
   startSession: (sessionId: string, characterId: OnboardingCharacterId) => void;
   addMessage: (message: ChatMessage) => void;
   appendDelta: (msgId: string, chunk: string) => void;
+  confirmStreamingMessageId: (outboundMsgId: string) => void;
   setAiTyping: (value: boolean) => void;
   activateEmotionScoring: (initialScore: number) => void;
   setPendingEmotionScore: (score: number) => void;
@@ -60,6 +61,22 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
         msg.id === msgId ? { ...msg, content: msg.content + chunk } : msg
       ),
     })),
+
+  // session_meta 시점엔 outboundMsgId(AI 메시지 id)를 아직 몰라 placeholder id로 빈 AI 메시지를 추적하다가,
+  // 최초 delta 수신 시 실제 outboundMsgId로 placeholder id를 확정한다 (placeholder === outboundMsgId면 스킵)
+  confirmStreamingMessageId: (outboundMsgId) =>
+    set((state) => {
+      if (!state.streamingMessageId || state.streamingMessageId === outboundMsgId) {
+        return state;
+      }
+      const placeholderId = state.streamingMessageId;
+      return {
+        streamingMessageId: outboundMsgId,
+        messages: state.messages.map((msg) =>
+          msg.id === placeholderId ? { ...msg, id: outboundMsgId } : msg
+        ),
+      };
+    }),
 
   setAiTyping: (value) => set({ isAiTyping: value }),
 

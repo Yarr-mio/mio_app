@@ -5,4 +5,7 @@
 
 ## 기록
 
-(아직 작업 시작 전)
+- `chatStore`에 `confirmStreamingMessageId(outboundMsgId)` 액션 추가. `streamingMessageId`를 placeholder id → 확정 id로 전환하면서 `messages` 배열의 해당 메시지 id도 같이 갱신한다.
+- `handleSessionMeta`: AI 메시지를 `pending-ai-${inboundMsgId}` placeholder id로 추가 (기존엔 `data.message_id`를 그대로 AI 메시지 id로 써서 실서버에서는 delta가 영원히 안 붙는 버그였음).
+- `handleDelta`: 매 호출마다 `confirmStreamingMessageId(data.msg_id)`를 먼저 호출 — placeholder와 다르면 그 시점에 한 번만 치환되고, 이후 호출은 이미 같은 id라 스킵됨.
+- `runMock`도 `msg_in_mock_*`/`msg_out_mock_*`로 inbound/outbound id를 분리 발급해 회귀 테스트 가능하게 함.

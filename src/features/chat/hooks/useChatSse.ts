@@ -91,11 +91,13 @@ export function useChatSse(sessionId: string | null) {
   //   const reader = res.body?.getReader();
   //   ... ReadableStream 청크 파싱 후 아래 핸들러 호출
 
+  // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
+  // outboundMsgId 대신 placeholder id로 빈 AI 메시지를 추적하고, 최초 delta 수신 시 확정한다
   function handleSessionMeta(data: SseSessionMetaData) {
-    const aiMsgId = data.message_id;
+    const placeholderId = `pending-ai-${data.message_id}`;
     const store = useChatStore.getState();
     store.addMessage({
-      id: aiMsgId,
+      id: placeholderId,
       role: 'ai',
       type: 'normal',
       content: '',
@@ -103,11 +105,13 @@ export function useChatSse(sessionId: string | null) {
     });
     // 빈 AI 메시지가 추가되는 순간 TypingIndicator 숨김 — delta가 이어받음
     store.setAiTyping(false);
-    useChatStore.setState({ streamingMessageId: aiMsgId });
+    useChatStore.setState({ streamingMessageId: placeholderId });
   }
 
   function handleDelta(data: SseDeltaData) {
-    useChatStore.getState().appendDelta(data.msg_id, data.chunk);
+    const store = useChatStore.getState();
+    store.confirmStreamingMessageId(data.msg_id);
+    store.appendDelta(data.msg_id, data.chunk);
   }
 
   // TODO: 백엔드 명세가 확실해지면 연동
@@ -140,21 +144,23 @@ export function useChatSse(sessionId: string | null) {
   function runMock(
     mockText: string = '말씀 잘 들었어요. 그 상황에서 어떤 감정이 가장 크게 느껴졌나요?'
   ) {
-    const metaId = `ai-${Date.now()}`;
+    // 실서버처럼 inboundMsgId(사용자 메시지)와 outboundMsgId(AI 메시지)를 다른 값으로 발급
+    const inboundMsgId = `msg_in_mock_${Date.now()}`;
+    const outboundMsgId = `msg_out_mock_${Date.now()}`;
 
     mockTimeoutRef.current = setTimeout(() => {
-      handleSessionMeta({ message_id: metaId, received_at: new Date().toISOString() });
+      handleSessionMeta({ message_id: inboundMsgId, received_at: new Date().toISOString() });
 
       let i = 0;
       mockIntervalRef.current = setInterval(() => {
         if (i < mockText.length) {
-          handleDelta({ msg_id: metaId, chunk: mockText[i] });
+          handleDelta({ msg_id: outboundMsgId, chunk: mockText[i] });
           i++;
         } else {
           if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
           mockIntervalRef.current = null;
           handleDone({
-            msg_id: metaId,
+            msg_id: outboundMsgId,
             emotion_score: null,
             is_crisis_flagged: false,
             finished_reason: 'stop',

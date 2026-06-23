@@ -8,7 +8,7 @@
 
 | #   | 작업                                          | 커밋 타입 | 작업 문서                                                                  | 로그                                              | 상태 |
 | --- | --------------------------------------------- | --------- | -------------------------------------------------------------------------- | ------------------------------------------------- | ---- |
-| 1   | 메시지 ID 체계 재설계 (inbound/outbound 분리) | fix       | [01-message-id-refactor.md](./01-message-id-refactor.md)                   | [log](../logs/01-message-id-refactor.md)          | ⬜   |
+| 1   | 메시지 ID 체계 재설계 (inbound/outbound 분리) | fix       | [01-message-id-refactor.md](./01-message-id-refactor.md)                   | [log](../logs/01-message-id-refactor.md)          | ✅   |
 | 2   | `delta.replace` 이벤트 핸들러 추가            | feature   | [02-delta-replace-handler.md](./02-delta-replace-handler.md)               | [log](../logs/02-delta-replace-handler.md)        | ⬜   |
 | 3   | 위기(crisis) 처리 보강 + 세션 자동종료 제거   | fix       | [03-crisis-handling-fixes.md](./03-crisis-handling-fixes.md)               | [log](../logs/03-crisis-handling-fixes.md)        | ⬜   |
 | 4   | `emotion_score` optional 처리                 | fix       | [04-emotion-score-optional.md](./04-emotion-score-optional.md)             | [log](../logs/04-emotion-score-optional.md)       | ⬜   |

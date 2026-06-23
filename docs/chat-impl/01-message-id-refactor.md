@@ -1,6 +1,6 @@
 # 01. 메시지 ID 체계 재설계 (inbound/outbound 분리)
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/01-message-id-refactor.md](../../logs/01-message-id-refactor.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §1](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 1-1](../CHAT_SERVER_GAP_ANALYSIS.md#1-1-session_meta의-message_id-오용--delta가-영원히-붙지-않음)
 
