@@ -15,4 +15,11 @@ export const queryKeys = {
     all: () => ['onboarding'] as const,
     status: () => ['onboarding', 'status'] as const,
   },
+  report: {
+    all: () => ['report'] as const,
+    weekly: (weekStart: string) => ['report', 'weekly', weekStart] as const,
+    monthly: (monthStart: string) => ['report', 'monthly', monthStart] as const,
+    emotionTrend: (period: string, periodStart: string) =>
+      ['report', 'emotionTrend', period, periodStart] as const,
+  },
 };
