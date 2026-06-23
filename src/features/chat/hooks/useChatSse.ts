@@ -166,7 +166,7 @@ export function useChatSse(sessionId: string | null) {
     useChatStore.setState({ streamingMessageId: null });
     setIsStreaming(false);
 
-    if (data.emotion_score !== null) {
+    if (typeof data.emotion_score === 'number') {
       store.activateEmotionScoring(data.emotion_score);
     }
     if (data.is_crisis_flagged && data.finished_reason === 'replaced_by_guard') {
@@ -193,9 +193,9 @@ export function useChatSse(sessionId: string | null) {
         } else {
           if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
           mockIntervalRef.current = null;
+          // emotion_score 필드 자체를 생략 (서버 스펙상 optional) — 슬라이더가 뜨지 않아야 함
           handleDone({
             msg_id: outboundMsgId,
-            emotion_score: null,
             is_crisis_flagged: false,
             finished_reason: 'stop',
           });
@@ -226,7 +226,6 @@ export function useChatSse(sessionId: string | null) {
         handleDeltaReplace({ msg_id: outboundMsgId, safe_response: safeResponse });
         handleDone({
           msg_id: outboundMsgId,
-          emotion_score: null,
           is_crisis_flagged: false,
           finished_reason: 'stop',
         });

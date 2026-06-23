@@ -1,6 +1,6 @@
 # 04. `emotion_score` optional 처리
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/04-emotion-score-optional.md](../../logs/04-emotion-score-optional.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §4](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 1-2](../CHAT_SERVER_GAP_ANALYSIS.md#1-2-emotion_score-undefined-체크-누락)
 

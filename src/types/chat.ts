@@ -38,13 +38,15 @@ export interface SseCrisisResource {
 export interface SseCrisisData {
   severity: number;
   fixed_response: string;
-  resources: { hotlines: SseCrisisResource[] };
+  // severity 1은 null (핫라인 없는 진정 유도 문구만)
+  resources: { hotlines: SseCrisisResource[] } | null;
 }
 
 export interface SseDoneData {
   msg_id: string;
   // TODO: 소크라테스 질문 식별 필드 백엔드 확인 필요 (message_type?: 'socratic')
-  emotion_score: number | null;
+  // optional — 필드 자체가 생략될 수 있음(undefined). null이 아니므로 `!== null` 체크로는 못 걸러냄
+  emotion_score?: number;
   is_crisis_flagged: boolean;
   finished_reason: 'stop' | 'crisis_flow' | 'security_refusal' | 'replaced_by_guard' | 'error';
 }
