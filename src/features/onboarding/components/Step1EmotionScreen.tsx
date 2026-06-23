@@ -13,9 +13,9 @@ import {
 import { ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
 import { useOnboardingStep1Submit } from '@/features/onboarding/hooks/useOnboardingStep1Submit';
 import { useOnboardingStepSkip } from '@/features/onboarding/hooks/useOnboardingStepSkip';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import type { EmotionType } from '@/types/checkin';
 import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
@@ -32,7 +32,7 @@ export function Step1EmotionScreen() {
     navigation.setOptions({ gestureEnabled: false });
   }, [navigation]);
 
-  const { emotion_state, emoji_score, setEmotionState, setEmojiScore } = useOnboardingStore();
+  const { emotion_state, emoji_score, setEmotionState, setEmojiScore } = useOnboardingSelection();
   const { submit, isPending, error, clearError } = useOnboardingStep1Submit();
   const {
     skip,

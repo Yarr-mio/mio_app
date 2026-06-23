@@ -2,51 +2,23 @@ import { ErrorState } from '@/components/feedback/ErrorState';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import {
-  getOnboardingCharacterById,
-  ONBOARDING_DEFAULT_CHARACTER_ID,
-} from '@/constants/characters';
+import { getOnboardingCharacterById } from '@/constants/characters';
 import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
-import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
-import { userStoreUtils, useUserStore } from '@/store/userStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function OnboardingCompleteScreen() {
   const insets = useSafeAreaInsets();
-  const { character_id, emotion_state, emoji_score, concern_types, preferred_style } =
-    useOnboardingStore();
-  const { setOnboardingResult } = useUserStore();
-  const setSelectedPartner = usePartnerStore((state) => state.setSelectedPartner);
+  const characterId = useSelectedCharacterId();
+  const character = getOnboardingCharacterById(characterId);
   const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit();
-  const selectedCharacterId = character_id ?? ONBOARDING_DEFAULT_CHARACTER_ID;
-  const character = getOnboardingCharacterById(selectedCharacterId);
 
   const handleStart = () => {
     clearError();
-
-    const emotionSelection =
-      emotion_state && emoji_score ? { emotion: emotion_state, intensity: emoji_score } : null;
-
-    void submit({
-      emotionState: emotion_state,
-      emojiScore: emoji_score,
-      concernTypes: concern_types,
-      preferredStyle: preferred_style,
-      characterId: selectedCharacterId,
-      onBeforeNavigate: () => {
-        setOnboardingResult({
-          emotionSelection,
-          concernTypes: userStoreUtils.normalizeConcernTypes(concern_types),
-          preferredStyle: preferred_style,
-          characterId: selectedCharacterId,
-        });
-        setSelectedPartner(selectedCharacterId);
-      },
-    });
+    void submit();
   };
 
   return (
