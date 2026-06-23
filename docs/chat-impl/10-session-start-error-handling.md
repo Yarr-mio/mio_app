@@ -1,6 +1,6 @@
 # 10. 세션 시작 실패 에러 코드별 분기 처리
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/10-session-start-error-handling.md](../../logs/10-session-start-error-handling.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §10](../CHAT_FRONTEND_TASKS.md), [API_SPEC.md 주요 에러 코드](../API_SPEC.md#주요-에러-코드-선택-발췌)
 > 결정 사항 (2026-06-23): 화면 이동 전 짧은 토스트 안내를 먼저 보여줌 (안내 없이 즉시 이동하지 않음)

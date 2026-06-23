@@ -17,7 +17,7 @@
 | 7   | 세션 요약 화면 재구성                         | feature   | [07-session-summary-redesign.md](./07-session-summary-redesign.md)         | [log](../logs/07-session-summary-redesign.md)     | ✅   |
 | 8   | "기록 저장하기" 버튼 단순화                   | refactor  | [08-save-button-simplify.md](./08-save-button-simplify.md)                 | [log](../logs/08-save-button-simplify.md)         | ✅   |
 | 9   | EmotionScorePanel 제출 동작 임시 단순화       | fix       | [09-emotion-score-panel-temp.md](./09-emotion-score-panel-temp.md)         | [log](../logs/09-emotion-score-panel-temp.md)     | ✅   |
-| 10  | 세션 시작 실패 에러 코드별 분기 처리          | feature   | [10-session-start-error-handling.md](./10-session-start-error-handling.md) | [log](../logs/10-session-start-error-handling.md) | ⬜   |
+| 10  | 세션 시작 실패 에러 코드별 분기 처리          | feature   | [10-session-start-error-handling.md](./10-session-start-error-handling.md) | [log](../logs/10-session-start-error-handling.md) | ✅   |
 | 11  | 채팅 SSE 실제 서버 연동 (mock 제거)           | feature   | [11-real-sse-integration.md](./11-real-sse-integration.md)                 | [log](../logs/11-real-sse-integration.md)         | ⬜   |
 
 상태 표기: ⬜ 미착수 · 🟨 진행중 · ✅ 완료. 작업을 시작/완료할 때 이 표와 해당 작업 문서 상단의 상태를 함께 갱신할 것.

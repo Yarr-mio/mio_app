@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { Alert } from 'react-native';
 import { queryKeys } from '@/api/queryKeys';
 import {
   endSession,
@@ -8,7 +9,9 @@ import {
   startSession,
 } from '@/api/endpoints/chat';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { SESSION_SUMMARY_POLL_INTERVAL_MS } from '@/constants/config';
+import { HTTP_STATUS, SESSION_SUMMARY_POLL_INTERVAL_MS } from '@/constants/config';
+import { AUTH_ROUTES } from '@/constants/routes';
+import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type { ActiveSessionResponse } from '@/types/chat';
 
 export function useActiveSession() {
@@ -35,6 +38,30 @@ export function useStartChatSession() {
           data.character_id,
           previousActiveSession?.last_ended_session_id
         );
+    },
+    onError: (error) => {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'ONBOARDING_REQUIRED') {
+        Alert.alert('온보딩이 필요해요', '먼저 온보딩을 마치면 대화를 시작할 수 있어요.', [
+          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.onboardingStep1) },
+        ]);
+        return;
+      }
+
+      if (status === HTTP_STATUS.CONFLICT && errorCode === 'SESSION_ALREADY_ACTIVE') {
+        Alert.alert('이미 진행 중인 대화가 있어요', '기존 대화로 이동할게요.', [
+          {
+            text: '확인',
+            onPress: () =>
+              queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() }),
+          },
+        ]);
+        return;
+      }
+
+      Alert.alert('대화 시작 실패', '잠시 후 다시 시도해 주세요.');
     },
   });
 }
