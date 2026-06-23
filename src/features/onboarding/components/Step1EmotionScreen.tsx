@@ -19,11 +19,19 @@ import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore'
 import type { EmotionType } from '@/types/checkin';
 import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
+import { useNavigation } from 'expo-router';
+import { useEffect } from 'react';
 import { ScrollView, View } from 'react-native';
 
 const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step1 as OnboardingSkippableStep;
 
 export function Step1EmotionScreen() {
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: false });
+  }, [navigation]);
+
   const { emotion_state, emoji_score, setEmotionState, setEmojiScore } = useOnboardingStore();
   const { submit, isPending, error, clearError } = useOnboardingStep1Submit();
   const {
