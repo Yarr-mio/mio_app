@@ -5,4 +5,5 @@
 
 ## 기록
 
-(아직 작업 시작 전)
+- 05번 작업에서 이미 도입한 공유 `SummaryStatus`(`'pending'|'done'|'viewed'|'failed'`) 타입을 `EndSessionResponse.summary_status`에도 적용해 인라인 `'pending' | 'done'` 중복 정의를 제거.
+- 타입 에러는 없었음 — 현재 `summary_status` 값을 직접 분기하는 코드가 없어(가짜 요약 mock이 still 박혀 있는 상태) 영향 없음. 실제 화면 처리(`pending` 폴링, `failed` 안내+재시도)는 07번 작업에서 `useSessionSummary` 폴링 훅과 함께 구현.

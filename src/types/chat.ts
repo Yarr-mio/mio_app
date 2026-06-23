@@ -78,7 +78,7 @@ export interface EndSessionResponse {
   ended_at: string;
   message_count: number;
   duration_seconds: number;
-  summary_status: 'pending' | 'done';
+  summary_status: SummaryStatus;
 }
 
 export interface ChatSummaryEmotion {

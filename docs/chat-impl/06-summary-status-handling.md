@@ -1,6 +1,6 @@
 # 06. `summary_status` viewed/failed 케이스 처리
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/06-summary-status-handling.md](../../logs/06-summary-status-handling.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §6](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 2-2](../CHAT_SERVER_GAP_ANALYSIS.md#2-2-summary_status-enum-값-누락)
 > 결정 사항: [GAP_ANALYSIS §0-1](../CHAT_SERVER_GAP_ANALYSIS.md#0-1-결정-사항-2026-06-22-점검) — failed 시 실패 안내 + 재시도 버튼
