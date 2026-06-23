@@ -35,7 +35,7 @@ export interface SessionSummary {
 }
 
 export interface WeeklyReportData {
-  report_id: string;
+  report_id?: string;
   week_start: string;
   week_end: string;
   status: ReportStatus;
@@ -49,7 +49,7 @@ export interface WeeklyReportData {
   coaching_direction: string | null;
   todo_summary: TodoSummary;
   session_summary: SessionSummary;
-  generated_at: string;
+  generated_at?: string;
   message?: string;
 }
 

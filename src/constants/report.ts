@@ -26,6 +26,11 @@ export const REPORT_DISTORTION_EMPTY_MESSAGE = '이번 주 인지 왜곡이 감�
 
 export const REPORT_PENDING_MESSAGE = '리포트를 생성하고 있어요';
 
+export const REPORT_SERVER_ERROR_MESSAGE =
+  '리포트를 불러오지 못했어요. 이전 기간을 선택하거나 다시 시도해 주세요.';
+
+export const REPORT_RETRY_BUTTON_LABEL = '다시 시도';
+
 export const REPORT_REQUIRED_CHECKIN_COUNT = 3;
 
 /** 월간 리포트 생성에 필요한 최소 체크인 횟수 */
