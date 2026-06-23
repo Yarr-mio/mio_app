@@ -1,6 +1,6 @@
 # 11. 채팅 SSE 실제 서버 연동 (mock 제거)
 
-> 상태: 미착수
+> 상태: 완료 (실기기/실서버 수동 테스트는 보류 — 아래 기록 참고)
 > 로그: [logs/11-real-sse-integration.md](../../logs/11-real-sse-integration.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §11](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 4](../CHAT_SERVER_GAP_ANALYSIS.md#4-누락된-구현-현재-전부-mock), [SSE_SPEC.md](../SSE_SPEC.md)
 > 선행 작업: 01~10번 전부 (이 작업이 mock→실제 전환의 마지막 단계이므로, 핸들러 로직이 먼저 정리돼 있어야 함)

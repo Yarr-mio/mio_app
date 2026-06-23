@@ -1,4 +1,6 @@
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS } from '@/constants/config';
+import { useAuthStore } from '@/store/authStore';
 import type {
   SseCrisisData,
   SseDeltaData,
@@ -6,17 +8,31 @@ import type {
   SseDoneData,
   SseSessionMetaData,
 } from '@/types/chat';
+import * as Crypto from 'expo-crypto';
+// 글로벌 fetch는 RN에서 response.body.getReader() 스트리밍을 지원하지 않음 — expo/fetch는 WinterCG 호환 구현으로 스트리밍 지원
+import { fetch } from 'expo/fetch';
 import { useEffect, useRef, useState } from 'react';
-
-// TODO mock 전용: delta.replace 동작 수동 확인용 트리거 문구. 실서버 연동(11번 작업)에서 mock 제거 시 같이 삭제
-const MOCK_DELTA_REPLACE_TRIGGER = '교체테스트';
+import { Alert } from 'react-native';
 
 // TODO: SSE 재연결 전략 미구현 (네트워크 끊김 대응 필요)
 
-function parseSSELine(line: string): { event: string; data: unknown } | null {
-  if (!line.startsWith('data:')) return null;
+// event:/data: 두 줄로 이뤄진 SSE 이벤트 블록(빈 줄로 구분된) 하나를 파싱
+function parseSSELine(block: string): { event: string; data: unknown } | null {
+  let event: string | null = null;
+  let dataLine: string | null = null;
+
+  for (const line of block.split('\n')) {
+    if (line.startsWith('event:')) {
+      event = line.slice('event:'.length).trim();
+    } else if (line.startsWith('data:')) {
+      dataLine = line.slice('data:'.length).trim();
+    }
+  }
+
+  if (!event || dataLine === null) return null;
+
   try {
-    return JSON.parse(line.slice(5).trim());
+    return { event, data: JSON.parse(dataLine) };
   } catch {
     return null;
   }
@@ -24,21 +40,22 @@ function parseSSELine(line: string): { event: string; data: unknown } | null {
 
 export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
-  // 실제 SSE 연동 시 진행 중인 fetch 요청을 취소할 AbortController 보관용 (현재는 mock이라 미할당)
+  // 화면 이탈/언마운트 시 진행 중인 스트림을 취소하기 위해 보관
   const abortRef = useRef<AbortController | null>(null);
-  const mockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 언마운트/세션 전환 시 mock 타이머가 남아 새 세션의 store에 응답을 흘려보내는 것을 방지
+  // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
   useEffect(() => {
     return () => {
-      if (mockTimeoutRef.current) clearTimeout(mockTimeoutRef.current);
-      if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
-      // 언마운트 시점의 최신 컨트롤러를 취소해야 하므로 ref를 그대로 읽는다 (값 복사 시 abort 무력화됨)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       abortRef.current?.abort();
     };
   }, []);
+
+  function resetStreamingState() {
+    const store = useChatStore.getState();
+    store.setAiTyping(false);
+    useChatStore.setState({ streamingMessageId: null });
+    setIsStreaming(false);
+  }
 
   function sendMessage(content: string) {
     if (!sessionId || isStreaming) return;
@@ -62,33 +79,13 @@ export function useChatSse(sessionId: string | null) {
 
     store.setAiTyping(true);
     setIsStreaming(true);
-
-    // TODO: 서버 연동 전 mock 응답 사용
-    if (content.trim() === MOCK_DELTA_REPLACE_TRIGGER) {
-      runMockDeltaReplaceScenario();
-    } else {
-      runMock();
-    }
+    void performSendMessage(sessionId, content);
   }
 
-  // TODO: 백엔드 emotion-score 제출 엔드포인트 추가되면 연동 (CHAT_BACKEND_QUESTIONS §6)
-  // emotion_score는 서버→클라 단방향 신호라 제출 API가 없음 — 점수는 버리고 패널만 닫는다
   function confirmEmotionScore(_score: number) {
+    // TODO: 백엔드 emotion-score 제출 엔드포인트 추가되면 연동 (CHAT_BACKEND_QUESTIONS §6)
     useChatStore.getState().deactivateEmotionScoring();
   }
-
-  // TODO: 서버 연동 시 아래 mock을 실제 SSE fetch로 교체
-  // 실제 구현 참고:
-  //   const controller = new AbortController();
-  //   abortRef.current = controller;
-  //   const res = await fetch(`/v1/sessions/${sessionId}/messages`, {
-  //     method: 'POST',
-  //     headers: { Accept: 'text/event-stream', 'Idempotency-Key': crypto.randomUUID() },
-  //     body: JSON.stringify({ content }),
-  //     signal: controller.signal,
-  //   });
-  //   const reader = res.body?.getReader();
-  //   ... ReadableStream 청크 파싱 후 아래 핸들러 호출
 
   // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
   // outboundMsgId 대신 placeholder id로 빈 AI 메시지를 추적하고, 최초 delta 수신 시 확정한다
@@ -120,8 +117,6 @@ export function useChatSse(sessionId: string | null) {
     store.replaceMessageContent(data.msg_id, data.safe_response);
   }
 
-  // mock에는 crisis 이벤트 시나리오가 없어 아직 호출부가 없음 — 11번 작업(실제 SSE 연동)에서 연결됨
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleCrisis(data: SseCrisisData) {
     // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
     useChatStore.getState().addMessage({
@@ -147,13 +142,10 @@ export function useChatSse(sessionId: string | null) {
   }
 
   function handleDone(data: SseDoneData) {
-    const store = useChatStore.getState();
-    store.setAiTyping(false);
-    useChatStore.setState({ streamingMessageId: null });
-    setIsStreaming(false);
+    resetStreamingState();
 
     if (typeof data.emotion_score === 'number') {
-      store.activateEmotionScoring(data.emotion_score);
+      useChatStore.getState().activateEmotionScoring(data.emotion_score);
     }
     if (data.is_crisis_flagged && data.finished_reason === 'replaced_by_guard') {
       handleCrisisFallback();
@@ -161,67 +153,144 @@ export function useChatSse(sessionId: string | null) {
     // crisis_flow를 받아도 서버는 세션을 종료하지 않음 — 세션은 active로 유지하고 대화를 계속할 수 있어야 함
   }
 
-  function runMock(
-    mockText: string = '말씀 잘 들었어요. 그 상황에서 어떤 감정이 가장 크게 느껴졌나요?'
-  ) {
-    // 실서버처럼 inboundMsgId(사용자 메시지)와 outboundMsgId(AI 메시지)를 다른 값으로 발급
-    const inboundMsgId = `msg_in_mock_${Date.now()}`;
-    const outboundMsgId = `msg_out_mock_${Date.now()}`;
-
-    mockTimeoutRef.current = setTimeout(() => {
-      handleSessionMeta({ message_id: inboundMsgId, received_at: new Date().toISOString() });
-
-      let i = 0;
-      mockIntervalRef.current = setInterval(() => {
-        if (i < mockText.length) {
-          handleDelta({ msg_id: outboundMsgId, chunk: mockText[i] });
-          i++;
-        } else {
-          if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
-          mockIntervalRef.current = null;
-          // emotion_score 필드 자체를 생략 (서버 스펙상 optional) — 슬라이더가 뜨지 않아야 함
-          handleDone({
-            msg_id: outboundMsgId,
-            is_crisis_flagged: false,
-            finished_reason: 'stop',
-          });
-        }
-      }, 40);
-    }, 600);
+  // 동기 검증 실패(SSE_SPEC.md §2-1) — 스트림이 열리기 전에 JSON ErrorResponse로 즉시 응답됨
+  function handleSyncValidationError(status: number) {
+    if (status === 429) {
+      Alert.alert(
+        '잠시만 기다려 주세요',
+        '메시지를 너무 빠르게 보내고 있어요. 잠시 후 다시 시도해 주세요.'
+      );
+      return;
+    }
+    if (status === 409) {
+      Alert.alert('전송 실패', '같은 메시지가 이미 처리 중이에요. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+    if (status === 404) {
+      Alert.alert('대화를 찾을 수 없어요', '세션이 존재하지 않아요.');
+      return;
+    }
+    if (status === 403) {
+      Alert.alert('접근할 수 없어요', '이 대화에 접근할 권한이 없어요.');
+      return;
+    }
+    if (status === 410) {
+      // 세션이 이미 종료된 상태 — 서버 상태에 맞춰 클라이언트 세션도 종료 처리
+      useChatStore.getState().endSession();
+      Alert.alert('대화가 이미 종료됐어요', '대화 요약을 확인해 주세요.');
+      return;
+    }
+    if (status === 400) {
+      Alert.alert('전송 실패', '메시지 내용을 확인해 주세요.');
+      return;
+    }
+    Alert.alert('전송 실패', '잠시 후 다시 시도해 주세요.');
   }
 
-  // TODO mock 전용: delta.replace 수동 확인용 시나리오. 11번 작업(실제 SSE 연동)에서 제거
-  function runMockDeltaReplaceScenario() {
-    const inboundMsgId = `msg_in_mock_${Date.now()}`;
-    const outboundMsgId = `msg_out_mock_${Date.now()}`;
-    const partialText = '음, 그 부분에 대해서는';
-    const safeResponse = '그 마음을 안전하게 들을 수 있는 방식으로 다시 이야기해 볼게요.';
+  // event:/data: 블록(빈 줄로 구분)을 모아 파싱하고 핸들러로 디스패치. done 이벤트 수신 여부를 반환
+  async function consumeStream(reader: ReadableStreamDefaultReader<Uint8Array>): Promise<boolean> {
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let receivedDone = false;
 
-    mockTimeoutRef.current = setTimeout(() => {
-      handleSessionMeta({ message_id: inboundMsgId, received_at: new Date().toISOString() });
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-      let i = 0;
-      mockIntervalRef.current = setInterval(() => {
-        if (i < partialText.length) {
-          handleDelta({ msg_id: outboundMsgId, chunk: partialText[i] });
-          i++;
-          return;
+      buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+
+      let separatorIndex = buffer.indexOf('\n\n');
+      while (separatorIndex !== -1) {
+        const block = buffer.slice(0, separatorIndex);
+        buffer = buffer.slice(separatorIndex + 2);
+
+        const parsed = parseSSELine(block);
+        if (parsed) {
+          switch (parsed.event) {
+            case 'session_meta':
+              // 이벤트별 데이터 모양은 event 이름으로 서버가 보장 — 런타임 검증은 하지 않음
+              handleSessionMeta(parsed.data as SseSessionMetaData);
+              break;
+            case 'delta':
+              handleDelta(parsed.data as SseDeltaData);
+              break;
+            case 'delta.replace':
+              handleDeltaReplace(parsed.data as SseDeltaReplaceData);
+              break;
+            case 'crisis':
+              handleCrisis(parsed.data as SseCrisisData);
+              break;
+            case 'done':
+              handleDone(parsed.data as SseDoneData);
+              receivedDone = true;
+              break;
+          }
         }
-        if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
-        mockIntervalRef.current = null;
-        handleDeltaReplace({ msg_id: outboundMsgId, safe_response: safeResponse });
-        handleDone({
-          msg_id: outboundMsgId,
-          is_crisis_flagged: false,
-          finished_reason: 'stop',
-        });
-      }, 40);
-    }, 600);
+
+        separatorIndex = buffer.indexOf('\n\n');
+      }
+    }
+
+    return receivedDone;
   }
 
-  // 사용되지 않지만 eslint warning 방지 및 향후 실제 연동 시 활용
-  void parseSSELine;
-  void abortRef;
+  async function performSendMessage(currentSessionId: string, content: string) {
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let timedOut = false;
+    const safetyTimeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, SSE_STREAM_SAFETY_TIMEOUT_MS);
+
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+      const res = await fetch(`${API_BASE_URL}/v1/sessions/${currentSessionId}/messages`, {
+        method: 'POST',
+        headers: {
+          Accept: 'text/event-stream',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+          'Idempotency-Key': Crypto.randomUUID(),
+        },
+        body: JSON.stringify({ content }),
+        signal: controller.signal,
+      });
+
+      const contentType = res.headers.get('content-type') ?? '';
+      if (contentType.includes('application/json')) {
+        resetStreamingState();
+        handleSyncValidationError(res.status);
+        return;
+      }
+
+      if (!res.body) {
+        throw new Error('SSE 응답 스트림이 비어 있음');
+      }
+
+      const receivedDone = await consumeStream(res.body.getReader());
+      if (!receivedDone) {
+        // done 없이 스트림이 끝남 — 60초 타임아웃 또는 연결 끊김으로 간주 (SSE_SPEC.md §2-3, §2-4)
+        resetStreamingState();
+        Alert.alert('전송 실패', '응답을 받는 데 문제가 생겼어요. 다시 시도해 주세요.');
+      }
+    } catch {
+      if (controller.signal.aborted && !timedOut) {
+        // 화면 이탈/언마운트로 인한 의도된 취소 — 쌓인 부분 응답은 그대로 두고 에러 표시 없음
+        return;
+      }
+      resetStreamingState();
+      Alert.alert(
+        '전송 실패',
+        '메시지를 보내는 데 문제가 생겼어요. 네트워크 상태를 확인해 주세요.'
+      );
+    } finally {
+      clearTimeout(safetyTimeout);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
+    }
+  }
 
   return { sendMessage, confirmEmotionScore, isStreaming };
 }

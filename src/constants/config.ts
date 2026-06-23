@@ -33,9 +33,13 @@ export const KAKAO_NATIVE_APP_KEY =
  * - 인터셉터나 에러 처리에서 숫자(401)를 직접 쓰지 않도록 상수화
  */
 export const HTTP_STATUS = {
+  BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
+  NOT_FOUND: 404,
   CONFLICT: 409,
+  GONE: 410,
+  TOO_MANY_REQUESTS: 429,
 } as const;
 
 /** 스플래시 화면이 표시되는 기본 시간(ms)*/
@@ -43,3 +47,9 @@ export const SPLASH_DURATION_MS = 2500;
 
 /** 세션 요약이 summary_status='pending'일 때 재조회 주기(ms) */
 export const SESSION_SUMMARY_POLL_INTERVAL_MS = 3000;
+
+/**
+ * 채팅 SSE 스트림 안전 타임아웃(ms).
+ * 서버 SseEmitter 타임아웃이 60초라 그보다 약간 길게 잡아, 연결이 완전히 멈춰버리는 극단적 케이스에서만 클라이언트가 직접 중단시킨다.
+ */
+export const SSE_STREAM_SAFETY_TIMEOUT_MS = 65000;
