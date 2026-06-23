@@ -10,7 +10,9 @@ import {
   postAuthSignupConsent,
   postAuthSignupProfile,
 } from '@/api/endpoints/auth';
+import { hydrateUserStoreFromAuthUser } from '@/features/auth/utils/mapAuthUserToUserStore';
 import { useAuthStore } from '@/store/authStore';
+import { useUserStore } from '@/store/userStore';
 import type {
   AuthLoginResponse,
   AuthNicknameDuplicateCheckResponse,
@@ -39,6 +41,10 @@ export function useSocialLogin() {
     onSuccess: async (res) => {
       await storage.refreshToken.set(res.data.refresh_token);
       setAccessToken(res.data.access_token);
+
+      if (!res.data.is_new_user && res.data.signup_step === 'COMPLETED' && res.data.user) {
+        hydrateUserStoreFromAuthUser(res.data.user);
+      }
     },
   });
 }
@@ -88,6 +94,8 @@ export function useLogout() {
     onSettled: async () => {
       setAccessToken(null);
       await storage.refreshToken.delete();
+      useUserStore.getState().reset();
+      await useUserStore.persist.clearStorage();
       onAuthInvalid?.();
     },
   });

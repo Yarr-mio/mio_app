@@ -1,9 +1,10 @@
 import type { AuthRoute } from '@/constants/routes';
-import type { AuthLoginResponse, AuthSignupStatusResponse, SignupStep } from '@/types/auth';
+import type { AuthLoginResponse, AuthSignupStatusResponse } from '@/types/auth';
 
 import {
   resolveSignupRoute,
   shouldFetchSignupStatus,
+  type FetchedSignupStatus,
 } from '@/features/auth/services/signupNavigation';
 import { signInWithApple } from '@/features/auth/utils/appleLogin';
 
@@ -35,13 +36,16 @@ export async function runAppleLoginFlow({
   });
 
   const { signup_step, is_new_user } = res.data;
-  let fetchedSignupStep: SignupStep | undefined;
+  let fetchedStatus: FetchedSignupStatus | undefined;
 
   if (shouldFetchSignupStatus(signup_step, is_new_user)) {
     const status = await fetchSignupStatus();
-    fetchedSignupStep = status.data.signup_step;
+    fetchedStatus = {
+      signup_step: status.data.signup_step,
+      onboarding_step: status.data.onboarding_step,
+    };
   }
 
-  const route = resolveSignupRoute(signup_step, is_new_user, fetchedSignupStep);
+  const route = resolveSignupRoute(signup_step, is_new_user, fetchedStatus);
   replaceRoute(route);
 }

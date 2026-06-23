@@ -136,3 +136,11 @@ const PARTNER_BY_KEY = Object.fromEntries(
 export function getPartnerByKey(key: OnboardingCharacterId): PartnerMeta {
   return PARTNER_BY_KEY[key];
 }
+
+export function toOnboardingCharacterId(id: string): OnboardingCharacterId {
+  if (ONBOARDING_ALL_CHARACTER_IDS.includes(id as OnboardingCharacterId)) {
+    return id as OnboardingCharacterId;
+  }
+
+  return ONBOARDING_DEFAULT_CHARACTER_ID;
+}
