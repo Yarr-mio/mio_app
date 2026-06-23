@@ -17,8 +17,8 @@ import {
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeMock } from '@/features/home/hooks/useHomeMock';
-import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { useUserStore } from '@/store/userStore';
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
@@ -39,8 +39,8 @@ function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undef
 
 export function HomeScreen() {
   const signupInfo = useUserStore((state) => state.signupInfo);
-  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
-  const partner = getPartnerByKey(selectedPartner);
+  const selectedCharacterId = useSelectedCharacterId();
+  const partner = getPartnerByKey(selectedCharacterId);
 
   const nickname = signupInfo?.nickname ?? '친구';
 

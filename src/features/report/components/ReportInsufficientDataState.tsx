@@ -26,7 +26,7 @@ import {
   ReportInsufficientDataLayout,
   ReportTextClasses,
 } from '@/constants/theme';
-import { useUserStore } from '@/store/userStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
 import { useState, type FC } from 'react';
 import { View } from 'react-native';
@@ -78,8 +78,7 @@ export function ReportInsufficientDataState({
   requiredCount,
   message,
 }: ReportInsufficientDataStateProps) {
-  const onboardingResult = useUserStore((state) => state.onboardingResult);
-  const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
+  const characterId = useSelectedCharacterId();
   const characterImage = getReportCharacterDataImage(characterId);
   const [imageSource, setImageSource] = useState(characterImage);
 

@@ -2,10 +2,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import {
-  getOnboardingCharacterById,
-  ONBOARDING_DEFAULT_CHARACTER_ID,
-} from '@/constants/characters';
+import { getOnboardingCharacterById } from '@/constants/characters';
 import { HTTP_STATUS } from '@/constants/config';
 import {
   formatReportChatButtonLabel,
@@ -40,7 +37,7 @@ import { ReportPendingState } from '@/features/report/components/ReportPendingSt
 import { ReportPeriodTabs } from '@/features/report/components/ReportPeriodTabs';
 import { TodoSummaryCard } from '@/features/report/components/TodoSummaryCard';
 import { useReport } from '@/features/report/hooks/useReport';
-import { useUserStore } from '@/store/userStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { cn } from '@/utils/cn';
 import {
   getMonthAnchorFromWeekEnd,
@@ -67,8 +64,7 @@ export function GrowthReportScreen() {
   const [monthAnchorDate, setMonthAnchorDate] = useState(() =>
     toKstDate(getMonthRange(new Date()).start)
   );
-  const onboardingResult = useUserStore((state) => state.onboardingResult);
-  const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
+  const characterId = useSelectedCharacterId();
   const character = getOnboardingCharacterById(characterId);
 
   const anchorDate =

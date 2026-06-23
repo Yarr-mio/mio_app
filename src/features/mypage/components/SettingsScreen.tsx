@@ -8,7 +8,7 @@ import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
-import { usePartnerStore } from '@/features/mypage/store/partnerStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { useUserStore } from '@/store/userStore';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
@@ -24,8 +24,8 @@ export function SettingsScreen() {
   const signupInfo = useUserStore((state) => state.signupInfo);
   const [pushEnabled, setPushEnabled] = useState(true);
 
-  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
-  const partner = getPartnerByKey(selectedPartner);
+  const selectedCharacterId = useSelectedCharacterId();
+  const partner = getPartnerByKey(selectedCharacterId);
   const nickname = signupInfo?.nickname ?? FALLBACK_NICKNAME;
 
   // TODO: userStore에 joinedAt 추가 필요
