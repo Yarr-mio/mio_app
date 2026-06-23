@@ -1,26 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { CheckboxCheckIcon } from '@/assets/icons';
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { HTTP_STATUS } from '@/constants/config';
-import { AUTH_ROUTES } from '@/constants/routes';
-import { FgColors, ScreenSpacing } from '@/constants/theme';
+import {
+  FgColors,
+  HeaderLayout,
+  HomeLayout,
+  PressableConfig,
+  ScreenSpacing,
+  SignupFlowLayout,
+  TermsOfServiceClasses,
+} from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useSignupConsent } from '@/features/auth/hooks/useAuth';
-import { buildSignupConsents, type TermConsentId } from '@/features/auth/utils/buildSignupConsents';
-import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
+import { useTermsOfServiceSubmit } from '@/features/auth/hooks/useTermsOfServiceSubmit';
+import { type TermConsentId } from '@/features/auth/utils/buildSignupConsents';
 import { cn } from '@/utils/cn';
 
-const SIGNUP_STEP_COUNT = 4;
-const SIGNUP_CURRENT_STEP = 2;
-const AGREEMENT_CARD_HEIGHT = 'h-[64px]';
+const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
+const SIGNUP_CURRENT_STEP = SignupFlowLayout.termsCurrentStep;
+const AGREEMENT_CARD_HEIGHT = TermsOfServiceClasses.agreementCardHeight;
 
 interface TermItem {
   id: TermConsentId;
@@ -29,18 +33,20 @@ interface TermItem {
 }
 
 const TERM_ITEMS: TermItem[] = [
+  { id: 'age', label: '만 14세 이상 확인', required: true },
   { id: 'service', label: '서비스 이용약관', required: true },
   { id: 'privacy', label: '개인정보 처리방침', required: true },
-  { id: 'age', label: '만 14세 이상 확인', required: true },
+  { id: 'sensitive', label: '민감정보 수집 및 이용', required: true },
   { id: 'marketing', label: '마케팅 정보 수신 동의', required: false },
 ];
 
 const REQUIRED_TERM_IDS = TERM_ITEMS.filter((item) => item.required).map((item) => item.id);
 
 const INITIAL_CHECKED_STATE: Record<TermConsentId, boolean> = {
+  age: false,
   service: false,
   privacy: false,
-  age: false,
+  sensitive: false,
   marketing: false,
 };
 
@@ -76,7 +82,13 @@ function AgreementCheckbox({ checked }: AgreementCheckboxProps) {
         checked ? 'border-accent bg-accent' : 'border-line-md bg-transparent'
       )}
     >
-      {checked ? <CheckboxCheckIcon width={12} height={9} color={FgColors.default} /> : null}
+      {checked ? (
+        <CheckboxCheckIcon
+          width={HomeLayout.checkboxCheckWidth}
+          height={HomeLayout.checkboxCheckHeight}
+          color={FgColors.default}
+        />
+      ) : null}
     </View>
   );
 }
@@ -109,24 +121,28 @@ function AgreementRow({ label, required, checked, onToggle, onDetailPress }: Agr
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${label} 상세 보기`}
-        hitSlop={8}
+        hitSlop={PressableConfig.hitSlop}
         onPress={onDetailPress}
       >
-        <Ionicons name="chevron-forward" size={20} color={FgColors.muted} />
+        <Ionicons
+          name="chevron-forward"
+          size={HeaderLayout.backHeaderIconSize}
+          color={FgColors.muted}
+        />
       </Pressable>
     </View>
   );
 }
 
 export default function TermsOfServiceScreen() {
-  const router = useRouter();
-  const signupConsent = useSignupConsent();
+  const { submit, isPending, error, clearError } = useTermsOfServiceSubmit();
   const [checkedState, setCheckedState] = useState(INITIAL_CHECKED_STATE);
 
   const requiredChecked = REQUIRED_TERM_IDS.every((id) => checkedState[id]);
   const isAgreeAllChecked = TERM_ITEMS.every((item) => checkedState[item.id]);
 
   const handleToggleTerm = (id: TermConsentId) => {
+    clearError();
     setCheckedState((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -134,43 +150,23 @@ export default function TermsOfServiceScreen() {
   };
 
   const handleToggleAgreeAll = () => {
+    clearError();
     const nextValue = !isAgreeAllChecked;
     setCheckedState({
+      age: nextValue,
       service: nextValue,
       privacy: nextValue,
-      age: nextValue,
+      sensitive: nextValue,
       marketing: nextValue,
     });
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!requiredChecked) {
       return;
     }
 
-    try {
-      const response = await signupConsent.mutateAsync({
-        consents: buildSignupConsents(checkedState),
-      });
-
-      if (response.data.signup_step !== 'CONSENT_AGREED') {
-        throw new Error('약관 동의에 실패했습니다. 다시 시도해 주세요.');
-      }
-
-      router.push(AUTH_ROUTES.signupInfo);
-    } catch (error) {
-      const status = readApiHttpStatus(error);
-      const errorCode = readApiErrorCode(error);
-
-      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
-        await handleSignupStepInvalid(router);
-        return;
-      }
-
-      const message =
-        error instanceof Error ? error.message : '약관 동의에 실패했습니다. 다시 시도해 주세요.';
-      Alert.alert('약관 동의', message);
-    }
+    void submit(checkedState);
   };
 
   return (
@@ -222,8 +218,9 @@ export default function TermsOfServiceScreen() {
           </View>
         </View>
 
-        <View className="mt-auto pt-8">
-          <Button disabled={!requiredChecked || signupConsent.isPending} onPress={handleContinue}>
+        <View className="mt-auto pt-8 gap-2">
+          {error ? <ErrorState message={error} /> : null}
+          <Button disabled={!requiredChecked || isPending} onPress={handleContinue}>
             동의하고 계속하기
           </Button>
         </View>

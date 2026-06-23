@@ -11,4 +11,8 @@ export const queryKeys = {
     character: () => ['chat', 'character'] as const,
     session: (sessionId: string) => ['chat', 'session', sessionId] as const,
   },
+  onboarding: {
+    all: () => ['onboarding'] as const,
+    status: () => ['onboarding', 'status'] as const,
+  },
 };

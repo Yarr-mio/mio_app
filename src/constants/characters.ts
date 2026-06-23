@@ -17,8 +17,8 @@ export const ONBOARDING_CHARACTERS = [
     name: '미오',
     chipLabel: '공감·감정 정리 전문가',
     quote: '“지금 느끼는 감정, 함께 천천히 들여다봐요”',
-    image: require('../../assets/images/characters/mio.png'),
-    iconImage: require('../../assets/images/characters/mio.png'),
+    image: require('@/assets/images/characters/mio.png'),
+    iconImage: require('@/assets/images/characters/mio.png'),
     greeting:
       '안녕! 나는 미오예요.\n당신의 마음을 있는 그대로 들어주고, 함께 정리할 수 있도록 곁에 있을게요. ✨',
   },
@@ -27,8 +27,8 @@ export const ONBOARDING_CHARACTERS = [
     name: '바우',
     chipLabel: '행동 파트너',
     quote: '“작은 실천이 큰 변화를 만들어요. 같이 해 봐요”',
-    image: require('../../assets/images/characters/bau.png'),
-    iconImage: require('../../assets/images/characters/bau.png'),
+    image: require('@/assets/images/characters/bau.png'),
+    iconImage: require('@/assets/images/characters/bau.png'),
     greeting:
       '안녕! 나는 바우예요.\n지금 할 수 있는 작은 한 걸음부터 같이 계획해 봐요. 내가 옆에서 응원할게요. ✨',
   },
@@ -37,8 +37,8 @@ export const ONBOARDING_CHARACTERS = [
     name: '루미',
     chipLabel: '생각 패턴 전문가',
     quote: '“차분하게 생각을 정리하는 걸 도와드릴게요”',
-    image: require('../../assets/images/characters/rumi.png'),
-    iconImage: require('../../assets/images/characters/rumi.png'),
+    image: require('@/assets/images/characters/rumi.png'),
+    iconImage: require('@/assets/images/characters/rumi.png'),
     greeting:
       '안녕! 나는 루미예요.\n복잡한 생각을 차분히 정리하고, 패턴을 발견할 수 있도록 함께 도와드릴게요. ✨',
   },
@@ -47,8 +47,8 @@ export const ONBOARDING_CHARACTERS = [
     name: '모모',
     chipLabel: '감정 수용 전문가',
     quote: '“자책하지 않아도 괜찮아요. 있는 그대로 받아들여 봐요”',
-    image: require('../../assets/images/characters/momo.png'),
-    iconImage: require('../../assets/images/characters/momo.png'),
+    image: require('@/assets/images/characters/momo.png'),
+    iconImage: require('@/assets/images/characters/momo.png'),
     greeting:
       '안녕! 나는 모모예요.\n자책보단 수용부터 시작해요. 지금의 마음을 있는 그대로 안아줄 수 있도록 곁에 있을게요. ✨',
   },
@@ -57,15 +57,15 @@ export const ONBOARDING_CHARACTERS = [
     name: '치치',
     chipLabel: '생각 패턴 전문가',
     quote: '“현실적인 시선으로 함께 답을 찾아드릴게요”',
-    image: require('../../assets/images/characters/chichi.png'),
-    iconImage: require('../../assets/images/characters/chichi.png'),
+    image: require('@/assets/images/characters/chichi.png'),
+    iconImage: require('@/assets/images/characters/chichi.png'),
     greeting:
       '안녕! 나는 치치예요.\n현실적인 시선으로 상황을 정리하고, 선택지를 함께 찾아볼게요. ✨',
   },
 ] as const;
 
-// TODO: ONBOARDING_CHARACTERS.quote는 curly quote(“ ”)를 사용해 replace(/^"|"$/g, '')로는 따옴표가 제거되지 않음.
-// PARTNER_LIST intro는 따옴표 없는 문구(예: mio → '지금 느끼는 감정, 함께 천천히 들여다봐요')가 올바른 값인지,
+// TODO: ONBOARDING_CHARACTERS.quote는 curly quote를 사용해 replace(/^"|"$/g, '')로는 따옴표가 제거되지 않음.
+// PARTNER_LIST intro는 따옴표 없는 문구(예: mio 지금 느끼는 감정, 함께 천천히 들여다봐요)가 올바른 값인지,
 // quote에서 파생한 값(따옴표 포함)이 올바른 값인지 디자인/기획 확인 필요.
 export const PARTNER_LIST: PartnerMeta[] = ONBOARDING_CHARACTERS.map((char) => ({
   key: char.id,
@@ -76,18 +76,6 @@ export const PARTNER_LIST: PartnerMeta[] = ONBOARDING_CHARACTERS.map((char) => (
 }));
 
 export const ONBOARDING_DEFAULT_CHARACTER_ID: OnboardingCharacterId = 'mio';
-
-export type ApiPreferredStyle = 'empathetic' | 'analytical' | 'solution' | 'balanced';
-
-export const ONBOARDING_STYLE_TO_API_PREFERRED_STYLE: Record<
-  OnboardingStyleType,
-  ApiPreferredStyle
-> = {
-  empathy: 'empathetic',
-  realistic: 'analytical',
-  action: 'solution',
-  reflective: 'balanced',
-} as const;
 
 /** 전체 캐릭터 목록 표시 순서 */
 export const ONBOARDING_ALL_CHARACTER_IDS: OnboardingCharacterId[] = [
@@ -105,10 +93,10 @@ export const ONBOARDING_CHARACTER_RECOMMENDATIONS_BY_STYLE: Record<
   OnboardingStyleType | 'default',
   OnboardingCharacterId[]
 > = {
-  empathy: ['mio', 'momo', 'rumi'],
-  realistic: ['chichi', 'rumi', 'mio'],
-  action: ['bau', 'mio', 'chichi'],
-  reflective: ['rumi', 'mio', 'momo'],
+  empathetic: ['mio', 'momo', 'rumi'],
+  analytical: ['chichi', 'rumi', 'mio'],
+  solution: ['bau', 'mio', 'chichi'],
+  balanced: ['rumi', 'mio', 'momo'],
   default: ['mio', 'momo', 'rumi'],
 };
 
@@ -127,11 +115,11 @@ export function getOnboardingCharacterById(id: OnboardingCharacterId) {
 
 /** 성장 리포트 — 데이터 부족 상태 캐릭터 이미지 */
 export const REPORT_CHARACTER_DATA_IMAGES: Record<OnboardingCharacterId, number> = {
-  mio: require('../../assets/images/report/characters/data/mio_data.png'),
-  bau: require('../../assets/images/report/characters/data/bau_data.png'),
-  rumi: require('../../assets/images/report/characters/data/rumi_data.png'),
-  momo: require('../../assets/images/report/characters/data/momo_data.png'),
-  chichi: require('../../assets/images/report/characters/data/chichi_data.png'),
+  mio: require('@/assets/images/report/characters/data/mio_data.png'),
+  bau: require('@/assets/images/report/characters/data/bau_data.png'),
+  rumi: require('@/assets/images/report/characters/data/rumi_data.png'),
+  momo: require('@/assets/images/report/characters/data/momo_data.png'),
+  chichi: require('@/assets/images/report/characters/data/chichi_data.png'),
 };
 
 export function getReportCharacterDataImage(characterId: OnboardingCharacterId): number {

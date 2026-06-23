@@ -228,6 +228,44 @@ export const SignupInfoLayout = {
   nicknameMinLength: 2,
 } as const;
 
+/** 회원가입 플로우 StepIndicator */
+export const SignupFlowLayout = {
+  totalSteps: 4,
+  termsCurrentStep: 2,
+  infoCurrentStep: 3,
+  completeCurrentStep: 4,
+} as const;
+
+/** 약관 동의 화면 레이아웃 */
+export const TermsOfServiceLayout = {
+  agreementCardHeight: 64,
+} as const;
+
+/** NativeWind className — TermsOfServiceLayout px 값과 동일하게 유지 */
+export const TermsOfServiceClasses = {
+  agreementCardHeight: 'h-[64px]',
+} as const;
+
+/** 회원가입 완료 화면 레이아웃 */
+export const SignupCompleteLayout = {
+  profileImageSize: 107,
+  profileTop: 101,
+  titleTop: 56,
+  highlightsTop: 119,
+} as const;
+
+/** NativeWind className — SignupCompleteLayout px 값과 동일하게 유지 */
+export const SignupCompleteClasses = {
+  profileTop: 'mt-[101px]',
+  titleTop: 'mt-[56px]',
+  highlightsTop: 'mt-[119px]',
+} as const;
+
+/** 하단 탭바 레이아웃 */
+export const TabBarLayout = {
+  iconSize: 24,
+} as const;
+
 /** 닉네임 중복 확인 버튼 — SignUpInfoScreen (기존 tailwind 색상 토큰 재사용) */
 export const NicknameDuplicateCheckClasses = {
   default: 'rounded-lg border border-line bg-surface px-3 py-2',

@@ -4,6 +4,7 @@ import { AppModal } from '@/components/ui/AppModal';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { getPartnerByKey } from '@/constants/characters';
 import { AccountModalColors, AppModalLayout } from '@/constants/theme';
+import { useAccountActions } from '@/features/mypage/hooks/useAccountActions';
 import { usePartnerStore } from '@/features/mypage/store/partnerStore';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -54,6 +55,7 @@ export function AccountSection() {
   const [activeModal, setActiveModal] = useState<AccountActionId | null>(null);
   const selectedPartner = usePartnerStore((state) => state.selectedPartner);
   const partnerName = getPartnerByKey(selectedPartner).name;
+  const { handleLogout } = useAccountActions();
 
   const closeModal = () => setActiveModal(null);
 
@@ -85,8 +87,8 @@ export function AccountSection() {
         description={LOGOUT_MODAL.description}
         confirmLabel={LOGOUT_MODAL.confirmLabel}
         onConfirm={() => {
-          console.log('로그아웃');
           closeModal();
+          handleLogout();
         }}
       />
 

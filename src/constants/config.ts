@@ -40,3 +40,9 @@ export const HTTP_STATUS = {
 
 /** 스플래시 화면이 표시되는 기본 시간(ms)*/
 export const SPLASH_DURATION_MS = 2500;
+
+/** Axios 요청 타임아웃(ms) */
+export const API_TIMEOUT_MS = 10_000;
+
+/** iOS bundle identifier 폴백 (expoConfig 미설정 환경용) */
+export const IOS_BUNDLE_IDENTIFIER_FALLBACK = 'com.mio.yarr.dev';

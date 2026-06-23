@@ -1,35 +1,27 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable } from 'react-native';
 
-import {
-  CategoryIcon,
-  HomeIcon,
-  HomeTrendUpIcon,
-  MessageTextIcon,
-  SecurityUserIcon,
-} from '@/assets/icons';
+import { CategoryIcon, HomeIcon, HomeTrendUpIcon, MessageTextIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { TabBarColors, TabBarShadowStyle } from '@/constants/theme';
+import { TabBarColors, TabBarLayout, TabBarShadowStyle } from '@/constants/theme';
 import { cn } from '@/utils/cn';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const TAB_ICONS = {
   home: HomeIcon,
   chat: MessageTextIcon,
   report: HomeTrendUpIcon,
-  my: SecurityUserIcon,
   explore: CategoryIcon,
 } as const;
 
 type TabRouteName = keyof typeof TAB_ICONS;
 
 export default function AppTabs({ state, descriptors, navigation }: BottomTabBarProps) {
-  const { bottom } = useSafeAreaInsets();
-
   return (
-    <View
+    <SafeAreaView
+      edges={['bottom']}
       className="flex-row overflow-visible bg-tab-bar"
-      style={[{ paddingBottom: bottom }, TabBarShadowStyle]}
+      style={TabBarShadowStyle}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
@@ -65,8 +57,8 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
             className="flex-1 items-center justify-center py-5 gap-1"
           >
             <IconComponent
-              width={24}
-              height={24}
+              width={TabBarLayout.iconSize}
+              height={TabBarLayout.iconSize}
               color={isFocused ? TabBarColors.iconActive : TabBarColors.iconInactive}
             />
             <ThemedText
@@ -80,6 +72,6 @@ export default function AppTabs({ state, descriptors, navigation }: BottomTabBar
           </Pressable>
         );
       })}
-    </View>
+    </SafeAreaView>
   );
 }

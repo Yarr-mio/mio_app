@@ -23,7 +23,7 @@ export function mapSignupProfileInput(input: SignupProfileFormInput): AuthSignup
   const body: AuthSignupProfileRequest = { nickname: input.nickname };
 
   if (input.ageRange) {
-    body.ageRange = USER_AGE_TO_API[input.ageRange];
+    body.age_range = USER_AGE_TO_API[input.ageRange];
   }
 
   if (input.gender) {
