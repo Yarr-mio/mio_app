@@ -7,6 +7,8 @@ export type SessionPhase = 'idle' | 'active' | 'ended';
 interface ChatState {
   sessionPhase: SessionPhase;
   sessionId: string | null;
+  // 새 세션 시작 시점의 last_ended_session_id — 세션 요약 화면에서 직전 세션과의 감정 변화율 계산용
+  previousSessionId: string | null;
   characterId: OnboardingCharacterId;
   messages: ChatMessage[];
   streamingMessageId: string | null;
@@ -17,7 +19,11 @@ interface ChatState {
 }
 
 interface ChatActions {
-  startSession: (sessionId: string, characterId: OnboardingCharacterId) => void;
+  startSession: (
+    sessionId: string,
+    characterId: OnboardingCharacterId,
+    previousSessionId?: string | null
+  ) => void;
   addMessage: (message: ChatMessage) => void;
   appendDelta: (msgId: string, chunk: string) => void;
   replaceMessageContent: (msgId: string, content: string) => void;
@@ -34,6 +40,7 @@ interface ChatActions {
 const initialState: ChatState = {
   sessionPhase: 'idle',
   sessionId: null,
+  previousSessionId: null,
   characterId: 'mio', // TODO: useCharacter() 훅으로 서버에서 수신 후 대체
   messages: [],
   streamingMessageId: null,
@@ -46,12 +53,13 @@ const initialState: ChatState = {
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
   ...initialState,
 
-  startSession: (sessionId, characterId) =>
+  startSession: (sessionId, characterId, previousSessionId = null) =>
     set({
       ...initialState,
       sessionPhase: 'active',
       sessionId,
       characterId,
+      previousSessionId,
     }),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),

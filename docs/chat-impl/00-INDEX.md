@@ -12,7 +12,7 @@
 | 2   | `delta.replace` 이벤트 핸들러 추가            | feature   | [02-delta-replace-handler.md](./02-delta-replace-handler.md)               | [log](../logs/02-delta-replace-handler.md)        | ✅   |
 | 3   | 위기(crisis) 처리 보강 + 세션 자동종료 제거   | fix       | [03-crisis-handling-fixes.md](./03-crisis-handling-fixes.md)               | [log](../logs/03-crisis-handling-fixes.md)        | ✅   |
 | 4   | `emotion_score` optional 처리                 | fix       | [04-emotion-score-optional.md](./04-emotion-score-optional.md)             | [log](../logs/04-emotion-score-optional.md)       | ✅   |
-| 5   | `GET /sessions/active` 응답 모델 교체         | fix       | [05-active-session-response.md](./05-active-session-response.md)           | [log](../logs/05-active-session-response.md)      | ⬜   |
+| 5   | `GET /sessions/active` 응답 모델 교체         | fix       | [05-active-session-response.md](./05-active-session-response.md)           | [log](../logs/05-active-session-response.md)      | ✅   |
 | 6   | `summary_status` viewed/failed 케이스 처리    | fix       | [06-summary-status-handling.md](./06-summary-status-handling.md)           | [log](../logs/06-summary-status-handling.md)      | ⬜   |
 | 7   | 세션 요약 화면 재구성                         | feature   | [07-session-summary-redesign.md](./07-session-summary-redesign.md)         | [log](../logs/07-session-summary-redesign.md)     | ⬜   |
 | 8   | "기록 저장하기" 버튼 단순화                   | refactor  | [08-save-button-simplify.md](./08-save-button-simplify.md)                 | [log](../logs/08-save-button-simplify.md)         | ⬜   |

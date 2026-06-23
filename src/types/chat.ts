@@ -51,13 +51,18 @@ export interface SseDoneData {
   finished_reason: 'stop' | 'crisis_flow' | 'security_refusal' | 'replaced_by_guard' | 'error';
 }
 
-export interface ActiveSession {
-  session_id: string;
-  character_id: OnboardingCharacterId;
-  status: 'active';
-  started_at: string;
-  last_message_at: string;
-  message_count: number;
+export type SummaryStatus = 'pending' | 'done' | 'viewed' | 'failed';
+
+export interface ActiveSessionResponse {
+  // 활성 세션이 없으면 앞 6개는 명시적 null, last_summary_status/last_ended_session_id만 값이 들어옴
+  session_id: string | null;
+  character_id: OnboardingCharacterId | null;
+  status: 'active' | null;
+  started_at: string | null;
+  last_message_at: string | null;
+  message_count: number | null;
+  last_summary_status: SummaryStatus | null;
+  last_ended_session_id: string | null;
 }
 
 export interface StartSessionResponse {

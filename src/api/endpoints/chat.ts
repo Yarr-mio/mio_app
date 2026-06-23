@@ -1,11 +1,20 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
-import type { ActiveSession, EndSessionResponse, StartSessionResponse } from '@/types/chat';
+import type { ActiveSessionResponse, EndSessionResponse, StartSessionResponse } from '@/types/chat';
 
 // TODO: 서버 연동 전 mock 응답 사용
 
-export async function fetchActiveSession(): Promise<ActiveSession | null> {
-  // TODO mock: 활성 세션 없음
-  return null;
+export async function fetchActiveSession(): Promise<ActiveSessionResponse> {
+  // TODO mock: 활성 세션 없음 — 서버는 세션이 없어도 항상 객체를 반환하고 필드를 null로 채운다
+  return {
+    session_id: null,
+    character_id: null,
+    status: null,
+    started_at: null,
+    last_message_at: null,
+    message_count: null,
+    last_summary_status: null,
+    last_ended_session_id: null,
+  };
 }
 
 export async function startSession(

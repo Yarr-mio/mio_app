@@ -1,8 +1,9 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { queryKeys } from '@/api/queryKeys';
 import { endSession, fetchActiveSession, startSession } from '@/api/endpoints/chat';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import type { ActiveSessionResponse } from '@/types/chat';
 
 export function useActiveSession() {
   return useQuery({
@@ -12,10 +13,22 @@ export function useActiveSession() {
 }
 
 export function useStartChatSession() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: startSession,
     onSuccess: (data) => {
-      useChatStore.getState().startSession(data.session_id, data.character_id);
+      // 새 세션 시작 직전에 조회된 last_ended_session_id를 직전 세션으로 캡처 (요약 화면 감정 변화율 계산용)
+      const previousActiveSession = queryClient.getQueryData<ActiveSessionResponse>(
+        queryKeys.chat.activeSession()
+      );
+      useChatStore
+        .getState()
+        .startSession(
+          data.session_id,
+          data.character_id,
+          previousActiveSession?.last_ended_session_id
+        );
     },
   });
 }

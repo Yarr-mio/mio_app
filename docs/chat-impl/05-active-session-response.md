@@ -1,6 +1,6 @@
 # 05. `GET /sessions/active` 응답 모델 교체
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/05-active-session-response.md](../../logs/05-active-session-response.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §5](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 2-1](../CHAT_SERVER_GAP_ANALYSIS.md#2-1-getsessionsactive-응답-모델-전체가-다름)
 > 결정 사항 (2026-06-23): 앱 재진입 시 못 본 요약이 있으면 자동으로 요약 화면으로 리다이렉트
