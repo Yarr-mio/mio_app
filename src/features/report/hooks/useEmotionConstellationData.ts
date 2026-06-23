@@ -3,9 +3,21 @@ import {
   REPORT_WEEKDAY_LABELS,
   type ReportPeriod,
 } from '@/constants/report';
-import { getMockEmotionTrendData, getMockReportData } from '@/features/report/hooks/useReportMock';
+import {
+  useEmotionTrend,
+  useMonthlyReport,
+  useWeeklyReport,
+} from '@/features/report/hooks/useReport';
 import type { ConstellationChartPoint } from '@/types/report';
-import { DAYS_PER_WEEK, getMonthRange, getWeekRange, MS_PER_DAY, toKstDate } from '@/utils/date';
+import {
+  DAYS_PER_WEEK,
+  getMonthStartIso,
+  getWeekRange,
+  getWeekStartIso,
+  MS_PER_DAY,
+  toKstDate,
+} from '@/utils/date';
+import { mapEmotionTrendToChartPoints, resolveReportAnchorDate } from '@/utils/report';
 import { getDate } from 'date-fns';
 
 interface EmotionConstellationData {
@@ -13,42 +25,44 @@ interface EmotionConstellationData {
   checkinCount: number;
   // avg_emotion_score 0-100: 리포트 집계용. avg_condition_score 1-5와 혼용 금지
   avgEmotionScore: number;
+  isLoading: boolean;
 }
 
-function mapTrendToChartPoints(
-  period: ReportPeriod,
-  trendPoints: ReturnType<typeof getMockEmotionTrendData>['points']
-): ConstellationChartPoint[] {
-  const labels = period === 'week' ? REPORT_WEEKDAY_LABELS : REPORT_MONTH_WEEK_LABELS;
-
-  return labels.map((label, index) => ({
-    label,
-    // avg_condition_score 1-5: 감정 별자리 차트 전용. avg_emotion_score 0-100와 혼용 금지
-    avg_condition_score: trendPoints[index]?.avg_condition_score ?? null,
-  }));
-}
-
-function resolveReportAnchorDate(period: ReportPeriod, anchorDate: Date): Date {
-  if (period === 'month') {
-    return toKstDate(getMonthRange(anchorDate).start);
-  }
-
-  return toKstDate(anchorDate);
+interface UseEmotionConstellationDataOptions {
+  enabled?: boolean;
 }
 
 export function useEmotionConstellationData(
   period: ReportPeriod,
-  anchorDate: Date
+  anchorDate: Date,
+  options?: UseEmotionConstellationDataOptions
 ): EmotionConstellationData {
   const resolvedAnchorDate = resolveReportAnchorDate(period, anchorDate);
-  const report = getMockReportData(period, resolvedAnchorDate);
-  const emotionTrend = getMockEmotionTrendData(period, resolvedAnchorDate);
-  const points = mapTrendToChartPoints(period, emotionTrend.points);
+  const weekStart = getWeekStartIso(resolvedAnchorDate);
+  const monthStart = getMonthStartIso(resolvedAnchorDate);
+  const enabled = options?.enabled ?? true;
+
+  const weeklyReportQuery = useWeeklyReport(weekStart, {
+    enabled: enabled && period === 'week',
+  });
+  const monthlyReportQuery = useMonthlyReport(monthStart, {
+    enabled: enabled && period === 'month',
+  });
+  const emotionTrendQuery = useEmotionTrend({
+    period,
+    anchorDate: resolvedAnchorDate,
+    enabled,
+  });
+
+  const reportQuery = period === 'week' ? weeklyReportQuery : monthlyReportQuery;
+  const trendPoints = emotionTrendQuery.data?.points ?? [];
+  const points = mapEmotionTrendToChartPoints(period, trendPoints, resolvedAnchorDate);
 
   return {
     points,
-    checkinCount: report.checkin_count,
-    avgEmotionScore: report.avg_emotion_score,
+    checkinCount: reportQuery.data?.checkin_count ?? 0,
+    avgEmotionScore: reportQuery.data?.avg_emotion_score ?? 0,
+    isLoading: reportQuery.isPending || emotionTrendQuery.isPending,
   };
 }
 
