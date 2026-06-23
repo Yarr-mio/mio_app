@@ -10,12 +10,18 @@ export function cacheOnboardingCharacterRecommendations(
   recommendations: OnboardingCharacterRecommendation[],
   onboardingStep: OnboardingProgressStep = 3
 ): void {
-  queryClient.setQueryData<OnboardingStatusResponse>(queryKeys.onboarding.status(), (prev) => ({
-    data: {
-      onboarding_step: onboardingStep,
-      signup_step: prev?.data.signup_step ?? 'PROFILE_COMPLETED',
-      character_recommendations: recommendations,
-    },
-    meta: prev?.meta ?? { trace_id: '' },
-  }));
+  queryClient.setQueryData<OnboardingStatusResponse>(queryKeys.onboarding.status(), (prev) => {
+    if (!prev) {
+      return prev;
+    }
+
+    return {
+      ...prev,
+      data: {
+        ...prev.data,
+        onboarding_step: onboardingStep,
+        character_recommendations: recommendations,
+      },
+    };
+  });
 }

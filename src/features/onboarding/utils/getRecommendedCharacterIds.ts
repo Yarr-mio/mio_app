@@ -14,7 +14,7 @@ export function getRecommendedCharacterIds(
 ): OnboardingCharacterId[] {
   const resolvedRecommendations = apiRecommendations ?? [];
   if (resolvedRecommendations.length > 0) {
-    return resolvedRecommendations.map((item) => item.character_id);
+    return [...new Set(resolvedRecommendations.map((item) => item.character_id))];
   }
 
   if (!preferredStyle) {
