@@ -8,6 +8,7 @@ export function routeForSignupStep(step: SignupStep): AuthRoute {
     case 'CONSENT_AGREED':
       return AUTH_ROUTES.signupInfo;
     case 'PROFILE_COMPLETED':
+      return AUTH_ROUTES.signupComplete;
     case 'ONBOARDING_COMPLETED':
       return AUTH_ROUTES.signupComplete;
     case 'COMPLETED':

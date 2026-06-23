@@ -53,3 +53,8 @@ export const SESSION_SUMMARY_POLL_INTERVAL_MS = 3000;
  * 서버 SseEmitter 타임아웃이 60초라 그보다 약간 길게 잡아, 연결이 완전히 멈춰버리는 극단적 케이스에서만 클라이언트가 직접 중단시킨다.
  */
 export const SSE_STREAM_SAFETY_TIMEOUT_MS = 65000;
+/** Axios 요청 타임아웃(ms) */
+export const API_TIMEOUT_MS = 10_000;
+
+/** iOS bundle identifier 폴백 (expoConfig 미설정 환경용) */
+export const IOS_BUNDLE_IDENTIFIER_FALLBACK = 'com.mio.yarr.dev';

@@ -1,8 +1,10 @@
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import {
+  ONBOARDING_CURRENT_STEPS,
   ONBOARDING_STYLE_OPTIONS,
   ONBOARDING_TOTAL_STEPS,
   type OnboardingStyleType,
@@ -15,13 +17,15 @@ import {
 } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingStep3Submit } from '@/features/onboarding/hooks/useOnboardingStep3Submit';
+import { useOnboardingStepSkip } from '@/features/onboarding/hooks/useOnboardingStepSkip';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-const ONBOARDING_CURRENT_STEP = 3;
+const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step3 as OnboardingSkippableStep;
 
 interface StyleOptionCardProps {
   title: string;
@@ -75,31 +79,49 @@ function StyleOptionCard({
 }
 
 export function Step3StyleScreen() {
-  const router = useRouter();
   const { preferred_style, setPreferredStyle, setCharacterId } = useOnboardingStore();
+  const { submit, isPending, error, clearError } = useOnboardingStep3Submit();
+  const {
+    skip,
+    isPending: isSkipPending,
+    error: skipError,
+    clearError: clearSkipError,
+  } = useOnboardingStepSkip();
+
+  const isActionPending = isPending || isSkipPending;
+  const actionError = error ?? skipError;
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
   const isStyleSelected = selectedStyle !== null;
+
+  const clearActionError = () => {
+    clearError();
+    clearSkipError();
+  };
 
   const handleSelectStyle = (
     styleId: OnboardingStyleType,
     characterId: (typeof ONBOARDING_STYLE_OPTIONS)[number]['characterId']
   ) => {
+    clearActionError();
     setPreferredStyle(styleId);
     setCharacterId(characterId);
   };
 
-  const handleSkip = () => {
-    setPreferredStyle(null);
-    setCharacterId(null);
-    router.push('/(auth)/onboarding/step4Character');
+  const handleSkip = async () => {
+    const success = await skip(ONBOARDING_CURRENT_STEP);
+    if (success) {
+      setPreferredStyle(null);
+      setCharacterId(null);
+    }
   };
 
   const handleNext = () => {
-    if (!isStyleSelected) {
+    if (!isStyleSelected || !selectedStyle) {
       return;
     }
-    router.push('/(auth)/onboarding/step4Character');
+
+    void submit(selectedStyle);
   };
 
   return (
@@ -141,13 +163,15 @@ export function Step3StyleScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
-          <Button disabled={!isStyleSelected} onPress={handleNext}>
+        <View className="pt-4 gap-2">
+          {actionError ? <ErrorState message={actionError} /> : null}
+          <Button disabled={!isStyleSelected || isActionPending} onPress={handleNext}>
             다음
           </Button>
           <OnboardingSkipButton
             label="건너뛰기"
             onPress={handleSkip}
+            disabled={isActionPending}
             className="items-center py-4"
           />
         </View>

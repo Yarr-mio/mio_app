@@ -1,6 +1,4 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Router } from 'expo-router';
-import { useEffect, useState } from 'react';
 
 import {
   getAuthNicknameDuplicateCheck,
@@ -12,9 +10,6 @@ import {
   postAuthSignupConsent,
   postAuthSignupProfile,
 } from '@/api/endpoints/auth';
-import { HTTP_STATUS } from '@/constants/config';
-import { handleSignupStepInvalid } from '@/features/auth/utils/handleSignupStepInvalid';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import { useAuthStore } from '@/store/authStore';
 import type {
   AuthLoginResponse,
@@ -31,8 +26,8 @@ import { storage } from '@/utils/storage';
 
 interface SocialLoginInput {
   provider: SocialProvider;
-  idToken: string | null;
-  accessToken: string | null;
+  id_token: string | null;
+  access_token: string | null;
 }
 
 // 카카오/애플 로그인
@@ -83,88 +78,17 @@ export function useSignupComplete() {
   });
 }
 
-interface UseSignupCompleteOnMountResult {
-  isReady: boolean;
-  isPending: boolean;
-  errorMessage: string | null;
-  retry: () => void;
-}
-
-// 회원가입 완료 화면 진입 시 complete API 호출
-export function useSignupCompleteOnMount(router: Router): UseSignupCompleteOnMountResult {
-  const { mutateAsync, isPending } = useSignupComplete();
-  const [isReady, setIsReady] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-
-  const retry = () => {
-    setErrorMessage(null);
-    setRetryCount((count) => count + 1);
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const completeSignup = async () => {
-      try {
-        const response = await mutateAsync();
-
-        if (cancelled) {
-          return;
-        }
-
-        if (response.data.signup_step === 'COMPLETED' && response.data.status === 'ACTIVE') {
-          setIsReady(true);
-          setErrorMessage(null);
-          return;
-        }
-
-        throw new Error('회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.');
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        const status = readApiHttpStatus(error);
-        const errorCode = readApiErrorCode(error);
-
-        if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'SIGNUP_STEP_INVALID') {
-          await handleSignupStepInvalid(router);
-          return;
-        }
-
-        const message =
-          error instanceof Error
-            ? error.message
-            : '회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
-        setErrorMessage(message);
-      }
-    };
-
-    void completeSignup();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router, mutateAsync, retryCount]);
-
-  return {
-    isReady,
-    isPending,
-    errorMessage,
-    retry,
-  };
-}
-
 // 로그아웃
 export function useLogout() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const onAuthInvalid = useAuthStore((s) => s.onAuthInvalid);
 
   return useMutation({
     mutationFn: () => postAuthLogout(),
-    onSuccess: async () => {
+    onSettled: async () => {
       setAccessToken(null);
       await storage.refreshToken.delete();
+      onAuthInvalid?.();
     },
   });
 }

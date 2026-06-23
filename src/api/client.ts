@@ -2,7 +2,7 @@ import axios, { create, type AxiosError, type InternalAxiosRequestConfig } from 
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-import { API_BASE_URL, HTTP_STATUS } from '@/constants/config';
+import { API_BASE_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import type { AuthRefreshResponse } from '@/types/auth';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
@@ -22,7 +22,7 @@ declare module 'axios' {
 
 const apiClient = create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -48,12 +48,13 @@ function getAppVersion(): string {
 }
 
 /**
- * 백엔드 에러코드를 AxiosError에서 추출한다.
+ * 백엔드 에러코드를 AxiosError에서 추출
  *
  * 명세가 완전히 Swagger로 확정된 상태가 아니라서,
- * 아래와 같은 형태들을 유연하게 지원하도록 방어적으로 구현했다.
+ * 아래와 같은 형태들을 유연하게 지원하도록 방어적으로 구현
  *
  * - { error_code: "AUTH_TOKEN_EXPIRED" }
+ * - { code: "AUTH_TOKEN_EXPIRED" }
  * - { error: { code: "AUTH_TOKEN_EXPIRED" } }
  */
 function readErrorCode(error: AxiosError): string | null {
@@ -64,12 +65,49 @@ function readErrorCode(error: AxiosError): string | null {
   const direct = obj['error_code'];
   if (typeof direct === 'string') return direct;
 
+  const topLevelCode = obj['code'];
+  if (typeof topLevelCode === 'string') return topLevelCode;
+
   const nested = obj['error'];
   if (nested && typeof nested === 'object') {
     const code = (nested as Record<string, unknown>)['code'];
     if (typeof code === 'string') return code;
   }
   return null;
+}
+
+/**
+ * dev 환경에서 API 에러 응답 바디를 구조화해 로깅한다.
+ *
+ * 글로벌 에러 포맷: { error: { code, message, details, trace_id } }
+ */
+function logApiErrorResponse(error: AxiosError): void {
+  if (!__DEV__) return;
+
+  const status = error.response?.status;
+  const data = error.response?.data;
+  const url = error.config?.url;
+
+  if (!isRecord(data)) {
+    console.error('[API] error response:', { status, url, data });
+    return;
+  }
+
+  const nestedError = data.error;
+  if (isRecord(nestedError)) {
+    console.error('[API] error response:', {
+      status,
+      url,
+      code: nestedError.code,
+      message: nestedError.message,
+      details: nestedError.details,
+      trace_id: nestedError.trace_id,
+      raw: data,
+    });
+    return;
+  }
+
+  console.error('[API] error response:', { status, url, raw: data });
 }
 
 /**
@@ -132,7 +170,7 @@ async function refreshAccessToken(): Promise<string> {
         'X-App-Version': getAppVersion(),
         'X-Platform': Platform.OS,
       },
-      timeout: 10000,
+      timeout: API_TIMEOUT_MS,
     }
   );
 
@@ -159,7 +197,7 @@ async function clearLocalAuthAndRedirect(): Promise<void> {
 /**
  * Response interceptor:
  * - 401 + AUTH_TOKEN_EXPIRED → refresh → 원 요청 1회 재시도
- * - 401 + REFRESH_TOKEN_INVALID → 강제 로그아웃
+ * - 401 + REFRESH_TOKEN_INVALID: 강제 로그아웃 (_skipAuthRefresh 요청 포함)
  *
  * 동시성:
  * - 여러 요청이 동시에 401을 맞아도 refresh는 1번만 수행하도록 `refreshPromise`로 병합한다.
@@ -167,6 +205,8 @@ async function clearLocalAuthAndRedirect(): Promise<void> {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    logApiErrorResponse(error);
+
     const originalRequest = error.config;
     const status = error.response?.status;
     const errorCode = readErrorCode(error);
@@ -175,13 +215,12 @@ apiClient.interceptors.response.use(
       throw error;
     }
 
-    if (originalRequest._skipAuthRefresh) {
+    if (errorCode === 'REFRESH_TOKEN_INVALID') {
+      await clearLocalAuthAndRedirect();
       throw error;
     }
 
-    // 토큰 전부 삭제 + 로그인 화면으로 이동
-    if (errorCode === 'REFRESH_TOKEN_INVALID') {
-      await clearLocalAuthAndRedirect();
+    if (originalRequest._skipAuthRefresh) {
       throw error;
     }
 

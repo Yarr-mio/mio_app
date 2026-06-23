@@ -1,22 +1,26 @@
 import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
+import { ErrorState } from '@/components/feedback/ErrorState';
+import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import {
   type OnboardingConcernType,
   ONBOARDING_CONCERN_OPTIONS,
+  ONBOARDING_CURRENT_STEPS,
   ONBOARDING_TOTAL_STEPS,
 } from '@/constants/onboarding';
-import { FgColors, PressableConfig, ScreenSpacing } from '@/constants/theme';
+import { FgColors, HomeLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingStep2Submit } from '@/features/onboarding/hooks/useOnboardingStep2Submit';
+import { useOnboardingStepSkip } from '@/features/onboarding/hooks/useOnboardingStepSkip';
 import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
+import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
-import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ONBOARDING_CURRENT_STEP = 2;
+const ONBOARDING_CURRENT_STEP = ONBOARDING_CURRENT_STEPS.step2 as OnboardingSkippableStep;
 
 interface ConcernButtonProps {
   label: string;
@@ -39,7 +43,13 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
       hitSlop={PressableConfig.hitSlop}
     >
       <View className={cn('flex-row items-center', selected && 'gap-2')}>
-        {selected && <CheckboxCheckIcon width={12} height={9} color={FgColors.onDefault} />}
+        {selected && (
+          <CheckboxCheckIcon
+            width={HomeLayout.checkboxCheckWidth}
+            height={HomeLayout.checkboxCheckHeight}
+            color={FgColors.onDefault}
+          />
+        )}
         <ThemedText type="default" className={selected ? 'text-fg-default' : 'text-label'}>
           {label}
         </ThemedText>
@@ -49,14 +59,28 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
 }
 
 export function Step2ConcernScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { concern_types, setConcernTypes } = useOnboardingStore();
+  const { submit, isPending, error, clearError } = useOnboardingStep2Submit();
+  const {
+    skip,
+    isPending: isSkipPending,
+    error: skipError,
+    clearError: clearSkipError,
+  } = useOnboardingStepSkip();
+
+  const isActionPending = isPending || isSkipPending;
+  const actionError = error ?? skipError;
 
   const selectedConcerns = (concern_types ?? []) as OnboardingConcernType[];
   const isConcernSelected = selectedConcerns.length > 0;
 
+  const clearActionError = () => {
+    clearError();
+    clearSkipError();
+  };
+
   const toggleConcern = (id: OnboardingConcernType) => {
+    clearActionError();
     const nextSelected = selectedConcerns.includes(id)
       ? selectedConcerns.filter((item) => item !== id)
       : [...selectedConcerns, id];
@@ -64,28 +88,25 @@ export function Step2ConcernScreen() {
     setConcernTypes(nextSelected.length === 0 ? null : nextSelected);
   };
 
-  const handleSkip = () => {
-    setConcernTypes(null);
-    router.push('/(auth)/onboarding/step3Style');
+  const handleSkip = async () => {
+    const success = await skip(ONBOARDING_CURRENT_STEP);
+    if (success) {
+      setConcernTypes(null);
+    }
   };
 
   const handleNext = () => {
     if (!isConcernSelected) {
       return;
     }
-    router.push('/(auth)/onboarding/step3Style');
+
+    void submit(selectedConcerns);
   };
 
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <View
-        className="flex-1 px-8"
-        style={{
-          paddingTop: insets.top,
-          paddingBottom: Math.max(insets.bottom, ScreenSpacing.bottomInsetMin),
-        }}
-      >
+      <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
         <View className="pt-4 mt-6">
           <OnboardingHeader
             currentStep={ONBOARDING_CURRENT_STEP}
@@ -119,17 +140,19 @@ export function Step2ConcernScreen() {
           </View>
         </ScrollView>
 
-        <View className="pt-4">
-          <Button disabled={!isConcernSelected} onPress={handleNext}>
+        <View className="pt-4 gap-2">
+          {actionError ? <ErrorState message={actionError} /> : null}
+          <Button disabled={!isConcernSelected || isActionPending} onPress={handleNext}>
             다음
           </Button>
           <OnboardingSkipButton
             label="건너뛰기"
             onPress={handleSkip}
+            disabled={isActionPending}
             className="items-center py-4"
           />
         </View>
-      </View>
+      </ScreenContainer>
     </View>
   );
 }
