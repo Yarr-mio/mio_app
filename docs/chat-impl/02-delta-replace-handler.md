@@ -1,6 +1,6 @@
 # 02. `delta.replace` 이벤트 핸들러 추가
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/02-delta-replace-handler.md](../../logs/02-delta-replace-handler.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §2](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 1-4](../CHAT_SERVER_GAP_ANALYSIS.md#1-4-deltareplace-이벤트-자체가-구현되어-있지-않음), [1-5](../CHAT_SERVER_GAP_ANALYSIS.md#1-5-donefinished_reason-타입-불일치)
 > 선행 작업: [01-message-id-refactor](./01-message-id-refactor.md) (같은 id 추적 구조를 사용)

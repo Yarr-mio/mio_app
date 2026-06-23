@@ -1,6 +1,15 @@
 import { useChatStore } from '@/features/chat/store/chatStore';
-import type { SseCrisisData, SseDeltaData, SseDoneData, SseSessionMetaData } from '@/types/chat';
+import type {
+  SseCrisisData,
+  SseDeltaData,
+  SseDeltaReplaceData,
+  SseDoneData,
+  SseSessionMetaData,
+} from '@/types/chat';
 import { useEffect, useRef, useState } from 'react';
+
+// TODO mock 전용: delta.replace 동작 수동 확인용 트리거 문구. 실서버 연동(11번 작업)에서 mock 제거 시 같이 삭제
+const MOCK_DELTA_REPLACE_TRIGGER = '교체테스트';
 
 // TODO: SSE 재연결 전략 미구현 (네트워크 끊김 대응 필요)
 
@@ -58,7 +67,11 @@ export function useChatSse(sessionId: string | null) {
     setIsStreaming(true);
 
     // TODO: 서버 연동 전 mock 응답 사용
-    runMock();
+    if (content.trim() === MOCK_DELTA_REPLACE_TRIGGER) {
+      runMockDeltaReplaceScenario();
+    } else {
+      runMock();
+    }
   }
 
   function confirmEmotionScore(score: number) {
@@ -114,6 +127,13 @@ export function useChatSse(sessionId: string | null) {
     store.appendDelta(data.msg_id, data.chunk);
   }
 
+  // append가 아니라 통째로 교체 — 지금까지 쌓인 delta.chunk를 버리고 safe_response로 다시 그림
+  function handleDeltaReplace(data: SseDeltaReplaceData) {
+    const store = useChatStore.getState();
+    store.confirmStreamingMessageId(data.msg_id);
+    store.replaceMessageContent(data.msg_id, data.safe_response);
+  }
+
   // TODO: 백엔드 명세가 확실해지면 연동
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleCrisis(data: SseCrisisData) {
@@ -166,6 +186,36 @@ export function useChatSse(sessionId: string | null) {
             finished_reason: 'stop',
           });
         }
+      }, 40);
+    }, 600);
+  }
+
+  // TODO mock 전용: delta.replace 수동 확인용 시나리오. 11번 작업(실제 SSE 연동)에서 제거
+  function runMockDeltaReplaceScenario() {
+    const inboundMsgId = `msg_in_mock_${Date.now()}`;
+    const outboundMsgId = `msg_out_mock_${Date.now()}`;
+    const partialText = '음, 그 부분에 대해서는';
+    const safeResponse = '그 마음을 안전하게 들을 수 있는 방식으로 다시 이야기해 볼게요.';
+
+    mockTimeoutRef.current = setTimeout(() => {
+      handleSessionMeta({ message_id: inboundMsgId, received_at: new Date().toISOString() });
+
+      let i = 0;
+      mockIntervalRef.current = setInterval(() => {
+        if (i < partialText.length) {
+          handleDelta({ msg_id: outboundMsgId, chunk: partialText[i] });
+          i++;
+          return;
+        }
+        if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
+        mockIntervalRef.current = null;
+        handleDeltaReplace({ msg_id: outboundMsgId, safe_response: safeResponse });
+        handleDone({
+          msg_id: outboundMsgId,
+          emotion_score: null,
+          is_crisis_flagged: false,
+          finished_reason: 'stop',
+        });
       }, 40);
     }, 600);
   }

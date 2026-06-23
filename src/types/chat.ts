@@ -23,6 +23,12 @@ export interface SseDeltaData {
   msg_id: string;
 }
 
+// 지금까지 누적한 delta.chunk를 모두 버리고 safe_response로 통째로 교체해야 함 (append 금지)
+export interface SseDeltaReplaceData {
+  safe_response: string;
+  msg_id: string;
+}
+
 export interface SseCrisisResource {
   name: string;
   number: string;
@@ -40,7 +46,7 @@ export interface SseDoneData {
   // TODO: 소크라테스 질문 식별 필드 백엔드 확인 필요 (message_type?: 'socratic')
   emotion_score: number | null;
   is_crisis_flagged: boolean;
-  finished_reason: 'stop' | 'crisis_flow' | 'security_refusal' | 'error';
+  finished_reason: 'stop' | 'crisis_flow' | 'security_refusal' | 'replaced_by_guard' | 'error';
 }
 
 export interface ActiveSession {

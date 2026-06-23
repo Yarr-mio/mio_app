@@ -5,4 +5,7 @@
 
 ## 기록
 
-(아직 작업 시작 전)
+- `SseDeltaReplaceData` 타입 추가, `finished_reason`에 `'replaced_by_guard'` 추가.
+- `chatStore.replaceMessageContent(msgId, content)` 액션 추가 — `appendDelta`와 달리 content를 누적이 아니라 덮어쓴다.
+- `useChatSse.handleDeltaReplace`: `confirmStreamingMessageId`를 먼저 호출해 placeholder id 전환을 보장한 뒤 `replaceMessageContent` 호출 (01번에서 만든 id 확정 로직과 동일하게 동작해야 해서 재사용).
+- 수동 테스트용으로 입력창에 "교체테스트"를 입력하면 mock이 `delta` 일부 → `delta.replace` → `done(finished_reason: 'stop')` 시나리오를 재생하도록 `runMockDeltaReplaceScenario` 추가. `ChatHeader`의 기존 `TestSocraticFlowButton`과 같은 임시 테스트 스캐폴딩 성격이며, 11번 작업(mock 제거)에서 같이 삭제될 코드.

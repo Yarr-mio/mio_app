@@ -20,6 +20,7 @@ interface ChatActions {
   startSession: (sessionId: string, characterId: OnboardingCharacterId) => void;
   addMessage: (message: ChatMessage) => void;
   appendDelta: (msgId: string, chunk: string) => void;
+  replaceMessageContent: (msgId: string, content: string) => void;
   confirmStreamingMessageId: (outboundMsgId: string) => void;
   setAiTyping: (value: boolean) => void;
   activateEmotionScoring: (initialScore: number) => void;
@@ -60,6 +61,12 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
       messages: state.messages.map((msg) =>
         msg.id === msgId ? { ...msg, content: msg.content + chunk } : msg
       ),
+    })),
+
+  // delta.replace 전용 — 지금까지 누적된 content를 버리고 통째로 덮어쓴다 (append 아님)
+  replaceMessageContent: (msgId, content) =>
+    set((state) => ({
+      messages: state.messages.map((msg) => (msg.id === msgId ? { ...msg, content } : msg)),
     })),
 
   // session_meta 시점엔 outboundMsgId(AI 메시지 id)를 아직 몰라 placeholder id로 빈 AI 메시지를 추적하다가,
