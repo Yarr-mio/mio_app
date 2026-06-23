@@ -134,16 +134,29 @@ export function useChatSse(sessionId: string | null) {
     store.replaceMessageContent(data.msg_id, data.safe_response);
   }
 
-  // TODO: 백엔드 명세가 확실해지면 연동
+  // mock에는 crisis 이벤트 시나리오가 없어 아직 호출부가 없음 — 11번 작업(실제 SSE 연동)에서 연결됨
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleCrisis(data: SseCrisisData) {
+    // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
     useChatStore.getState().addMessage({
       id: `crisis-${Date.now()}`,
       role: 'ai',
       type: 'crisis',
       content: data.fixed_response,
       timestamp: new Date().toISOString(),
-      crisisResources: data.resources.hotlines,
+      crisisResources: data.resources?.hotlines,
+    });
+  }
+
+  // CAUTIOUS_SPECULATIVE 경로에서 출력단계 위기 재분류 시 crisis 이벤트 없이 is_crisis_flagged만 옴
+  // (CHAT_BACKEND_QUESTIONS §5에 백엔드 수정 요청해둠) — 응답 전까지 핫라인 번호 없는 fallback 안내로 대응
+  function handleCrisisFallback() {
+    useChatStore.getState().addMessage({
+      id: `crisis-fallback-${Date.now()}`,
+      role: 'ai',
+      type: 'crisis',
+      content: '지금 많이 힘든 마음이 느껴져요. 잠시 숨을 고르며 그 감정에 함께 머물러볼까요?',
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -156,9 +169,10 @@ export function useChatSse(sessionId: string | null) {
     if (data.emotion_score !== null) {
       store.activateEmotionScoring(data.emotion_score);
     }
-    if (data.finished_reason === 'crisis_flow') {
-      store.endSession();
+    if (data.is_crisis_flagged && data.finished_reason === 'replaced_by_guard') {
+      handleCrisisFallback();
     }
+    // crisis_flow를 받아도 서버는 세션을 종료하지 않음 — 세션은 active로 유지하고 대화를 계속할 수 있어야 함
   }
 
   function runMock(

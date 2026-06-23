@@ -1,6 +1,6 @@
 # 03. 위기(crisis) 처리 보강 + 세션 자동종료 제거
 
-> 상태: 미착수
+> 상태: 완료
 > 로그: [logs/03-crisis-handling-fixes.md](../../logs/03-crisis-handling-fixes.md)
 > 관련: [CHAT_FRONTEND_TASKS.md §3](../CHAT_FRONTEND_TASKS.md), [GAP_ANALYSIS 1-3](../CHAT_SERVER_GAP_ANALYSIS.md#1-3-crisis-이벤트의-resources-null-크래시), [1-6](../CHAT_SERVER_GAP_ANALYSIS.md#1-6-donefinished_reason-만-보고-위기-ui를-결정함), [5-1](../CHAT_SERVER_GAP_ANALYSIS.md#5-1-crisis_flow-시-프론트가-바로-세션을-종료시킴)
 > 결정 사항: [GAP_ANALYSIS §0-1](../CHAT_SERVER_GAP_ANALYSIS.md#0-1-결정-사항-2026-06-22-점검)
