@@ -55,7 +55,7 @@ function UserBubble({ message }: Pick<MessageBubbleProps, 'message'>) {
 }
 
 function SocraticBubble({ message, characterId, characterName }: MessageBubbleProps) {
-  // TODO: SSE 응답에서 socratic 타입 식별 필드 백엔드 확인 필요 (message_type?: 'socratic')
+  // 필드(SseDoneData.is_socratic)는 존재하지만 판정 로직이 단순해 실연동 보류 중 — 여전히 ChatHeader의 테스트 버튼으로만 트리거됨
   return (
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />

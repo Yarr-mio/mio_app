@@ -43,10 +43,11 @@ export interface SseCrisisData {
 
 export interface SseDoneData {
   msg_id: string;
-  // TODO: 소크라테스 질문 식별 필드 백엔드 확인 필요 (message_type?: 'socratic')
   // optional — 필드 자체가 생략될 수 있음(undefined). null이 아니므로 `!== null` 체크로는 못 걸러냄
   emotion_score?: number;
   is_crisis_flagged: boolean;
+  // 판정 로직이 단순(AI 응답에 물음표 포함 여부)해 오탐 위험이 커 실연동 보류 중 — CHAT_FRONTEND_FOLLOWUP_PLAN.md §2-2 참고
+  is_socratic: boolean;
   finished_reason: 'stop' | 'crisis_flow' | 'security_refusal' | 'replaced_by_guard' | 'error';
 }
 
