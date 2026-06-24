@@ -1,22 +1,22 @@
 import {
   REPORT_MONTH_WEEK_LABELS,
+  REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES,
+  REPORT_PERIOD,
   REPORT_WEEKDAY_LABELS,
   type ReportPeriod,
 } from '@/constants/report';
 import type { ConstellationChartPoint, EmotionTrendPoint } from '@/types/report';
-import { getMonthRange, getWeekRange, toKstDate } from '@/utils/date';
+import { DAYS_PER_WEEK, getMonthRange, getWeekRange, MS_PER_DAY, toKstDate } from '@/utils/date';
 import { addDays, format, getDate, parseISO } from 'date-fns';
 
-const MONTHLY_WEEK_BUCKET_BOUNDARIES = [7, 14, 21] as const;
-
 function getMonthlyWeekBucketIndex(dayOfMonth: number): number {
-  if (dayOfMonth <= MONTHLY_WEEK_BUCKET_BOUNDARIES[0]) {
+  if (dayOfMonth <= REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES[0]) {
     return 0;
   }
-  if (dayOfMonth <= MONTHLY_WEEK_BUCKET_BOUNDARIES[1]) {
+  if (dayOfMonth <= REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES[1]) {
     return 1;
   }
-  if (dayOfMonth <= MONTHLY_WEEK_BUCKET_BOUNDARIES[2]) {
+  if (dayOfMonth <= REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES[2]) {
     return 2;
   }
   return 3;
@@ -74,7 +74,7 @@ export function mapEmotionTrendToChartPoints(
   points: EmotionTrendPoint[],
   anchorDate: Date
 ): ConstellationChartPoint[] {
-  if (period === 'month') {
+  if (period === REPORT_PERIOD.month) {
     return groupMonthlyTrendToChartPoints(points);
   }
 
@@ -82,9 +82,23 @@ export function mapEmotionTrendToChartPoints(
 }
 
 export function resolveReportAnchorDate(period: ReportPeriod, anchorDate: Date): Date {
-  if (period === 'month') {
+  if (period === REPORT_PERIOD.month) {
     return toKstDate(getMonthRange(anchorDate).start);
   }
 
   return toKstDate(anchorDate);
+}
+
+export function getActiveChartIndex(period: ReportPeriod, anchorDate: Date): number {
+  const today = toKstDate(new Date());
+  const resolvedAnchorDate = resolveReportAnchorDate(period, anchorDate);
+
+  if (period === REPORT_PERIOD.week) {
+    const { start } = getWeekRange(resolvedAnchorDate);
+    const dayIndex = Math.floor((today.getTime() - start.getTime()) / MS_PER_DAY);
+    return Math.min(Math.max(dayIndex, 0), REPORT_WEEKDAY_LABELS.length - 1);
+  }
+
+  const weekIndex = Math.floor((getDate(today) - 1) / DAYS_PER_WEEK);
+  return Math.min(Math.max(weekIndex, 0), REPORT_MONTH_WEEK_LABELS.length - 1);
 }
