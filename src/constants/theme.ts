@@ -603,8 +603,47 @@ export const IntensityLabelTextClasses = {
 
 export const IntensityLabelBaseClasses = 'rounded-full border px-2 py-0.5';
 
+export const ReportPendingStateLayout = {
+  characterImageSize: 200,
+  clockIconSize: 20,
+} as const;
+
+export const ReportStateColors = {
+  title: '#EEEAF8',
+  subtitle: '#969696',
+  emphasis: '#D9D9D9',
+  outlineButtonBorder: 'rgba(255,255,255,0.30)',
+  outlineButtonText: '#FFFFFF',
+} as const;
+
 export const ReportPendingStateClasses = {
+  root: 'mt-6 w-full flex-1 justify-between items-center',
+  topContent: 'w-full items-center',
+  textGroup: 'mt-7 w-full items-center gap-2',
+  cardList: 'mt-9 w-full gap-2',
+  card: 'rounded-2xl border border-line bg-surface px-4 py-4',
+  scheduleCardRow: 'flex-row items-center gap-3',
+  scheduleTextGroup: 'flex-1 gap-1',
+  reasonCard: 'gap-2',
+  notice: 'pb-2 text-center text-sm',
   container: 'mt-6 min-h-[200px] items-center justify-center gap-3',
+} as const;
+
+export const ReportErrorStateLayout = {
+  characterImageSize: 200,
+  warnIconSize: 20,
+} as const;
+
+export const ReportErrorStateClasses = {
+  root: 'mt-6 w-full flex-1 justify-between items-center',
+  topContent: 'w-full items-center',
+  textGroup: 'mt-7 w-full items-center gap-2',
+  buttonArea: 'mt-23 w-full gap-5',
+  helpCardWrapper: 'mt-12 w-full',
+  helpCardBody: 'flex-row items-center gap-3 px-4 py-4',
+  helpTextGroup: 'flex-1 gap-1',
+  outlineButton: 'h-16 w-full items-center justify-center rounded-2xl border bg-transparent',
+  outlineButtonText: 'text-xl font-bold',
 } as const;
 
 export const ReportFetchingOverlayClasses = {

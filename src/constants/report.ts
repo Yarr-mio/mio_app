@@ -1,4 +1,4 @@
-import type { DistortionType, ReportStatus } from '@/types/report';
+import type { DistortionType, EmotionTrendPeriod, ReportStatus } from '@/types/report';
 
 export const REPORT_TITLE = '성장 리포트';
 
@@ -8,6 +8,19 @@ export const REPORT_PERIOD_TABS = {
 } as const;
 
 export type ReportPeriod = keyof typeof REPORT_PERIOD_TABS;
+
+export const REPORT_PERIOD = {
+  week: 'week',
+  month: 'month',
+} as const satisfies Record<ReportPeriod, ReportPeriod>;
+
+export const REPORT_PERIOD_LIST = Object.keys(REPORT_PERIOD_TABS) as ReportPeriod[];
+
+export const EMOTION_TREND_PERIOD = {
+  week: 'week',
+  month: 'month',
+  all: 'all',
+} as const satisfies Record<EmotionTrendPeriod, EmotionTrendPeriod>;
 
 export const REPORT_STATUS = {
   GENERATED: 'GENERATED',
@@ -24,12 +37,43 @@ export const REPORT_INSUFFICIENT_DATA_DEFAULT_MESSAGE =
 
 export const REPORT_DISTORTION_EMPTY_MESSAGE = '이번 주 인지 왜곡이 감지되지 않았어요';
 
-export const REPORT_PENDING_MESSAGE = '리포트를 생성하고 있어요';
+export const REPORT_PENDING_TITLE: Record<ReportPeriod, string> = {
+  week: '이번 주 마음 흐름을\n정리하고 있어요',
+  month: '이번 달 마음 흐름을\n정리하고 있어요',
+};
 
-export const REPORT_SERVER_ERROR_MESSAGE =
-  '리포트를 불러오지 못했어요. 이전 기간을 선택하거나 다시 시도해 주세요.';
+export const REPORT_PENDING_SUBTITLE = '리포트가 완성되면 알려드릴게요';
 
-export const REPORT_RETRY_BUTTON_LABEL = '다시 시도';
+export const REPORT_PENDING_SCHEDULE: Record<ReportPeriod, string> = {
+  week: '매주 월요일 3:00',
+  month: '매월 1일 3:00',
+};
+
+export const REPORT_PENDING_SCHEDULE_LABEL = '자동 생성 시간';
+
+export const REPORT_PENDING_REASON_TITLE = '왜 기다려야 하나요?';
+
+export const REPORT_PENDING_REASON_BODY =
+  '체크인, TO-DO, 세션 데이터를 모아 더 정확한 리포트를 만들고 있어요';
+
+export const REPORT_PENDING_CHECKIN_NOTICE: Record<ReportPeriod, string> = {
+  week: '* 체크인 3회 이상 시 리포트가 생성됩니다',
+  month: '* 체크인 7회 이상 시 리포트가 생성됩니다',
+};
+
+export const REPORT_API_ERROR_CODE = 'SERVER_ERROR';
+
+export const REPORT_ERROR_TITLE = '리포트를 불러오지 못했어요';
+
+export const REPORT_ERROR_SUBTITLE = '잠시 후 다시 시도해 주세요';
+
+export const REPORT_ERROR_RETRY_LABEL = '다시 시도';
+
+export const REPORT_ERROR_VIEW_PREVIOUS_LABEL = '이전 리포트 보기';
+
+export const REPORT_ERROR_HELP_TITLE = '문제가 계속되나요?';
+
+export const REPORT_ERROR_HELP_BODY = '네트워크를 확인하거나\n잠시 후 다시 시도해 주세요';
 
 export const REPORT_REQUIRED_CHECKIN_COUNT = 3;
 
@@ -114,6 +158,12 @@ export const REPORT_WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', 
 
 export const REPORT_MONTH_WEEK_LABELS = ['1주', '2주', '3주', '4주'] as const;
 
+export const REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES = [7, 14, 21] as const;
+
+export const REPORT_DATE_NAVIGATOR_A11Y_PREV = '이전 기간';
+
+export const REPORT_DATE_NAVIGATOR_A11Y_NEXT = '다음 기간';
+
 /** 월간 통계 표시에 필요한 주차 수 (각 주 1회 이상 체크인) */
 export const MONTHLY_STATS_WEEKS_REQUIRED = 4;
 
@@ -182,10 +232,16 @@ export function formatReportChatButtonLabel(characterName: string): string {
   return `${characterName}와 이야기 하러 가기`;
 }
 
+export const CHARACTER_STORY_PERIOD_WEEKLY = 'weekly';
+
 export const CHARACTER_STORY_PERIOD_LABELS = {
   weekly: '주간',
   monthly: '월간',
 } as const;
+
+export const CHARACTER_STORY_A11Y_EXPAND = '이야기 더보기';
+
+export const CHARACTER_STORY_A11Y_COLLAPSE = '이야기 접기';
 
 export type CharacterStoryPeriod = keyof typeof CHARACTER_STORY_PERIOD_LABELS;
 

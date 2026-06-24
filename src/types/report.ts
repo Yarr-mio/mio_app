@@ -1,5 +1,13 @@
 export type ReportStatus = 'GENERATED' | 'INSUFFICIENT_DATA' | 'PENDING';
 
+export type EmotionTrendPeriod = 'week' | 'month' | 'all';
+
+export interface FetchEmotionTrendParams {
+  period: EmotionTrendPeriod;
+  week_start?: string;
+  month_start?: string;
+}
+
 export type DistortionType =
   | 'overgeneralization'
   | 'catastrophizing'
