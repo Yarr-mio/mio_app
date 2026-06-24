@@ -1,11 +1,15 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
 import type { OnboardingConcernType, OnboardingStyleType } from '@/constants/onboarding';
-import { ONBOARDING_DEFAULT_EMOJI_SCORE } from '@/constants/onboarding';
+import {
+  ONBOARDING_DEFAULT_EMOJI_SCORE,
+  ONBOARDING_INTENSITY_MAX,
+  ONBOARDING_INTENSITY_MIN,
+} from '@/constants/onboarding';
 import { useUserStore } from '@/store/userStore';
 import type { EmotionType } from '@/types/checkin';
 
 function clampEmojiScore(score: number): number {
-  return Math.max(1, Math.min(5, Math.round(score)));
+  return Math.max(ONBOARDING_INTENSITY_MIN, Math.min(ONBOARDING_INTENSITY_MAX, Math.round(score)));
 }
 
 export function useOnboardingSelection() {

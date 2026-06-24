@@ -173,7 +173,9 @@ export function getPartnerByKey(key: OnboardingCharacterId): PartnerMeta {
 }
 
 export function toOnboardingCharacterId(id: string): OnboardingCharacterId {
+  // ONBOARDING_ALL_CHARACTER_IDS 포함 여부로 런타임 검증 후 단언
   if (ONBOARDING_ALL_CHARACTER_IDS.includes(id as OnboardingCharacterId)) {
+    // includes 통과 후 안전한 단언
     return id as OnboardingCharacterId;
   }
 
