@@ -84,10 +84,15 @@ export async function resolveRouteFromSignupStatus(): Promise<AuthRoute> {
   return route;
 }
 
+export interface FetchedSignupStatus {
+  signup_step: SignupStep;
+  onboarding_step: number;
+}
+
 export function resolveSignupRoute(
   signupStep: SignupStep,
   isNewUser: boolean,
-  fetchedSignupStep?: SignupStep
+  fetchedStatus?: FetchedSignupStatus
 ): AuthRoute {
   console.log('[AUTH] login response:', {
     is_new_user: isNewUser,
@@ -99,10 +104,18 @@ export function resolveSignupRoute(
   }
 
   const needsStatusFetch = shouldFetchSignupStatus(signupStep, isNewUser);
-  const targetStep = needsStatusFetch && fetchedSignupStep ? fetchedSignupStep : signupStep;
+  const targetStep = needsStatusFetch && fetchedStatus ? fetchedStatus.signup_step : signupStep;
+
+  if (targetStep === 'PROFILE_COMPLETED' && fetchedStatus) {
+    const normalizedOnboardingStep = normalizeOnboardingProgressStep(fetchedStatus.onboarding_step);
+    const route = routeForSignupStatus(targetStep, normalizedOnboardingStep);
+    logSignupStatusNavigation(targetStep, route, normalizedOnboardingStep);
+    return route;
+  }
+
   const route = routeForSignupStep(targetStep);
 
-  if (needsStatusFetch && fetchedSignupStep) {
+  if (needsStatusFetch && fetchedStatus) {
     logSignupStatusNavigation(targetStep, route);
   }
 

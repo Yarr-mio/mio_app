@@ -23,8 +23,8 @@ import {
 } from '@/constants/theme';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingCharacterRecommendations } from '@/features/onboarding/hooks/useOnboardingCharacterRecommendations';
+import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
 import { useOnboardingStep4Submit } from '@/features/onboarding/hooks/useOnboardingStep4Submit';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useState } from 'react';
@@ -99,7 +99,7 @@ function CharacterOptionCard({
 }
 
 export function Step4CharacterScreen() {
-  const { preferred_style, character_id, setCharacterId } = useOnboardingStore();
+  const { preferred_style, character_id, setCharacterId } = useOnboardingSelection();
   const { submit, isPending, error, clearError } = useOnboardingStep4Submit();
   const [showAllCharacters, setShowAllCharacters] = useState(false);
 

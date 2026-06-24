@@ -5,9 +5,9 @@ import { useSignupStatus, useSocialLogin } from '@/features/auth/hooks/useAuth';
 import {
   resolveSignupRoute,
   shouldFetchSignupStatus,
+  type FetchedSignupStatus,
 } from '@/features/auth/services/signupNavigation';
 import { signInWithKakao } from '@/features/auth/utils/kakaoLogin';
-import type { SignupStep } from '@/types/auth';
 
 function getLoginErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {
@@ -44,14 +44,17 @@ export function useKakaoLogin() {
       });
 
       const { signup_step, is_new_user } = res.data;
-      let fetchedSignupStep: SignupStep | undefined;
+      let fetchedStatus: FetchedSignupStatus | undefined;
 
       if (shouldFetchSignupStatus(signup_step, is_new_user)) {
         const status = await signupStatus.mutateAsync();
-        fetchedSignupStep = status.data.signup_step;
+        fetchedStatus = {
+          signup_step: status.data.signup_step,
+          onboarding_step: status.data.onboarding_step,
+        };
       }
 
-      const route = resolveSignupRoute(signup_step, is_new_user, fetchedSignupStep);
+      const route = resolveSignupRoute(signup_step, is_new_user, fetchedStatus);
       router.replace(route);
     } catch (err) {
       setIsSdkPending(false);

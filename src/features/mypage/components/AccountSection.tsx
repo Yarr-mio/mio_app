@@ -5,7 +5,7 @@ import { BaseCard } from '@/components/ui/BaseCard';
 import { getPartnerByKey } from '@/constants/characters';
 import { AccountModalColors, AppModalLayout } from '@/constants/theme';
 import { useAccountActions } from '@/features/mypage/hooks/useAccountActions';
-import { usePartnerStore } from '@/features/mypage/store/partnerStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -53,8 +53,8 @@ function AccountActionRow({ label, onPress }: AccountActionRowProps) {
 
 export function AccountSection() {
   const [activeModal, setActiveModal] = useState<AccountActionId | null>(null);
-  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
-  const partnerName = getPartnerByKey(selectedPartner).name;
+  const selectedCharacterId = useSelectedCharacterId();
+  const partnerName = getPartnerByKey(selectedCharacterId).name;
   const { handleLogout } = useAccountActions();
 
   const closeModal = () => setActiveModal(null);

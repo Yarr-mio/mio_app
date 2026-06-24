@@ -8,11 +8,15 @@ import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInva
 import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStep3 } from '@/features/onboarding/hooks/useOnboarding';
 import { cacheOnboardingCharacterRecommendations } from '@/features/onboarding/utils/cacheOnboardingCharacterRecommendations';
+import { useUserStore } from '@/store/userStore';
 
 export function useOnboardingStep3Submit() {
   const router = useRouter();
   const onboardingStep3 = useOnboardingStep3();
   const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
+  const patchOnboardingPreferredStyle = useUserStore(
+    (state) => state.patchOnboardingPreferredStyle
+  );
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => {
@@ -32,6 +36,7 @@ export function useOnboardingStep3Submit() {
         cacheOnboardingCharacterRecommendations(response.data.character_recommendations);
       }
 
+      patchOnboardingPreferredStyle(selectedStyle);
       router.push(AUTH_ROUTES.onboardingStep4);
     } catch (submitError) {
       if (isSignupStepInvalidError(submitError)) {

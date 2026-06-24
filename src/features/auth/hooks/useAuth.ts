@@ -11,6 +11,7 @@ import {
   postAuthSignupProfile,
 } from '@/api/endpoints/auth';
 import { useAuthStore } from '@/store/authStore';
+import { useUserStore } from '@/store/userStore';
 import type {
   AuthLoginResponse,
   AuthNicknameDuplicateCheckResponse,
@@ -39,6 +40,13 @@ export function useSocialLogin() {
     onSuccess: async (res) => {
       await storage.refreshToken.set(res.data.refresh_token);
       setAccessToken(res.data.access_token);
+
+      if (!res.data.is_new_user && res.data.signup_step === 'COMPLETED' && res.data.user) {
+        useUserStore.getState().setAuthProfile({
+          nickname: res.data.user.nickname,
+          characterId: res.data.user.preferred_character_id,
+        });
+      }
     },
   });
 }
@@ -54,6 +62,9 @@ export function useSignupConsent() {
 export function useSignupProfile() {
   return useMutation<AuthSignupProfileResponse, Error, AuthSignupProfileRequest>({
     mutationFn: (body) => postAuthSignupProfile(body),
+    onSuccess: (res) => {
+      useUserStore.getState().patchOnboardingNickname(res.data.nickname);
+    },
   });
 }
 
@@ -87,8 +98,15 @@ export function useLogout() {
     mutationFn: () => postAuthLogout(),
     onSettled: async () => {
       setAccessToken(null);
-      await storage.refreshToken.delete();
-      onAuthInvalid?.();
+      useUserStore.getState().reset();
+      try {
+        await Promise.allSettled([
+          storage.refreshToken.delete(),
+          useUserStore.persist.clearStorage(),
+        ]);
+      } finally {
+        onAuthInvalid?.();
+      }
     },
   });
 }

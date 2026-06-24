@@ -2,32 +2,36 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import {
-  getOnboardingCharacterById,
-  ONBOARDING_DEFAULT_CHARACTER_ID,
-} from '@/constants/characters';
+import { getOnboardingCharacterById } from '@/constants/characters';
 import {
   formatReportChatButtonLabel,
+  REPORT_PERIOD,
   REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD,
   REPORT_STATUS,
   REPORT_TITLE,
   type ReportPeriod,
 } from '@/constants/report';
 import { MAIN_ROUTES } from '@/constants/routes';
-import { ReportDividerClasses, ReportSectionClasses, ReportTextClasses } from '@/constants/theme';
+import {
+  ButtonColors,
+  ReportDividerClasses,
+  ReportFetchingOverlayClasses,
+  ReportSectionClasses,
+  ReportTextClasses,
+} from '@/constants/theme';
 import { AverageEmotionScoreCard } from '@/features/report/components/AverageEmotionScoreCard';
 import { CharacterStoryCard } from '@/features/report/components/CharacterStoryCard';
 import { DistortionTop3Section } from '@/features/report/components/DistortionTop3Section';
 import { EmotionConstellation } from '@/features/report/components/EmotionConstellation';
 import { ReportCoachingSection } from '@/features/report/components/ReportCoachingSection';
 import { ReportDateNavigator } from '@/features/report/components/ReportDateNavigator';
+import { ReportErrorState } from '@/features/report/components/ReportErrorState';
 import { ReportInsufficientDataState } from '@/features/report/components/ReportInsufficientDataState';
-import { ReportNarrativeSection } from '@/features/report/components/ReportNarrativeSection';
 import { ReportPendingState } from '@/features/report/components/ReportPendingState';
 import { ReportPeriodTabs } from '@/features/report/components/ReportPeriodTabs';
 import { TodoSummaryCard } from '@/features/report/components/TodoSummaryCard';
-import { useReportMock } from '@/features/report/hooks/useReportMock';
-import { useUserStore } from '@/store/userStore';
+import { useReport } from '@/features/report/hooks/useReport';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { cn } from '@/utils/cn';
 import {
   getMonthAnchorFromWeekEnd,
@@ -39,26 +43,40 @@ import {
 } from '@/utils/date';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 export function GrowthReportScreen() {
-  const [period, setPeriod] = useState<ReportPeriod>('week');
+  const [period, setPeriod] = useState<ReportPeriod>(REPORT_PERIOD.week);
   const [weekAnchorDate, setWeekAnchorDate] = useState(() => toKstDate(new Date()));
   const [monthAnchorDate, setMonthAnchorDate] = useState(() =>
     toKstDate(getMonthRange(new Date()).start)
   );
-  const onboardingResult = useUserStore((state) => state.onboardingResult);
-  const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
+  const characterId = useSelectedCharacterId();
   const character = getOnboardingCharacterById(characterId);
 
   const anchorDate =
-    period === 'week' ? weekAnchorDate : toKstDate(getMonthRange(monthAnchorDate).start);
+    period === REPORT_PERIOD.week
+      ? weekAnchorDate
+      : toKstDate(getMonthRange(monthAnchorDate).start);
   const dateRange =
-    period === 'week' ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
-  const { report } = useReportMock(period, anchorDate);
+    period === REPORT_PERIOD.week ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
+  const { report, isPending, isFetching, isPlaceholderData, isError, isPollingTimedOut, refetch } =
+    useReport({
+      period,
+      anchorDate,
+    });
+
+  const showFetchingOverlay = !isPending && isFetching && isPlaceholderData;
+
+  const showChatButton =
+    !isPending &&
+    !isError &&
+    !isPollingTimedOut &&
+    report != null &&
+    report.status !== REPORT_STATUS.PENDING;
 
   const handlePrevious = () => {
-    if (period === 'week') {
+    if (period === REPORT_PERIOD.week) {
       setWeekAnchorDate((current) => toKstDate(shiftWeek(current, -1)));
       return;
     }
@@ -67,7 +85,7 @@ export function GrowthReportScreen() {
   };
 
   const handleNext = () => {
-    if (period === 'week') {
+    if (period === REPORT_PERIOD.week) {
       setWeekAnchorDate((current) => toKstDate(shiftWeek(current, 1)));
       return;
     }
@@ -80,14 +98,23 @@ export function GrowthReportScreen() {
       return;
     }
 
-    if (nextPeriod === 'month' && period === 'week') {
+    if (nextPeriod === REPORT_PERIOD.month && period === REPORT_PERIOD.week) {
       const syncedMonthAnchor = toKstDate(getMonthAnchorFromWeekEnd(weekAnchorDate));
       setMonthAnchorDate(syncedMonthAnchor);
-      setPeriod('month');
+      setPeriod(REPORT_PERIOD.month);
       return;
     }
 
     setPeriod(nextPeriod);
+  };
+
+  const handleViewPrevious = () => {
+    if (period === REPORT_PERIOD.week) {
+      setWeekAnchorDate((current) => toKstDate(shiftWeek(current, -1)));
+      return;
+    }
+
+    setMonthAnchorDate((current) => toKstDate(shiftMonth(current, -1)));
   };
 
   const handleGoToChat = () => {
@@ -95,8 +122,24 @@ export function GrowthReportScreen() {
   };
 
   const renderReportContent = () => {
+    if (isPending) {
+      return <ReportPendingState period={period} />;
+    }
+
+    if (isError) {
+      return <ReportErrorState onRetry={refetch} onViewPrevious={handleViewPrevious} />;
+    }
+
+    if (!report) {
+      return <ReportPendingState period={period} />;
+    }
+
+    if (isPollingTimedOut) {
+      return <ReportErrorState onRetry={refetch} onViewPrevious={handleViewPrevious} />;
+    }
+
     if (report.status === REPORT_STATUS.PENDING) {
-      return <ReportPendingState />;
+      return <ReportPendingState period={period} />;
     }
 
     if (report.status === REPORT_STATUS.INSUFFICIENT_DATA) {
@@ -105,6 +148,7 @@ export function GrowthReportScreen() {
           period={period}
           checkinCount={report.checkin_count}
           requiredCount={report.required_count}
+          message={report.message}
         />
       );
     }
@@ -121,12 +165,14 @@ export function GrowthReportScreen() {
           <DistortionTop3Section distortionTop3={report.distortion_top3} />
           <TodoSummaryCard period={period} todoSummary={report.todo_summary} />
         </View>
-        <CharacterStoryCard
-          period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
-          anchorDate={anchorDate}
-          characterId={characterId}
-        />
-        {report.narrative ? <ReportNarrativeSection narrative={report.narrative} /> : null}
+        {report.narrative ? (
+          <CharacterStoryCard
+            period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
+            anchorDate={anchorDate}
+            characterId={characterId}
+            storyText={report.narrative}
+          />
+        ) : null}
         {report.coaching_direction ? (
           <ReportCoachingSection coachingDirection={report.coaching_direction} />
         ) : null}
@@ -172,10 +218,17 @@ export function GrowthReportScreen() {
           {renderReportContent()}
         </ScrollView>
 
-        <View className={ReportSectionClasses.chatButtonContainer}>
-          <Button onPress={handleGoToChat}>{formatReportChatButtonLabel(character.name)}</Button>
-        </View>
+        {showChatButton ? (
+          <View className={ReportSectionClasses.chatButtonContainer}>
+            <Button onPress={handleGoToChat}>{formatReportChatButtonLabel(character.name)}</Button>
+          </View>
+        ) : null}
       </ScreenContainer>
+      {showFetchingOverlay ? (
+        <View className={ReportFetchingOverlayClasses.overlay}>
+          <ActivityIndicator color={ButtonColors.spinnerLight} />
+        </View>
+      ) : null}
     </View>
   );
 }

@@ -1,22 +1,56 @@
-import { ONBOARDING_CONCERN_OPTIONS, type OnboardingConcernType } from '@/constants/onboarding';
-import { EditNicknameLayout } from '@/constants/theme';
-import type { UserOnboardingSelectionResult, UserSignupInfo } from '@/types/user';
+import type { OnboardingCharacterId } from '@/constants/characters';
+import {
+  ONBOARDING_CONCERN_OPTIONS,
+  type OnboardingConcernType,
+  type OnboardingStyleType,
+} from '@/constants/onboarding';
+import type { EmotionType } from '@/types/checkin';
+import type { UserOnboardingSelectionResult } from '@/types/user';
+import { zustandStorage } from '@/utils/zustandStorage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
+export const USER_STORE_PERSIST_KEY = 'user-store';
+
+export interface AuthProfile {
+  nickname: string;
+  characterId: string;
+}
 
 interface UserState {
-  signupInfo: UserSignupInfo | null;
+  authProfile: AuthProfile | null;
   onboardingResult: UserOnboardingSelectionResult | null;
 
-  setSignupInfo: (info: UserSignupInfo) => void;
-  updateNickname: (nickname: string) => void;
+  setAuthProfile: (profile: AuthProfile) => void;
+  clearAuthProfile: () => void;
   setOnboardingResult: (result: UserOnboardingSelectionResult) => void;
+  patchOnboardingEmotion: (emotion: EmotionType, intensity: number) => void;
+  patchOnboardingConcernTypes: (types: OnboardingConcernType[]) => void;
+  patchOnboardingPreferredStyle: (style: OnboardingStyleType) => void;
+  patchOnboardingCharacterId: (characterId: OnboardingCharacterId) => void;
+  patchOnboardingNickname: (nickname: string) => void;
+  clearOnboardingEmotion: () => void;
+  clearOnboardingConcernTypes: () => void;
+  clearOnboardingPreferredStyle: () => void;
+  clearOnboardingCharacterId: () => void;
+  clearOnboardingNickname: () => void;
   reset: () => void;
 }
 
 const INITIAL_STATE = {
-  signupInfo: null,
+  authProfile: null,
   onboardingResult: null,
 } as const;
+
+function createEmptyOnboardingResult(): UserOnboardingSelectionResult {
+  return {
+    emotionSelection: null,
+    concernTypes: null,
+    preferredStyle: null,
+    characterId: null,
+    nickname: null,
+  };
+}
 
 function normalizeConcernTypes(types: string[] | null): OnboardingConcernType[] | null {
   if (!types || types.length === 0) {
@@ -28,25 +62,125 @@ function normalizeConcernTypes(types: string[] | null): OnboardingConcernType[] 
   return normalized.length === 0 ? null : normalized;
 }
 
-export const useUserStore = create<UserState>((set) => ({
-  ...INITIAL_STATE,
-  setSignupInfo: (info) => set({ signupInfo: info }),
-  // todo: 닉네임 수정 API 연동 후 updateNickname에서 서버 요청 추가
-  updateNickname: (nickname) => {
-    const normalized = nickname.trim().slice(0, EditNicknameLayout.maxLength);
-    if (normalized.length === 0) {
-      return;
+export const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      ...INITIAL_STATE,
+      setAuthProfile: (profile) => set({ authProfile: profile }),
+      clearAuthProfile: () => set({ authProfile: null }),
+      setOnboardingResult: (result) => set({ onboardingResult: result }),
+      patchOnboardingEmotion: (emotion, intensity) =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              emotionSelection: { emotion, intensity },
+            },
+          };
+        }),
+      patchOnboardingConcernTypes: (types) =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              concernTypes: normalizeConcernTypes(types),
+            },
+          };
+        }),
+      patchOnboardingPreferredStyle: (style) =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              preferredStyle: style,
+            },
+          };
+        }),
+      patchOnboardingCharacterId: (characterId) =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              characterId,
+            },
+          };
+        }),
+      patchOnboardingNickname: (nickname) =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              nickname,
+            },
+          };
+        }),
+      clearOnboardingEmotion: () =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              emotionSelection: null,
+            },
+          };
+        }),
+      clearOnboardingConcernTypes: () =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              concernTypes: null,
+            },
+          };
+        }),
+      clearOnboardingPreferredStyle: () =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              preferredStyle: null,
+            },
+          };
+        }),
+      clearOnboardingCharacterId: () =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              characterId: null,
+            },
+          };
+        }),
+      clearOnboardingNickname: () =>
+        set((state) => {
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              nickname: null,
+            },
+          };
+        }),
+      reset: () => set({ ...INITIAL_STATE }),
+    }),
+    {
+      name: USER_STORE_PERSIST_KEY,
+      storage: createJSONStorage(() => zustandStorage),
+      partialize: (state) => ({
+        authProfile: state.authProfile,
+        onboardingResult: state.onboardingResult,
+      }),
     }
-
-    set((state) => ({
-      signupInfo: state.signupInfo
-        ? { ...state.signupInfo, nickname: normalized }
-        : { nickname: normalized, gender: null, ageRange: null },
-    }));
-  },
-  setOnboardingResult: (result) => set({ onboardingResult: result }),
-  reset: () => set({ ...INITIAL_STATE }),
-}));
+  )
+);
 
 export const userStoreUtils = {
   normalizeConcernTypes,

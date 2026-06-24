@@ -9,7 +9,6 @@ import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignu
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
 import { readApiHttpStatus } from '@/features/auth/utils/readApiError';
-import { useUserStore } from '@/store/userStore';
 import type { UserAgeRange, UserGender } from '@/types/user';
 
 const DUPLICATE_CHECK_ERROR_MESSAGE = '닉네임 중복 확인에 실패했습니다. 다시 시도해 주세요.';
@@ -26,7 +25,6 @@ export function useSignupInfoSubmit() {
   const signupProfile = useSignupProfile();
   const nicknameDuplicateCheck = useNicknameDuplicateCheck();
   const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
-  const { setSignupInfo } = useUserStore();
   const [duplicateCheckError, setDuplicateCheckError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -69,12 +67,6 @@ export function useSignupInfoSubmit() {
       if (response.data.signup_step !== 'PROFILE_COMPLETED') {
         throw new Error(PROFILE_SUBMIT_ERROR_MESSAGE);
       }
-
-      setSignupInfo({
-        nickname,
-        gender,
-        ageRange,
-      });
 
       router.push({
         pathname: AUTH_ROUTES.signupComplete,
