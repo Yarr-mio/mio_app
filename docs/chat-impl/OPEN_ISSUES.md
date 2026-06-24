@@ -4,13 +4,13 @@
 
 ## 목록
 
-| #   | 이슈                                                                      | 영향 작업                              | 상태    |
-| --- | ------------------------------------------------------------------------- | -------------------------------------- | ------- |
-| 1   | 위기 fallback 안내에 핫라인 번호(109/1577-0199) 포함 여부                 | [03](./03-crisis-handling-fixes.md)    | 🟡 보류 |
-| 2   | `summary_status` done→viewed 전환 시점 불명 (재진입 무한 리다이렉트 위험) | [05](./05-active-session-response.md)  | 🟡 보류 |
-| 3   | `bias_types_detected` 포맷(구분자)·null일 때 표시 방식                    | [07](./07-session-summary-redesign.md) | 🟡 보류 |
-| 4   | 위기 이후 지속 대화 시 안내 배너 표시 여부                                | [03](./03-crisis-handling-fixes.md)    | 🟡 보류 |
-| 5   | 메시지 전송 완전 실패 시 재전송 버튼 제공 여부                            | [11](./11-real-sse-integration.md)     | 🟡 보류 |
+| #   | 이슈                                                                      | 영향 작업                              | 상태                     |
+| --- | ------------------------------------------------------------------------- | -------------------------------------- | ------------------------ |
+| 1   | 위기 fallback 안내에 핫라인 번호(109/1577-0199) 포함 여부                 | [03](./03-crisis-handling-fixes.md)    | ✅ 해소(안전망으로 격하) |
+| 2   | `summary_status` done→viewed 전환 시점 불명 (재진입 무한 리다이렉트 위험) | [05](./05-active-session-response.md)  | 🟡 보류                  |
+| 3   | `bias_types_detected` 포맷(구분자)·null일 때 표시 방식                    | [07](./07-session-summary-redesign.md) | 🟡 보류                  |
+| 4   | 위기 이후 지속 대화 시 안내 배너 표시 여부                                | [03](./03-crisis-handling-fixes.md)    | 🟡 보류                  |
+| 5   | 메시지 전송 완전 실패 시 재전송 버튼 제공 여부                            | [11](./11-real-sse-integration.md)     | 🟡 보류                  |
 
 ---
 
@@ -24,6 +24,8 @@
 - B) 번호 없이 안내 문구만 — severity 1 기본값과 일관성 유지
 
 **현재 임시 처리** ([03번 작업](./03-crisis-handling-fixes.md)): 번호 없는 문구(B)로 구현. 핫라인 정보가 없어 안전이 부족한 상태는 아님 — 백엔드 수정이 들어가면 정상적인 `crisis` 이벤트(+필요시 핫라인)가 오게 되므로 이 fallback 자체는 임시 안전망 역할.
+
+**해소 (2026-06-24)**: 백엔드가 CAUTIOUS_SPECULATIVE 위기 재분류 시 `crisisFlowService.handle()`을 호출하도록 수정함(커밋 `f0c6744`, [chat-trouble-shoot/03-backend-fixes-applied.md §6](../chat-trouble-shoot/03-backend-fixes-applied.md#6-cautious_speculative-경로--출력단계-위기-재분류-시-crisis-이벤트-누락--수정됨-)). 이제 이 경로도 정상적인 `crisis` 이벤트(+핫라인)가 오므로, 이 fallback 분기(`handleCrisisFallback`, `useChatSse.ts`)는 이론상 도달 불가능한 안전망으로 격하됨. 실기기 QA(4회 시도: 입력단계 hardCrisis 1회 정상 확인, MEDIUM risk 문구 3회는 안전한 응답만 생성돼 출력단계 재분류 자체가 트리거되지 않음)로 fallback이 호출되지 않는 것까지는 확인했으나, 재분류 자체를 강제 재현하지는 못함 — LLM 응답에 좌우되는 드문 안전망이라 코드 분석(백엔드 diff + 프론트 `resources?.hotlines` 옵셔널 체이닝 구조)으로 충분하다고 판단해 마무리함. 상세: [trouble-impl/logs/02-crisis-safety-net-review.md](../trouble-impl/logs/02-crisis-safety-net-review.md).
 
 ---
 

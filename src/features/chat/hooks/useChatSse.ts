@@ -139,8 +139,6 @@ export function useChatSse(sessionId: string | null) {
     });
   }
 
-  // CAUTIOUS_SPECULATIVE 경로에서 출력단계 위기 재분류 시 crisis 이벤트 없이 is_crisis_flagged만 옴
-  // (CHAT_BACKEND_QUESTIONS §5에 백엔드 수정 요청해둠) — 응답 전까지 핫라인 번호 없는 fallback 안내로 대응
   function handleCrisisFallback() {
     useChatStore.getState().addMessage({
       id: `crisis-fallback-${Date.now()}`,
