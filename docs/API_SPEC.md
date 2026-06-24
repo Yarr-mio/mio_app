@@ -553,13 +553,14 @@ interface EmotionTrendResponse {
 
 ## 9. Session / 채팅 (`SessionController`) — `/v1/sessions`
 
-| Method | Path                                | 인증 | 비고                                                           |
-| ------ | ----------------------------------- | ---- | -------------------------------------------------------------- |
-| GET    | `/v1/sessions/active`               | 필요 |                                                                |
-| POST   | `/v1/sessions`                      | 필요 | `201`                                                          |
-| POST   | `/v1/sessions/{sessionId}/messages` | 필요 | **SSE** (REST 아님) — 상세는 [SSE_SPEC.md](./SSE_SPEC.md) 참고 |
-| POST   | `/v1/sessions/{sessionId}/end`      | 필요 |                                                                |
-| GET    | `/v1/sessions/{sessionId}/summary`  | 필요 | `summary_status==="pending"`이면 `202`, 아니면 `200`           |
+| Method | Path                                     | 인증 | 비고                                                                          |
+| ------ | ---------------------------------------- | ---- | ----------------------------------------------------------------------------- |
+| GET    | `/v1/sessions/active`                    | 필요 |                                                                               |
+| POST   | `/v1/sessions`                           | 필요 | `201`                                                                         |
+| POST   | `/v1/sessions/{sessionId}/messages`      | 필요 | **SSE** (REST 아님) — 상세는 [SSE_SPEC.md](./SSE_SPEC.md) 참고                |
+| POST   | `/v1/sessions/{sessionId}/end`           | 필요 |                                                                               |
+| GET    | `/v1/sessions/{sessionId}/summary`       | 필요 | `summary_status==="pending"`이면 `202`, 아니면 `200`                          |
+| POST   | `/v1/sessions/{sessionId}/emotion-score` | 필요 | **세션이 종료된 후에만** 호출 가능 — 진행 중 세션이면 `409 SESSION_NOT_ENDED` |
 
 ```ts
 interface ActiveSessionResponse {
@@ -603,6 +604,21 @@ interface SessionSummaryResponse {
   avg_emotion_score: number | null;
   bias_types_detected: string | null;
   cbt_intervened: boolean | null;
+  // 스키마만 존재, 채우는 로직이 아직 없어 항상 null — chat-trouble-shoot/03-backend-fixes-applied.md §9 참고
+  key_thoughts: string[] | null;
+  socratic_count: number | null;
+}
+
+// POST /v1/sessions/{sessionId}/emotion-score — 메시지 단위가 아니라 세션 단위, 세션 종료 후에만 호출 가능
+interface EmotionScoreRequest {
+  score: number; // 0~100 필수
+}
+interface EmotionScoreResponse {
+  session_id: string;
+  // 세션 종료 후 컨솔리데이션(비동기)이 끝나기 전까지 null일 수 있음
+  emotion_score_ai: number | null;
+  emotion_score_user: number | null;
+  updated_at: string; // 점수 갱신 시각 (세션 종료 시각 아님)
 }
 ```
 
@@ -656,16 +672,17 @@ interface TodoCheckinResponse {
 
 ## 주요 에러 코드 (선택 발췌)
 
-| code                                                                               | http status | 의미                         |
-| ---------------------------------------------------------------------------------- | ----------- | ---------------------------- |
-| `VALIDATION_ERROR`                                                                 | 400         | 입력값 검증 실패             |
-| `UNAUTHORIZED` / `AUTH_TOKEN_INVALID` / `AUTH_TOKEN_EXPIRED`                       | 401         | 인증 실패                    |
-| `FORBIDDEN` / `ONBOARDING_REQUIRED`                                                | 403         | 권한 없음 / 온보딩 미완료    |
-| `USER_NOT_FOUND` / `SESSION_NOT_FOUND` / `CHECKIN_NOT_FOUND` / `TODO_NOT_FOUND` 등 | 404         | 리소스 없음                  |
-| `ALREADY_CHECKED_IN` / `SESSION_ALREADY_ACTIVE` / `TODO_ALREADY_COMPLETED`         | 409         | 중복/충돌                    |
-| `LOCKED_BY_SAFETY`                                                                 | 423         | 안전정책 차단 (위기 감지 등) |
-| `BUSINESS_RULE_VIOLATION` (당일 체크인 수정 등)                                    | 422         | 비즈니스 규칙 위반           |
-| `RATE_LIMITED`                                                                     | 429         | 요청 한도 초과               |
-| `INTERNAL_ERROR`                                                                   | 500         | 서버 오류                    |
+| code                                                                               | http status | 의미                                     |
+| ---------------------------------------------------------------------------------- | ----------- | ---------------------------------------- |
+| `VALIDATION_ERROR`                                                                 | 400         | 입력값 검증 실패                         |
+| `UNAUTHORIZED` / `AUTH_TOKEN_INVALID` / `AUTH_TOKEN_EXPIRED`                       | 401         | 인증 실패                                |
+| `FORBIDDEN` / `ONBOARDING_REQUIRED`                                                | 403         | 권한 없음 / 온보딩 미완료                |
+| `USER_NOT_FOUND` / `SESSION_NOT_FOUND` / `CHECKIN_NOT_FOUND` / `TODO_NOT_FOUND` 등 | 404         | 리소스 없음                              |
+| `ALREADY_CHECKED_IN` / `SESSION_ALREADY_ACTIVE` / `TODO_ALREADY_COMPLETED`         | 409         | 중복/충돌                                |
+| `SESSION_NOT_ENDED`                                                                | 409         | 진행 중인 세션에 emotion-score 제출 시도 |
+| `LOCKED_BY_SAFETY`                                                                 | 423         | 안전정책 차단 (위기 감지 등)             |
+| `BUSINESS_RULE_VIOLATION` (당일 체크인 수정 등)                                    | 422         | 비즈니스 규칙 위반                       |
+| `RATE_LIMITED`                                                                     | 429         | 요청 한도 초과                           |
+| `INTERNAL_ERROR`                                                                   | 500         | 서버 오류                                |
 
 전체 코드는 [`src/main/java/com/mio/common/error/ErrorCode.java`](../src/main/java/com/mio/common/error/ErrorCode.java)에 있습니다.

@@ -207,8 +207,8 @@ POST /v1/sessions/{id}/end                 → 세션 종료, SessionEndedEvent 
 
 LLM이 응답을 만든 _후_ `OutputJudge`가 `CRISIS_FLOW`를 판정할 수도 있다 (예: 사용자 발화는 애매했지만 LLM 응답 내용이나 사전 필터 결과를 보고서야 위기로 확정되는 경우). 이때 동작이 **딜리버리 모드에 따라 다르다**:
 
-- **BUFFER 모드**: `resolveOutputJudgeAction`이 `crisisFlowService.handle()`을 호출하긴 하지만, **이때 원본 메시지를 `null`로 넘긴다.** `BUFFER` 딜리버리는 PolicyEngine 순위 6번(HIGH risk)에서만 오는데 이 경로는 `hardCrisis=false`가 보장된 상태이므로, `determineSeverity`는 `originalMessage == null` 분기를 타 **항상 severity 1**(핫라인 없는 진정 유도 문구)로 귀결된다. 즉 `crisis` SSE 이벤트 자체는 오지만(§6-1과 달리), **실질적으로 핫라인 정보가 포함된 severity 2/3은 이 경로에서 나오지 않는다.**
-- **CAUTIOUS_SPECULATIVE 모드**: `crisisFlowService.handle()`을 호출하지 **않고**, 고정 대체 문구("지금 많이 힘드시겠어요…")를 `delta.replace`로 보낸 뒤 `done(is_crisis_flagged=true, finished_reason="replaced_by_guard")`만 전송 — **`crisis` 이벤트와 핫라인 정보가 클라이언트에 전달되지 않는다.** (SSE_SPEC.md §7의 gotcha와 동일 사안, 백엔드 구현상의 비대칭)
+- **BUFFER 모드**: `resolveOutputJudgeAction`이 `crisisFlowService.handle()`을 호출하며, **원본 사용자 메시지를 실제 값으로 전달한다.** `determineSeverity`가 `SEVERITY_2/3_KEYWORDS`로 원본 메시지를 검사할 수 있게 되어, `BUFFER` 딜리버리(PolicyEngine 순위 6번, HIGH risk)에서도 severity 2/3(핫라인 포함)이 산정될 수 있다.
+- **CAUTIOUS_SPECULATIVE 모드**: 이제 BUFFER 모드와 동일하게 `crisisFlowService.handle()`을 호출해 `crisis` 이벤트(+필요시 핫라인)와 `done(finished_reason="crisis_flow")`가 함께 전송된다. `replaced_by_guard`는 더 이상 위기 케이스에 쓰이지 않고, 위기가 아닌 REWRITE/REPLACE 케이스 전용이다.
 
 ### 6-3. 보안 공격으로 판정된 경우 (`SECURITY_REFUSAL`)
 
@@ -289,8 +289,7 @@ PreFilter를 통과하지 못한 경우에만 비용을 들여 LLM에게 재검�
 ## 9. 알아두면 좋은 설계 특징과 한계
 
 - **fail-open vs fail-closed가 단계별로 다르다.** 입력 측 (L0 모더레이션, InputJudge)은 실패 시 "위험 없음"으로 후퇴해 대화가 끊기지 않게 하고, 출력 측 (OutputJudge)은 실패 시 "안전 문구로 교체"로 후퇴해 더 보수적으로 동작한다. 입력 판단이 실패해도 SafetyL1의 결정론적 키워드 체크는 별도로 항상 동작하므로 완전 무방비 상태는 아니다.
-- **`Message.isCrisisFlagged` 컬럼은 메시지 저장 시 항상 `false`로 저장된다** (`SessionMessagePersistenceService.saveMessage`). 실제 위기 판정 결과는 SSE의 `done.is_crisis_flagged`와 `crisis_events` 테이블에만 남고, `messages` 테이블의 해당 컬럼에는 반영되지 않는다.
-- **CAUTIOUS_SPECULATIVE 경로에서 출력 단계 위기 재분류 시 `crisis` 이벤트(핫라인 정보)가 누락된다** — 자세한 내용은 §6-2와 [SSE_SPEC.md](./SSE_SPEC.md) §7.
+- **`Message.isCrisisFlagged` 컬럼은 ASSISTANT 메시지 행에는 실제 위기 판정 결과가 반영되지만, USER 메시지 행은 여전히 항상 `false`로 저장된다** (`SessionMessagePersistenceService.saveMessage`). 메시지 히스토리 API에서 이 컬럼을 신뢰하려면 "위기로 이어진 대화 턴의 AI 응답 메시지만 true가 될 수 있고, 사용자 메시지는 절대 true가 되지 않는다"는 점을 알고 있어야 한다.
 - **판사(Judge) 모델은 실제 대화 생성 모델과 분리**돼 있다 — 대화 응답은 `gpt-4o`, InputJudge/OutputJudge/ExtractorLLM/세션요약/체크포인트 요약은 모두 `gpt-4o-mini` (비용 최적화).
 - **세션당 활성 SafetyProfile/메모리 컨텍스트는 Redis 캐시 기반**이라, Redis 장애 시 매 메시지마다 동기로 DB를 다시 조회하게 되어 지연이 늘어날 수 있다 (fallback 경로는 있으나 성능 저하 가능).
 - **소크라테스식 질문 2회 제한**(`SessionDelta.socraticLimitReached`)처럼 세션 단위로 누적되는 CBT 관련 제약이 있어, 같은 세션이 길어질수록 AI의 개입 스타일이 달라질 수 있다.
