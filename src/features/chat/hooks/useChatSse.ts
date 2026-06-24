@@ -129,7 +129,21 @@ export function useChatSse(sessionId: string | null) {
 
   function handleCrisis(data: SseCrisisData) {
     // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
-    useChatStore.getState().addMessage({
+    const store = useChatStore.getState();
+    const pendingId = store.streamingMessageId;
+    const pendingMessage = pendingId
+      ? store.messages.find((msg) => msg.id === pendingId)
+      : undefined;
+
+    // delta 없이 곧장 crisis로 끝나는 경로(입력단계 즉시 위기 감지, BUFFER 출력단계 위기 전환)에서는
+    // session_meta가 만든 빈 placeholder가 안 채워진 채 남아 위기 말풍선과 중복 표시되므로, 새 메시지를
+    // 추가하는 대신 그 placeholder를 위기 말풍선으로 전환한다
+    if (pendingId && pendingMessage && pendingMessage.content === '') {
+      store.replaceMessageAsCrisis(pendingId, data.fixed_response, data.resources?.hotlines);
+      return;
+    }
+
+    store.addMessage({
       id: `crisis-${Date.now()}`,
       role: 'ai',
       type: 'crisis',

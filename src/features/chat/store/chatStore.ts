@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { OnboardingCharacterId } from '@/constants/characters';
-import type { ChatMessage } from '@/types/chat';
+import type { ChatMessage, SseCrisisResource } from '@/types/chat';
 
 export type SessionPhase = 'idle' | 'active' | 'ended';
 
@@ -26,6 +26,11 @@ interface ChatActions {
   addMessage: (message: ChatMessage) => void;
   appendDelta: (msgId: string, chunk: string) => void;
   replaceMessageContent: (msgId: string, content: string) => void;
+  replaceMessageAsCrisis: (
+    msgId: string,
+    content: string,
+    crisisResources?: SseCrisisResource[]
+  ) => void;
   confirmStreamingMessageId: (outboundMsgId: string) => void;
   setAiTyping: (value: boolean) => void;
   activateEmotionScoring: (initialScore: number) => void;
@@ -72,6 +77,15 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
   replaceMessageContent: (msgId, content) =>
     set((state) => ({
       messages: state.messages.map((msg) => (msg.id === msgId ? { ...msg, content } : msg)),
+    })),
+
+  // delta 없이 곧장 crisis로 끝나는 경로(입력단계 즉시 위기 감지, BUFFER 출력단계 위기 전환)에서
+  // session_meta가 만든 빈 placeholder를 새 메시지 추가 없이 위기 말풍선으로 그대로 전환한다
+  replaceMessageAsCrisis: (msgId, content, crisisResources) =>
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg.id === msgId ? { ...msg, type: 'crisis', content, crisisResources } : msg
+      ),
     })),
 
   // session_meta 시점엔 outboundMsgId(AI 메시지 id)를 아직 몰라 placeholder id로 빈 AI 메시지를 추적하다가,
