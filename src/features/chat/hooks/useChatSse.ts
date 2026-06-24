@@ -105,8 +105,8 @@ export function useChatSse(sessionId: string | null) {
       content: '',
       timestamp: data.received_at,
     });
-    // 빈 AI 메시지가 추가되는 순간 TypingIndicator 숨김 — delta가 이어받음
-    store.setAiTyping(false);
+    // placeholder는 여기서 추가되지만, 콘텐츠가 빈 동안은 ChatMain에서 렌더링 제외됨 —
+    // 실제 콘텐츠가 도착할 때(handleDelta/handleDeltaReplace/handleCrisis)까지 TypingIndicator를 유지한다
     useChatStore.setState({ streamingMessageId: placeholderId });
   }
 
@@ -118,6 +118,7 @@ export function useChatSse(sessionId: string | null) {
     const store = useChatStore.getState();
     store.confirmStreamingMessageId(data.msg_id);
     store.appendDelta(data.msg_id, data.chunk);
+    store.setAiTyping(false);
   }
 
   // append가 아니라 통째로 교체 — 지금까지 쌓인 delta.chunk를 버리고 safe_response로 다시 그림
@@ -125,11 +126,13 @@ export function useChatSse(sessionId: string | null) {
     const store = useChatStore.getState();
     store.confirmStreamingMessageId(data.msg_id);
     store.replaceMessageContent(data.msg_id, data.safe_response);
+    store.setAiTyping(false);
   }
 
   function handleCrisis(data: SseCrisisData) {
     // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
     const store = useChatStore.getState();
+    store.setAiTyping(false);
     const pendingId = store.streamingMessageId;
     const pendingMessage = pendingId
       ? store.messages.find((msg) => msg.id === pendingId)

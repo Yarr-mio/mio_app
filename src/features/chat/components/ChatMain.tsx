@@ -20,6 +20,9 @@ export function ChatMain() {
   const emotionScoringActive = useChatStore((s) => s.emotionScoringActive);
   const pendingEmotionScore = useChatStore((s) => s.pendingEmotionScore);
   const character = getOnboardingCharacterById(characterId);
+  // session_meta가 만든 빈 AI placeholder는 실제 콘텐츠가 도착하기 전까지 렌더링에서 제외 —
+  // 그 사이에는 TypingIndicator(isAiTyping)만 보여준다
+  const visibleMessages = messages.filter((m) => !(m.role === 'ai' && m.content === ''));
 
   const { sendMessage, confirmEmotionScore, isStreaming } = useChatSse(sessionId);
   const { mutate: endChatSession } = useEndChatSession();
@@ -37,7 +40,7 @@ export function ChatMain() {
           className="flex-1"
         >
           <FlatList<ChatMessage>
-            data={[...messages].reverse()}
+            data={[...visibleMessages].reverse()}
             inverted
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
