@@ -3,7 +3,10 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { getOnboardingCharacterById, type OnboardingCharacterId } from '@/constants/characters';
 import {
+  CHARACTER_STORY_A11Y_COLLAPSE,
+  CHARACTER_STORY_A11Y_EXPAND,
   CHARACTER_STORY_COLLAPSE_LABEL,
+  CHARACTER_STORY_PERIOD_WEEKLY,
   CHARACTER_STORY_READ_MORE_INLINE_LABEL,
   CHARACTER_STORY_READ_MORE_MIN_LENGTH,
   CHARACTER_STORY_TRUNCATE_ELLIPSIS,
@@ -42,7 +45,7 @@ export function CharacterStoryCard({
   const character = getOnboardingCharacterById(characterId);
   const title = formatCharacterStoryCardTitle(character.name, period);
   const dateLabel =
-    period === 'weekly'
+    period === CHARACTER_STORY_PERIOD_WEEKLY
       ? formatCharacterStoryWeeklyDateLabel(anchorDate)
       : formatCharacterStoryMonthlyDateLabel(anchorDate);
   const isStoryLongEnough = storyText.length > CHARACTER_STORY_READ_MORE_MIN_LENGTH;
@@ -76,7 +79,7 @@ export function CharacterStoryCard({
             className={ReportTextClasses.characterStoryReadMore}
             onPress={handleReadMorePress}
             accessibilityRole="button"
-            accessibilityLabel="이야기 더보기"
+            accessibilityLabel={CHARACTER_STORY_A11Y_EXPAND}
           >
             {CHARACTER_STORY_READ_MORE_INLINE_LABEL}
           </ThemedText>
@@ -122,7 +125,7 @@ export function CharacterStoryCard({
           <Pressable
             onPress={handleCollapsePress}
             accessibilityRole="button"
-            accessibilityLabel="이야기 접기"
+            accessibilityLabel={CHARACTER_STORY_A11Y_COLLAPSE}
             hitSlop={PressableConfig.hitSlop}
           >
             <ThemedText type="small" className={ReportTextClasses.characterStoryReadMore}>

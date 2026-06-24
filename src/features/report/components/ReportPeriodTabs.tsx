@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/themed/ThemedText';
-import { REPORT_PERIOD_TABS, type ReportPeriod } from '@/constants/report';
+import { REPORT_PERIOD_LIST, REPORT_PERIOD_TABS, type ReportPeriod } from '@/constants/report';
 import { PressableConfig, ReportTabClasses } from '@/constants/theme';
 import { cn } from '@/utils/cn';
 import { Pressable, View } from 'react-native';
@@ -9,7 +9,7 @@ interface ReportPeriodTabsProps {
   onChange: (period: ReportPeriod) => void;
 }
 
-const PERIOD_OPTIONS: ReportPeriod[] = ['week', 'month'];
+const PERIOD_OPTIONS = REPORT_PERIOD_LIST;
 
 export function ReportPeriodTabs({ period, onChange }: ReportPeriodTabsProps) {
   return (

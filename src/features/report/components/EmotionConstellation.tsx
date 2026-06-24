@@ -9,11 +9,9 @@ import {
   ReportSectionClasses,
   ReportTextClasses,
 } from '@/constants/theme';
-import {
-  getActiveChartIndex,
-  useEmotionConstellationData,
-} from '@/features/report/hooks/useEmotionConstellationData';
+import { useEmotionConstellationData } from '@/features/report/hooks/useEmotionConstellationData';
 import type { ConstellationChartPoint } from '@/types/report';
+import { getActiveChartIndex } from '@/utils/report';
 import { ActivityIndicator, View } from 'react-native';
 
 interface EmotionConstellationProps {

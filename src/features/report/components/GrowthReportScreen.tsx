@@ -3,11 +3,10 @@ import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
-import { HTTP_STATUS } from '@/constants/config';
 import {
   formatReportChatButtonLabel,
+  REPORT_PERIOD,
   REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD,
-  REPORT_SERVER_ERROR_MESSAGE,
   REPORT_STATUS,
   REPORT_TITLE,
   type ReportPeriod,
@@ -20,11 +19,6 @@ import {
   ReportSectionClasses,
   ReportTextClasses,
 } from '@/constants/theme';
-import {
-  readApiErrorCode,
-  readApiErrorMessage,
-  readApiHttpStatus,
-} from '@/features/auth/utils/readApiError';
 import { AverageEmotionScoreCard } from '@/features/report/components/AverageEmotionScoreCard';
 import { CharacterStoryCard } from '@/features/report/components/CharacterStoryCard';
 import { DistortionTop3Section } from '@/features/report/components/DistortionTop3Section';
@@ -51,15 +45,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
-function isReportServerError(error: unknown): boolean {
-  return (
-    readApiHttpStatus(error) === HTTP_STATUS.INTERNAL_SERVER_ERROR ||
-    readApiErrorCode(error) === 'SERVER_ERROR'
-  );
-}
-
 export function GrowthReportScreen() {
-  const [period, setPeriod] = useState<ReportPeriod>('week');
+  const [period, setPeriod] = useState<ReportPeriod>(REPORT_PERIOD.week);
   const [weekAnchorDate, setWeekAnchorDate] = useState(() => toKstDate(new Date()));
   const [monthAnchorDate, setMonthAnchorDate] = useState(() =>
     toKstDate(getMonthRange(new Date()).start)
@@ -68,10 +55,21 @@ export function GrowthReportScreen() {
   const character = getOnboardingCharacterById(characterId);
 
   const anchorDate =
-    period === 'week' ? weekAnchorDate : toKstDate(getMonthRange(monthAnchorDate).start);
+    period === REPORT_PERIOD.week
+      ? weekAnchorDate
+      : toKstDate(getMonthRange(monthAnchorDate).start);
   const dateRange =
-    period === 'week' ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
-  const { report, isPending, isFetching, isPlaceholderData, isError, error, refetch } = useReport({
+    period === REPORT_PERIOD.week ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
+  const {
+    report,
+    isPending,
+    isFetching,
+    isPlaceholderData,
+    isError,
+    isServerError,
+    isPollingTimedOut,
+    refetch,
+  } = useReport({
     period,
     anchorDate,
   });
@@ -79,7 +77,7 @@ export function GrowthReportScreen() {
   const showFetchingOverlay = !isPending && isFetching && isPlaceholderData;
 
   const handlePrevious = () => {
-    if (period === 'week') {
+    if (period === REPORT_PERIOD.week) {
       setWeekAnchorDate((current) => toKstDate(shiftWeek(current, -1)));
       return;
     }
@@ -88,7 +86,7 @@ export function GrowthReportScreen() {
   };
 
   const handleNext = () => {
-    if (period === 'week') {
+    if (period === REPORT_PERIOD.week) {
       setWeekAnchorDate((current) => toKstDate(shiftWeek(current, 1)));
       return;
     }
@@ -101,14 +99,23 @@ export function GrowthReportScreen() {
       return;
     }
 
-    if (nextPeriod === 'month' && period === 'week') {
+    if (nextPeriod === REPORT_PERIOD.month && period === REPORT_PERIOD.week) {
       const syncedMonthAnchor = toKstDate(getMonthAnchorFromWeekEnd(weekAnchorDate));
       setMonthAnchorDate(syncedMonthAnchor);
-      setPeriod('month');
+      setPeriod(REPORT_PERIOD.month);
       return;
     }
 
     setPeriod(nextPeriod);
+  };
+
+  const handleViewPrevious = () => {
+    if (period === REPORT_PERIOD.week) {
+      setWeekAnchorDate((current) => toKstDate(shiftWeek(current, -1)));
+      return;
+    }
+
+    setMonthAnchorDate((current) => toKstDate(shiftMonth(current, -1)));
   };
 
   const handleGoToChat = () => {
@@ -117,23 +124,28 @@ export function GrowthReportScreen() {
 
   const renderReportContent = () => {
     if (isPending) {
-      return <ReportPendingState />;
+      return <ReportPendingState period={period} />;
     }
 
     if (isError) {
-      const errorMessage = isReportServerError(error)
-        ? REPORT_SERVER_ERROR_MESSAGE
-        : readApiErrorMessage(error);
-
-      return <ReportErrorState message={errorMessage} onRetry={refetch} />;
+      return (
+        <ReportErrorState
+          onRetry={refetch}
+          onViewPrevious={isServerError ? handleViewPrevious : undefined}
+        />
+      );
     }
 
     if (!report) {
-      return <ReportPendingState />;
+      return <ReportPendingState period={period} />;
+    }
+
+    if (isPollingTimedOut) {
+      return <ReportErrorState onRetry={refetch} />;
     }
 
     if (report.status === REPORT_STATUS.PENDING) {
-      return <ReportPendingState />;
+      return <ReportPendingState period={period} />;
     }
 
     if (report.status === REPORT_STATUS.INSUFFICIENT_DATA) {
