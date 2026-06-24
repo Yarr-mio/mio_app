@@ -66,11 +66,7 @@ export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       ...INITIAL_STATE,
-      setAuthProfile: (profile) =>
-        set(() => {
-          console.log('[디버그][userStore] setAuthProfile 호출', profile);
-          return { authProfile: profile };
-        }),
+      setAuthProfile: (profile) => set({ authProfile: profile }),
       clearAuthProfile: () => set({ authProfile: null }),
       setOnboardingResult: (result) => set({ onboardingResult: result }),
       patchOnboardingEmotion: (emotion, intensity) =>
@@ -105,7 +101,6 @@ export const useUserStore = create<UserState>()(
         }),
       patchOnboardingCharacterId: (characterId) =>
         set((state) => {
-          console.log('[디버그][userStore] patchOnboardingCharacterId', characterId);
           const current = state.onboardingResult ?? createEmptyOnboardingResult();
           return {
             onboardingResult: {
@@ -116,7 +111,6 @@ export const useUserStore = create<UserState>()(
         }),
       patchOnboardingNickname: (nickname) =>
         set((state) => {
-          console.log('[디버그][userStore] patchOnboardingNickname', nickname);
           const current = state.onboardingResult ?? createEmptyOnboardingResult();
           return {
             onboardingResult: {
@@ -184,9 +178,6 @@ export const useUserStore = create<UserState>()(
         authProfile: state.authProfile,
         onboardingResult: state.onboardingResult,
       }),
-      onRehydrateStorage: () => (state) => {
-        console.log('[디버그][userStore] rehydrate 완료, authProfile', state?.authProfile);
-      },
     }
   )
 );

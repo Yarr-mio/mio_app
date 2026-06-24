@@ -42,12 +42,8 @@ export function useSocialLogin() {
       setAccessToken(res.data.access_token);
 
       if (!res.data.is_new_user && res.data.signup_step === 'COMPLETED' && res.data.user) {
-        console.log('[디버그][useSocialLogin] 서버 응답 user 데이터', res.data.user);
+        console.log('[서버응답] 로그인 유저 데이터', res.data.user);
         useUserStore.getState().setAuthProfile({
-          nickname: res.data.user.nickname,
-          characterId: res.data.user.preferred_character_id,
-        });
-        console.log('[디버그][useSocialLogin] authProfile 저장 완료', {
           nickname: res.data.user.nickname,
           characterId: res.data.user.preferred_character_id,
         });
@@ -69,7 +65,6 @@ export function useSignupProfile() {
     mutationFn: (body) => postAuthSignupProfile(body),
     onSuccess: (res) => {
       useUserStore.getState().patchOnboardingNickname(res.data.nickname);
-      console.log('[디버그][useSignupProfile] 닉네임 저장', res.data.nickname);
     },
   });
 }
