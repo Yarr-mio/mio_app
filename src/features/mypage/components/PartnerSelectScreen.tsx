@@ -3,14 +3,15 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import { Label } from '@/components/ui/Label';
-import { PARTNER_LIST } from '@/constants/characters';
+import { PARTNER_LIST, type OnboardingCharacterId } from '@/constants/characters';
 import {
   OnboardingStyleCardClasses,
   OnboardingStyleCardLayout,
   PressableConfig,
   ScreenSpacing,
 } from '@/constants/theme';
-import { usePartnerStore } from '@/features/mypage/store/partnerStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -68,14 +69,14 @@ function PartnerOptionCard({ name, tag, intro, image, selected, onPress }: Partn
 export function PartnerSelectScreen() {
   const router = useRouter();
   const { bottom } = useSafeAreaInsets();
-  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
-  const setSelectedPartner = usePartnerStore((state) => state.setSelectedPartner);
-  const [tempSelected, setTempSelected] = useState(selectedPartner);
+  const selectedCharacterId = useSelectedCharacterId();
+  const patchOnboardingCharacterId = useUserStore((state) => state.patchOnboardingCharacterId);
+  const [tempSelected, setTempSelected] = useState<OnboardingCharacterId>(selectedCharacterId);
 
   const bottomPadding = Math.max(bottom, ScreenSpacing.bottomInsetMin);
 
   const handleApply = () => {
-    setSelectedPartner(tempSelected);
+    patchOnboardingCharacterId(tempSelected);
     router.back();
   };
 

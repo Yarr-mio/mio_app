@@ -8,8 +8,7 @@ import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
-import { usePartnerStore } from '@/features/mypage/store/partnerStore';
-import { useUserStore } from '@/store/userStore';
+import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -21,12 +20,11 @@ const FALLBACK_JOINED_AT = '2026-01-01';
 
 export function SettingsScreen() {
   const router = useRouter();
-  const signupInfo = useUserStore((state) => state.signupInfo);
+  const nickname = useSelectedNickname() ?? FALLBACK_NICKNAME;
   const [pushEnabled, setPushEnabled] = useState(true);
 
-  const selectedPartner = usePartnerStore((state) => state.selectedPartner);
-  const partner = getPartnerByKey(selectedPartner);
-  const nickname = signupInfo?.nickname ?? FALLBACK_NICKNAME;
+  const selectedCharacterId = useSelectedCharacterId();
+  const partner = getPartnerByKey(selectedCharacterId);
 
   // TODO: userStore에 joinedAt 추가 필요
   const joinedAt = FALLBACK_JOINED_AT;

@@ -1,5 +1,6 @@
 import type { OnboardingStyleType } from '@/constants/onboarding';
 import type { ImageSource } from 'expo-image';
+import type { ImageSourcePropType } from 'react-native';
 
 export type OnboardingCharacterId = 'mio' | 'bau' | 'rumi' | 'momo' | 'chichi';
 
@@ -129,10 +130,59 @@ export function getReportCharacterDataImage(characterId: OnboardingCharacterId):
   );
 }
 
+/** 성장 리포트 — PENDING 상태 캐릭터 로딩 이미지 */
+export const REPORT_CHARACTER_LOADING_IMAGES: Record<OnboardingCharacterId, number> = {
+  mio: require('@/assets/images/report/characters/loading/mio_loading.png'),
+  bau: require('@/assets/images/report/characters/loading/bau_loading.png'),
+  rumi: require('@/assets/images/report/characters/loading/rumi_loading.png'),
+  momo: require('@/assets/images/report/characters/loading/momo_loading.png'),
+  chichi: require('@/assets/images/report/characters/loading/chichi_loading.png'),
+};
+
+export function getReportCharacterLoadingImage(characterId: OnboardingCharacterId): number {
+  return (
+    REPORT_CHARACTER_LOADING_IMAGES[characterId] ??
+    REPORT_CHARACTER_LOADING_IMAGES[ONBOARDING_DEFAULT_CHARACTER_ID]
+  );
+}
+
+/** 성장 리포트 — 에러 상태 캐릭터 이미지 */
+export const REPORT_CHARACTER_WARN_IMAGES: Record<OnboardingCharacterId, number> = {
+  mio: require('@/assets/images/report/characters/warn/mio_warn.png'),
+  bau: require('@/assets/images/report/characters/warn/bau_warn.png'),
+  rumi: require('@/assets/images/report/characters/warn/rumi_warn.png'),
+  momo: require('@/assets/images/report/characters/warn/momo_warn.png'),
+  chichi: require('@/assets/images/report/characters/warn/chichi_warn.png'),
+};
+
+export function getReportCharacterWarnImage(
+  characterId: OnboardingCharacterId
+): ImageSourcePropType {
+  return (
+    REPORT_CHARACTER_WARN_IMAGES[characterId] ??
+    REPORT_CHARACTER_WARN_IMAGES[ONBOARDING_DEFAULT_CHARACTER_ID]
+  );
+}
+
 const PARTNER_BY_KEY = Object.fromEntries(
   PARTNER_LIST.map((partner) => [partner.key, partner])
 ) as Record<OnboardingCharacterId, PartnerMeta>;
 
 export function getPartnerByKey(key: OnboardingCharacterId): PartnerMeta {
   return PARTNER_BY_KEY[key];
+}
+
+export function getCharacterNameById(characterId: string): string {
+  const id = toOnboardingCharacterId(characterId);
+  return getPartnerByKey(id).name;
+}
+
+export function toOnboardingCharacterId(id: string): OnboardingCharacterId {
+  // ONBOARDING_ALL_CHARACTER_IDS 포함 여부로 런타임 검증 후 단언
+  if (ONBOARDING_ALL_CHARACTER_IDS.includes(id as OnboardingCharacterId)) {
+    // includes 통과 후 안전한 단언
+    return id as OnboardingCharacterId;
+  }
+
+  return ONBOARDING_DEFAULT_CHARACTER_ID;
 }

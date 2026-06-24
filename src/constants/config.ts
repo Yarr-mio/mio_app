@@ -36,7 +36,14 @@ export const HTTP_STATUS = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   CONFLICT: 409,
+  INTERNAL_SERVER_ERROR: 500,
 } as const;
+
+/** 리포트 PENDING 상태 폴링 간격(ms) */
+export const REPORT_POLL_INTERVAL_MS = 5_000;
+
+/** 리포트 PENDING 폴링 최대 횟수 (5초 × 12회 = 1분) */
+export const REPORT_POLL_MAX_ATTEMPTS = 12;
 
 /** 스플래시 화면이 표시되는 기본 시간(ms)*/
 export const SPLASH_DURATION_MS = 2500;

@@ -541,10 +541,14 @@ export const ReportTextClasses = {
   scoreValue: 'text-fg-default text-2xl font-semibold',
   scoreDenominator: 'text-score-denominator text-base',
   insufficientTitle: 'text-center text-xl font-semibold text-fg-default',
-  insufficientSubtitle: 'text-center text-base text-weekday',
+  insufficientSubtitle: 'text-center text-base font-medium text-weekday',
   insufficientCheckinCardTitle: 'text-base text-primary',
   insufficientGuideSubtitle: 'text-center text-base font-medium text-weekday',
   insufficientGuideItemLabel: 'shrink text-center text-xs font-medium text-weekday',
+  pendingScheduleText: 'text-base font-medium text-weekday',
+  pendingReasonTitle: 'text-base font-semibold text-label',
+  pendingReasonBody: 'text-sm font-normal text-weekday',
+  errorOutlineButtonText: 'text-xl font-bold text-fg',
   characterStoryTitle: 'text-character-story-title',
   characterStoryDate: 'text-label',
   characterStoryReadMore: 'text-weekday',
@@ -603,8 +607,52 @@ export const IntensityLabelTextClasses = {
 
 export const IntensityLabelBaseClasses = 'rounded-full border px-2 py-0.5';
 
+export const ReportPendingStateLayout = {
+  characterImageSize: 200,
+  clockIconSize: 40,
+} as const;
+
+export const ReportStateColors = {
+  title: '#EEEAF8',
+  subtitle: '#969696',
+  emphasis: '#D9D9D9',
+  outlineButtonBorder: 'rgba(255,255,255,0.30)',
+  outlineButtonText: '#FFFFFF',
+} as const;
+
 export const ReportPendingStateClasses = {
+  root: 'mt-6 w-full flex-1 items-center gap-8',
+  topContent: 'w-full items-center',
+  heroSection: 'w-full items-center gap-4',
+  cardList: 'mt-9 w-full gap-2',
+  scheduleCardRow: 'flex-row items-center gap-3',
+  scheduleIcon: 'shrink-0 items-center justify-center',
+  scheduleTextGroup: 'flex-1 gap-1',
+  reasonCard: 'gap-2',
+  notice: 'pb-2 text-center text-sm font-medium text-weekday',
   container: 'mt-6 min-h-[200px] items-center justify-center gap-3',
+} as const;
+
+export const ReportErrorStateLayout = {
+  characterImageSize: 200,
+  warnIconSize: 24,
+} as const;
+
+export const ReportErrorStateClasses = {
+  root: 'mt-6 w-full flex-1 justify-between items-center',
+  topContent: 'w-full items-center',
+  heroSection: 'w-full items-center gap-4',
+  buttonArea: 'mt-10 w-full',
+  outlineButton:
+    'mt-5 h-16 w-full items-center justify-center rounded-2xl border border-white/30 bg-transparent',
+  helpCardWrapper: 'mt-8 w-full',
+  helpCardBody: 'flex-row items-center gap-5 px-6 py-6',
+  helpIconCircle: 'h-14 w-14 items-center justify-center rounded-full border bg-transparent',
+  helpTextGroup: 'flex-1 gap-2',
+} as const;
+
+export const ReportFetchingOverlayClasses = {
+  overlay: 'absolute inset-0 z-10 items-center justify-center bg-midnight/60',
 } as const;
 
 /** ScoreSlider 값 범위 및 눈금 */

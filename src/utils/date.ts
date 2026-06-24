@@ -101,6 +101,18 @@ export function toDateRangeIso(start: Date, end: Date): { from: string; to: stri
   };
 }
 
+/** 주간 리포트 API week_start 파라미터용 ISO 날짜 */
+export function getWeekStartIso(anchorDate: Date): string {
+  const { start } = getWeekRange(anchorDate);
+  return format(kstDate(start), 'yyyy-MM-dd');
+}
+
+/** 월간 리포트 API month_start 파라미터용 ISO 날짜 */
+export function getMonthStartIso(anchorDate: Date): string {
+  const { start } = getMonthRange(anchorDate);
+  return format(kstDate(start), 'yyyy-MM-dd');
+}
+
 /** 해당 월 기준 주차 계산 (주간 종료일 토요일 기준) */
 export function getWeekOfMonth(anchorDate: Date): number {
   const { end } = getWeekRange(anchorDate);

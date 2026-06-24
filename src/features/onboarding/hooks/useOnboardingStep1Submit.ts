@@ -7,12 +7,14 @@ import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignu
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStep1 } from '@/features/onboarding/hooks/useOnboarding';
+import { useUserStore } from '@/store/userStore';
 import type { EmotionType } from '@/types/checkin';
 
 export function useOnboardingStep1Submit() {
   const router = useRouter();
   const onboardingStep1 = useOnboardingStep1();
   const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
+  const patchOnboardingEmotion = useUserStore((state) => state.patchOnboardingEmotion);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => {
@@ -29,6 +31,7 @@ export function useOnboardingStep1Submit() {
         emotion_state: emotionState,
         responses: [{ question_id: ONBOARDING_QUESTION_IDS.step1, answer: emotionState }],
       });
+      patchOnboardingEmotion(emotionState, resolvedEmojiScore);
       router.push(AUTH_ROUTES.onboardingStep2);
       return { emojiScore: resolvedEmojiScore };
     } catch (submitError) {

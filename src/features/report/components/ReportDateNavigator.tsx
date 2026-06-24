@@ -1,6 +1,10 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import {
+  REPORT_DATE_NAVIGATOR_A11Y_NEXT,
+  REPORT_DATE_NAVIGATOR_A11Y_PREV,
+} from '@/constants/report';
+import {
   FgColors,
   PressableConfig,
   ReportDateNavigatorClasses,
@@ -21,7 +25,7 @@ export function ReportDateNavigator({ label, onPrevious, onNext }: ReportDateNav
       <Pressable
         onPress={onPrevious}
         accessibilityRole="button"
-        accessibilityLabel="이전 기간"
+        accessibilityLabel={REPORT_DATE_NAVIGATOR_A11Y_PREV}
         hitSlop={PressableConfig.hitSlop}
         className={ReportDateNavigatorClasses.chevronButton}
       >
@@ -39,7 +43,7 @@ export function ReportDateNavigator({ label, onPrevious, onNext }: ReportDateNav
       <Pressable
         onPress={onNext}
         accessibilityRole="button"
-        accessibilityLabel="다음 기간"
+        accessibilityLabel={REPORT_DATE_NAVIGATOR_A11Y_NEXT}
         hitSlop={PressableConfig.hitSlop}
         className={ReportDateNavigatorClasses.chevronButton}
       >

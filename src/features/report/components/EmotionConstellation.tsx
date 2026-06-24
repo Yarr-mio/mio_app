@@ -2,13 +2,17 @@ import { EmotionConstellationChart } from '@/components/emotion/EmotionConstella
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { formatCheckinCountLabel, REPORT_CARD_TITLES, type ReportPeriod } from '@/constants/report';
-import { ReportCardClasses, ReportSectionClasses, ReportTextClasses } from '@/constants/theme';
 import {
-  getActiveChartIndex,
-  useEmotionConstellationData,
-} from '@/features/report/hooks/useEmotionConstellationData';
+  ButtonColors,
+  ReportCardClasses,
+  ReportPendingStateClasses,
+  ReportSectionClasses,
+  ReportTextClasses,
+} from '@/constants/theme';
+import { useEmotionConstellationData } from '@/features/report/hooks/useEmotionConstellationData';
 import type { ConstellationChartPoint } from '@/types/report';
-import { View } from 'react-native';
+import { getActiveChartIndex } from '@/utils/report';
+import { ActivityIndicator, View } from 'react-native';
 
 interface EmotionConstellationProps {
   period: ReportPeriod;
@@ -44,10 +48,16 @@ export function EmotionConstellation({
   anchorDate,
   showCard = true,
 }: EmotionConstellationProps) {
-  const { points, checkinCount } = useEmotionConstellationData(period, anchorDate);
+  const { points, checkinCount, isLoading } = useEmotionConstellationData(period, anchorDate, {
+    enabled: true,
+  });
   const activeIndex = getActiveChartIndex(period, anchorDate);
 
-  const chart = (
+  const chart = isLoading ? (
+    <View className={ReportPendingStateClasses.container}>
+      <ActivityIndicator color={ButtonColors.spinnerLight} />
+    </View>
+  ) : (
     <EmotionConstellationContent period={period} points={points} activeIndex={activeIndex} />
   );
 

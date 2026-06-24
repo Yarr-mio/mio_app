@@ -7,11 +7,13 @@ import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignu
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStep2 } from '@/features/onboarding/hooks/useOnboarding';
+import { useUserStore } from '@/store/userStore';
 
 export function useOnboardingStep2Submit() {
   const router = useRouter();
   const onboardingStep2 = useOnboardingStep2();
   const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
+  const patchOnboardingConcernTypes = useUserStore((state) => state.patchOnboardingConcernTypes);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => {
@@ -31,6 +33,7 @@ export function useOnboardingStep2Submit() {
         concern_types: selectedConcerns,
         responses: [{ question_id: ONBOARDING_QUESTION_IDS.step2, answer: selectedConcerns[0] }],
       });
+      patchOnboardingConcernTypes(selectedConcerns);
       router.push(AUTH_ROUTES.onboardingStep3);
     } catch (submitError) {
       if (isSignupStepInvalidError(submitError)) {

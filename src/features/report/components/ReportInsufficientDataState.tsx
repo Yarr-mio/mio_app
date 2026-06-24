@@ -1,7 +1,4 @@
-import DataChatIcon from '@/assets/icons/report/data_chat.svg';
-import DataCheckinIcon from '@/assets/icons/report/data_checkin.svg';
-import DataReportIcon from '@/assets/icons/report/data_report.svg';
-import DataTodoIcon from '@/assets/icons/report/data_todo.svg';
+import { DataChatIcon, DataCheckinIcon, DataReportIcon, DataTodoIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import {
@@ -24,11 +21,12 @@ import {
   ReportCardClasses,
   ReportInsufficientDataClasses,
   ReportInsufficientDataLayout,
+  ReportStateColors,
   ReportTextClasses,
 } from '@/constants/theme';
-import { useUserStore } from '@/store/userStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
@@ -36,6 +34,7 @@ interface ReportInsufficientDataStateProps {
   period: ReportPeriod;
   checkinCount: number;
   requiredCount?: number;
+  message?: string;
 }
 
 interface InsufficientDataGuideItemProps {
@@ -60,7 +59,7 @@ function InsufficientDataGuideItem({ icon: Icon, text }: InsufficientDataGuideIt
   return (
     <View className={ReportInsufficientDataClasses.guideItem}>
       <View className={ReportInsufficientDataClasses.guideIconCircle}>
-        <Icon width={guideIconSize} height={guideIconSize} />
+        <Icon width={guideIconSize} height={guideIconSize} color={ReportStateColors.emphasis} />
       </View>
       <View className={ReportInsufficientDataClasses.guideItemText}>
         <ThemedText type="small" className={ReportTextClasses.insufficientGuideItemLabel}>
@@ -75,19 +74,24 @@ export function ReportInsufficientDataState({
   period,
   checkinCount,
   requiredCount,
+  message,
 }: ReportInsufficientDataStateProps) {
-  const onboardingResult = useUserStore((state) => state.onboardingResult);
-  const characterId = onboardingResult?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID;
+  const characterId = useSelectedCharacterId();
   const characterImage = getReportCharacterDataImage(characterId);
-  const [imageSource, setImageSource] = useState(characterImage);
+  const [hasImageError, setHasImageError] = useState(false);
+  const imageSource = hasImageError ? REPORT_CHARACTER_DATA_FALLBACK_IMAGE : characterImage;
 
   const resolvedRequiredCount = requiredCount ?? REPORT_REQUIRED_CHECKIN_COUNT;
   const checkinCardTitle = REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE[period];
-  const subtitle = formatInsufficientDataSubtitle(period, resolvedRequiredCount);
+  const subtitle = message?.trim() || formatInsufficientDataSubtitle(period, resolvedRequiredCount);
 
   const handleCharacterImageError = () => {
-    setImageSource(REPORT_CHARACTER_DATA_FALLBACK_IMAGE);
+    setHasImageError(true);
   };
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [characterId]);
 
   return (
     <View className={ReportInsufficientDataClasses.container}>

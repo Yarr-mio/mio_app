@@ -13,9 +13,9 @@ import {
 import { FgColors, HomeLayout, PressableConfig, ScreenSpacing } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
 import { useOnboardingStep2Submit } from '@/features/onboarding/hooks/useOnboardingStep2Submit';
 import { useOnboardingStepSkip } from '@/features/onboarding/hooks/useOnboardingStepSkip';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -59,7 +59,7 @@ function ConcernButton({ label, selected, onPress }: ConcernButtonProps) {
 }
 
 export function Step2ConcernScreen() {
-  const { concern_types, setConcernTypes } = useOnboardingStore();
+  const { concern_types, setConcernTypes } = useOnboardingSelection();
   const { submit, isPending, error, clearError } = useOnboardingStep2Submit();
   const {
     skip,

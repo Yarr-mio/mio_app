@@ -17,9 +17,9 @@ import {
 } from '@/constants/theme';
 import { OnboardingHeader } from '@/features/onboarding/components/OnboardingHeader';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
+import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
 import { useOnboardingStep3Submit } from '@/features/onboarding/hooks/useOnboardingStep3Submit';
 import { useOnboardingStepSkip } from '@/features/onboarding/hooks/useOnboardingStepSkip';
-import { useOnboardingStore } from '@/features/onboarding/store/onboardingStore';
 import type { OnboardingSkippableStep } from '@/types/onboarding';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
@@ -79,7 +79,7 @@ function StyleOptionCard({
 }
 
 export function Step3StyleScreen() {
-  const { preferred_style, setPreferredStyle, setCharacterId } = useOnboardingStore();
+  const { preferred_style, setPreferredStyle } = useOnboardingSelection();
   const { submit, isPending, error, clearError } = useOnboardingStep3Submit();
   const {
     skip,
@@ -99,20 +99,15 @@ export function Step3StyleScreen() {
     clearSkipError();
   };
 
-  const handleSelectStyle = (
-    styleId: OnboardingStyleType,
-    characterId: (typeof ONBOARDING_STYLE_OPTIONS)[number]['characterId']
-  ) => {
+  const handleSelectStyle = (styleId: OnboardingStyleType) => {
     clearActionError();
     setPreferredStyle(styleId);
-    setCharacterId(characterId);
   };
 
   const handleSkip = async () => {
     const success = await skip(ONBOARDING_CURRENT_STEP);
     if (success) {
       setPreferredStyle(null);
-      setCharacterId(null);
     }
   };
 
@@ -157,7 +152,7 @@ export function Step3StyleScreen() {
                 description={option.description}
                 characterImage={option.characterImage}
                 selected={selectedStyle === option.id}
-                onPress={() => handleSelectStyle(option.id, option.characterId)}
+                onPress={() => handleSelectStyle(option.id)}
               />
             ))}
           </View>
