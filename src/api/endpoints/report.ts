@@ -1,12 +1,11 @@
 import apiClient from '@/api/client';
 import type { ApiResponse } from '@/types/common';
-import type { EmotionTrendData, MonthlyReportData, WeeklyReportData } from '@/types/report';
-
-export interface FetchEmotionTrendParams {
-  period: 'week' | 'month' | 'all';
-  week_start?: string;
-  month_start?: string;
-}
+import type {
+  EmotionTrendData,
+  FetchEmotionTrendParams,
+  MonthlyReportData,
+  WeeklyReportData,
+} from '@/types/report';
 
 export async function fetchWeeklyReport(weekStart: string): Promise<WeeklyReportData> {
   const { data } = await apiClient.get<ApiResponse<WeeklyReportData>>('/v1/reports/weekly', {

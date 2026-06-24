@@ -1,3 +1,5 @@
+import type { EmotionTrendPeriod } from '@/types/report';
+
 export const queryKeys = {
   checkin: {
     all: () => ['checkin'] as const,
@@ -19,7 +21,7 @@ export const queryKeys = {
     all: () => ['report'] as const,
     weekly: (weekStart: string) => ['report', 'weekly', weekStart] as const,
     monthly: (monthStart: string) => ['report', 'monthly', monthStart] as const,
-    emotionTrend: (period: string, periodStart: string) =>
+    emotionTrend: (period: EmotionTrendPeriod, periodStart: string) =>
       ['report', 'emotionTrend', period, periodStart] as const,
   },
 };
