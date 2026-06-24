@@ -21,6 +21,7 @@ import {
   ReportCardClasses,
   ReportInsufficientDataClasses,
   ReportInsufficientDataLayout,
+  ReportStateColors,
   ReportTextClasses,
 } from '@/constants/theme';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
@@ -58,7 +59,7 @@ function InsufficientDataGuideItem({ icon: Icon, text }: InsufficientDataGuideIt
   return (
     <View className={ReportInsufficientDataClasses.guideItem}>
       <View className={ReportInsufficientDataClasses.guideIconCircle}>
-        <Icon width={guideIconSize} height={guideIconSize} />
+        <Icon width={guideIconSize} height={guideIconSize} color={ReportStateColors.emphasis} />
       </View>
       <View className={ReportInsufficientDataClasses.guideItemText}>
         <ThemedText type="small" className={ReportTextClasses.insufficientGuideItemLabel}>

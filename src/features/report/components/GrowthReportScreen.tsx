@@ -60,21 +60,20 @@ export function GrowthReportScreen() {
       : toKstDate(getMonthRange(monthAnchorDate).start);
   const dateRange =
     period === REPORT_PERIOD.week ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
-  const {
-    report,
-    isPending,
-    isFetching,
-    isPlaceholderData,
-    isError,
-    isServerError,
-    isPollingTimedOut,
-    refetch,
-  } = useReport({
-    period,
-    anchorDate,
-  });
+  const { report, isPending, isFetching, isPlaceholderData, isError, isPollingTimedOut, refetch } =
+    useReport({
+      period,
+      anchorDate,
+    });
 
   const showFetchingOverlay = !isPending && isFetching && isPlaceholderData;
+
+  const showChatButton =
+    !isPending &&
+    !isError &&
+    !isPollingTimedOut &&
+    report != null &&
+    report.status !== REPORT_STATUS.PENDING;
 
   const handlePrevious = () => {
     if (period === REPORT_PERIOD.week) {
@@ -128,12 +127,7 @@ export function GrowthReportScreen() {
     }
 
     if (isError) {
-      return (
-        <ReportErrorState
-          onRetry={refetch}
-          onViewPrevious={isServerError ? handleViewPrevious : undefined}
-        />
-      );
+      return <ReportErrorState onRetry={refetch} onViewPrevious={handleViewPrevious} />;
     }
 
     if (!report) {
@@ -141,7 +135,7 @@ export function GrowthReportScreen() {
     }
 
     if (isPollingTimedOut) {
-      return <ReportErrorState onRetry={refetch} />;
+      return <ReportErrorState onRetry={refetch} onViewPrevious={handleViewPrevious} />;
     }
 
     if (report.status === REPORT_STATUS.PENDING) {
@@ -224,9 +218,11 @@ export function GrowthReportScreen() {
           {renderReportContent()}
         </ScrollView>
 
-        <View className={ReportSectionClasses.chatButtonContainer}>
-          <Button onPress={handleGoToChat}>{formatReportChatButtonLabel(character.name)}</Button>
-        </View>
+        {showChatButton ? (
+          <View className={ReportSectionClasses.chatButtonContainer}>
+            <Button onPress={handleGoToChat}>{formatReportChatButtonLabel(character.name)}</Button>
+          </View>
+        ) : null}
       </ScreenContainer>
       {showFetchingOverlay ? (
         <View className={ReportFetchingOverlayClasses.overlay}>

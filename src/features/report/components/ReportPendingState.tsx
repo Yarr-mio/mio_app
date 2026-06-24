@@ -1,5 +1,6 @@
 import { DataCreationTimeIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { BaseCard } from '@/components/ui/BaseCard';
 import { getReportCharacterLoadingImage } from '@/constants/characters';
 import {
   REPORT_PENDING_CHECKIN_NOTICE,
@@ -12,9 +13,11 @@ import {
   type ReportPeriod,
 } from '@/constants/report';
 import {
+  PrimaryColors,
+  ReportCardClasses,
   ReportPendingStateClasses,
   ReportPendingStateLayout,
-  ReportStateColors,
+  ReportTextClasses,
 } from '@/constants/theme';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
@@ -32,66 +35,56 @@ export function ReportPendingState({ period }: ReportPendingStateProps) {
   return (
     <View className={ReportPendingStateClasses.root}>
       <View className={ReportPendingStateClasses.topContent}>
-        <Image
-          source={characterImage}
-          style={{ width: characterImageSize, height: characterImageSize }}
-          contentFit="contain"
-        />
+        <View className={ReportPendingStateClasses.heroSection}>
+          <Image
+            source={characterImage}
+            style={{ width: characterImageSize, height: characterImageSize }}
+            contentFit="contain"
+          />
 
-        <View className={ReportPendingStateClasses.textGroup}>
-          <ThemedText
-            className="text-center text-2xl font-medium"
-            style={{ color: ReportStateColors.title }}
-          >
+          <ThemedText type="defaultBold" className={ReportTextClasses.insufficientTitle}>
             {REPORT_PENDING_TITLE[period]}
           </ThemedText>
-          <ThemedText className="text-center text-lg" style={{ color: ReportStateColors.subtitle }}>
+          <ThemedText type="default" className={ReportTextClasses.insufficientSubtitle}>
             {REPORT_PENDING_SUBTITLE}
           </ThemedText>
         </View>
 
         <View className={ReportPendingStateClasses.cardList}>
-          <View className={ReportPendingStateClasses.card}>
+          <BaseCard className={ReportCardClasses.body}>
             <View className={ReportPendingStateClasses.scheduleCardRow}>
-              <DataCreationTimeIcon
-                width={clockIconSize}
-                height={clockIconSize}
-                color={ReportStateColors.subtitle}
-              />
+              <View className={ReportPendingStateClasses.scheduleIcon}>
+                <DataCreationTimeIcon
+                  width={clockIconSize}
+                  height={clockIconSize}
+                  color={PrimaryColors.DEFAULT}
+                />
+              </View>
               <View className={ReportPendingStateClasses.scheduleTextGroup}>
-                <ThemedText className="text-sm" style={{ color: ReportStateColors.subtitle }}>
+                <ThemedText type="defaultRegular" className={ReportTextClasses.pendingScheduleText}>
                   {REPORT_PENDING_SCHEDULE_LABEL}
                 </ThemedText>
-                <ThemedText
-                  className="text-base font-medium"
-                  style={{ color: ReportStateColors.emphasis }}
-                >
+                <ThemedText type="defaultRegular" className={ReportTextClasses.pendingScheduleText}>
                   {REPORT_PENDING_SCHEDULE[period]}
                 </ThemedText>
               </View>
             </View>
-          </View>
+          </BaseCard>
 
-          <View className={ReportPendingStateClasses.card}>
+          <BaseCard className={ReportCardClasses.body}>
             <View className={ReportPendingStateClasses.reasonCard}>
-              <ThemedText
-                className="text-xl font-semibold"
-                style={{ color: ReportStateColors.emphasis }}
-              >
+              <ThemedText type="defaultRegular" className={ReportTextClasses.pendingReasonTitle}>
                 {REPORT_PENDING_REASON_TITLE}
               </ThemedText>
-              <ThemedText className="text-base" style={{ color: ReportStateColors.subtitle }}>
+              <ThemedText type="default" className={ReportTextClasses.pendingReasonBody}>
                 {REPORT_PENDING_REASON_BODY}
               </ThemedText>
             </View>
-          </View>
+          </BaseCard>
         </View>
       </View>
 
-      <ThemedText
-        className={ReportPendingStateClasses.notice}
-        style={{ color: ReportStateColors.subtitle }}
-      >
+      <ThemedText type="small" className={ReportPendingStateClasses.notice}>
         {REPORT_PENDING_CHECKIN_NOTICE[period]}
       </ThemedText>
     </View>
