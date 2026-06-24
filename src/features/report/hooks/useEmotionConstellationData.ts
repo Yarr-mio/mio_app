@@ -1,24 +1,12 @@
-import {
-  REPORT_MONTH_WEEK_LABELS,
-  REPORT_WEEKDAY_LABELS,
-  type ReportPeriod,
-} from '@/constants/report';
+import { REPORT_PERIOD, type ReportPeriod } from '@/constants/report';
 import {
   useEmotionTrend,
   useMonthlyReport,
   useWeeklyReport,
 } from '@/features/report/hooks/useReport';
 import type { ConstellationChartPoint } from '@/types/report';
-import {
-  DAYS_PER_WEEK,
-  getMonthStartIso,
-  getWeekRange,
-  getWeekStartIso,
-  MS_PER_DAY,
-  toKstDate,
-} from '@/utils/date';
+import { getMonthStartIso, getWeekStartIso } from '@/utils/date';
 import { mapEmotionTrendToChartPoints, resolveReportAnchorDate } from '@/utils/report';
-import { getDate } from 'date-fns';
 
 interface EmotionConstellationData {
   points: ConstellationChartPoint[];
@@ -43,10 +31,10 @@ export function useEmotionConstellationData(
   const enabled = options?.enabled ?? true;
 
   const weeklyReportQuery = useWeeklyReport(weekStart, {
-    enabled: enabled && period === 'week',
+    enabled: enabled && period === REPORT_PERIOD.week,
   });
   const monthlyReportQuery = useMonthlyReport(monthStart, {
-    enabled: enabled && period === 'month',
+    enabled: enabled && period === REPORT_PERIOD.month,
   });
   const emotionTrendQuery = useEmotionTrend({
     period,
@@ -54,7 +42,7 @@ export function useEmotionConstellationData(
     enabled,
   });
 
-  const reportQuery = period === 'week' ? weeklyReportQuery : monthlyReportQuery;
+  const reportQuery = period === REPORT_PERIOD.week ? weeklyReportQuery : monthlyReportQuery;
   const trendPoints = emotionTrendQuery.data?.points ?? [];
   const points = mapEmotionTrendToChartPoints(period, trendPoints, resolvedAnchorDate);
 
@@ -64,18 +52,4 @@ export function useEmotionConstellationData(
     avgEmotionScore: reportQuery.data?.avg_emotion_score ?? 0,
     isLoading: reportQuery.isPending || emotionTrendQuery.isPending,
   };
-}
-
-export function getActiveChartIndex(period: ReportPeriod, anchorDate: Date): number {
-  const today = toKstDate(new Date());
-  const resolvedAnchorDate = resolveReportAnchorDate(period, anchorDate);
-
-  if (period === 'week') {
-    const { start } = getWeekRange(resolvedAnchorDate);
-    const dayIndex = Math.floor((today.getTime() - start.getTime()) / MS_PER_DAY);
-    return Math.min(Math.max(dayIndex, 0), REPORT_WEEKDAY_LABELS.length - 1);
-  }
-
-  const weekIndex = Math.floor((getDate(today) - 1) / DAYS_PER_WEEK);
-  return Math.min(Math.max(weekIndex, 0), REPORT_MONTH_WEEK_LABELS.length - 1);
 }
