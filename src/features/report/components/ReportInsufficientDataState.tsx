@@ -1,7 +1,4 @@
-import DataChatIcon from '@/assets/icons/report/data_chat.svg';
-import DataCheckinIcon from '@/assets/icons/report/data_checkin.svg';
-import DataReportIcon from '@/assets/icons/report/data_report.svg';
-import DataTodoIcon from '@/assets/icons/report/data_todo.svg';
+import { DataChatIcon, DataCheckinIcon, DataReportIcon, DataTodoIcon } from '@/assets/icons';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
 import {
