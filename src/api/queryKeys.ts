@@ -24,4 +24,7 @@ export const queryKeys = {
     emotionTrend: (period: EmotionTrendPeriod, periodStart: string) =>
       ['report', 'emotionTrend', period, periodStart] as const,
   },
+  my: {
+    profile: () => ['my', 'profile'] as const,
+  },
 };

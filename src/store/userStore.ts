@@ -1,40 +1,44 @@
-import { toOnboardingCharacterId, type OnboardingCharacterId } from '@/constants/characters';
+import type { OnboardingCharacterId } from '@/constants/characters';
 import {
   ONBOARDING_CONCERN_OPTIONS,
   type OnboardingConcernType,
   type OnboardingStyleType,
 } from '@/constants/onboarding';
-import { EditNicknameLayout } from '@/constants/theme';
-import type { AuthUser } from '@/types/auth';
 import type { EmotionType } from '@/types/checkin';
-import type { UserOnboardingSelectionResult, UserSignupInfo } from '@/types/user';
+import type { UserOnboardingSelectionResult } from '@/types/user';
 import { zustandStorage } from '@/utils/zustandStorage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export const USER_STORE_PERSIST_KEY = 'user-store';
 
+export interface AuthProfile {
+  nickname: string;
+  characterId: string;
+}
+
 interface UserState {
-  signupInfo: UserSignupInfo | null;
+  authProfile: AuthProfile | null;
   onboardingResult: UserOnboardingSelectionResult | null;
 
-  setSignupInfo: (info: UserSignupInfo) => void;
-  updateNickname: (nickname: string) => void;
+  setAuthProfile: (profile: AuthProfile) => void;
+  clearAuthProfile: () => void;
   setOnboardingResult: (result: UserOnboardingSelectionResult) => void;
   patchOnboardingEmotion: (emotion: EmotionType, intensity: number) => void;
   patchOnboardingConcernTypes: (types: OnboardingConcernType[]) => void;
   patchOnboardingPreferredStyle: (style: OnboardingStyleType) => void;
   patchOnboardingCharacterId: (characterId: OnboardingCharacterId) => void;
+  patchOnboardingNickname: (nickname: string) => void;
   clearOnboardingEmotion: () => void;
   clearOnboardingConcernTypes: () => void;
   clearOnboardingPreferredStyle: () => void;
   clearOnboardingCharacterId: () => void;
-  hydrateFromAuthUser: (user: AuthUser) => void;
+  clearOnboardingNickname: () => void;
   reset: () => void;
 }
 
 const INITIAL_STATE = {
-  signupInfo: null,
+  authProfile: null,
   onboardingResult: null,
 } as const;
 
@@ -44,6 +48,7 @@ function createEmptyOnboardingResult(): UserOnboardingSelectionResult {
     concernTypes: null,
     preferredStyle: null,
     characterId: null,
+    nickname: null,
   };
 }
 
@@ -61,20 +66,12 @@ export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       ...INITIAL_STATE,
-      setSignupInfo: (info) => set({ signupInfo: info }),
-      // todo: 닉네임 수정 API 연동 후 updateNickname에서 서버 요청 추가
-      updateNickname: (nickname) => {
-        const normalized = nickname.trim().slice(0, EditNicknameLayout.maxLength);
-        if (normalized.length === 0) {
-          return;
-        }
-
-        set((state) => ({
-          signupInfo: state.signupInfo
-            ? { ...state.signupInfo, nickname: normalized }
-            : { nickname: normalized, gender: null, ageRange: null },
-        }));
-      },
+      setAuthProfile: (profile) =>
+        set(() => {
+          console.log('[디버그][userStore] setAuthProfile 호출', profile);
+          return { authProfile: profile };
+        }),
+      clearAuthProfile: () => set({ authProfile: null }),
       setOnboardingResult: (result) => set({ onboardingResult: result }),
       patchOnboardingEmotion: (emotion, intensity) =>
         set((state) => {
@@ -108,11 +105,23 @@ export const useUserStore = create<UserState>()(
         }),
       patchOnboardingCharacterId: (characterId) =>
         set((state) => {
+          console.log('[디버그][userStore] patchOnboardingCharacterId', characterId);
           const current = state.onboardingResult ?? createEmptyOnboardingResult();
           return {
             onboardingResult: {
               ...current,
               characterId,
+            },
+          };
+        }),
+      patchOnboardingNickname: (nickname) =>
+        set((state) => {
+          console.log('[디버그][userStore] patchOnboardingNickname', nickname);
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
+          return {
+            onboardingResult: {
+              ...current,
+              nickname,
             },
           };
         }),
@@ -156,21 +165,13 @@ export const useUserStore = create<UserState>()(
             },
           };
         }),
-      hydrateFromAuthUser: (user) =>
+      clearOnboardingNickname: () =>
         set((state) => {
-          const currentOnboarding = state.onboardingResult ?? createEmptyOnboardingResult();
-          const existingNickname = state.signupInfo?.nickname?.trim() ?? '';
-          const nickname = existingNickname.length > 0 ? existingNickname : user.nickname;
-
+          const current = state.onboardingResult ?? createEmptyOnboardingResult();
           return {
-            signupInfo: {
-              nickname,
-              gender: state.signupInfo?.gender ?? null,
-              ageRange: state.signupInfo?.ageRange ?? null,
-            },
             onboardingResult: {
-              ...currentOnboarding,
-              characterId: toOnboardingCharacterId(user.preferred_character_id),
+              ...current,
+              nickname: null,
             },
           };
         }),
@@ -180,9 +181,12 @@ export const useUserStore = create<UserState>()(
       name: USER_STORE_PERSIST_KEY,
       storage: createJSONStorage(() => zustandStorage),
       partialize: (state) => ({
-        signupInfo: state.signupInfo,
+        authProfile: state.authProfile,
         onboardingResult: state.onboardingResult,
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('[디버그][userStore] rehydrate 완료, authProfile', state?.authProfile);
+      },
     }
   )
 );

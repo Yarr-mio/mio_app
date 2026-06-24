@@ -21,4 +21,53 @@ export interface UserOnboardingSelectionResult {
   concernTypes: OnboardingConcernType[] | null;
   preferredStyle: OnboardingStyleType | null;
   characterId: OnboardingCharacterId | null;
+  nickname: string | null;
+}
+
+export interface MyPreferredCharacter {
+  character_id: string;
+  name: string;
+  animal: string;
+  description: string;
+}
+
+export interface MyStats {
+  total_checkins: number;
+  consecutive_days: number;
+  todo_completed: number;
+}
+
+export interface MyEmotionDistribution {
+  emotion_type: string;
+  label: string;
+  percentage: number;
+}
+
+export interface MyProfile {
+  user_id: string;
+  nickname: string;
+  age_range: string | null;
+  preferred_character: MyPreferredCharacter;
+  stats: MyStats;
+  monthly_emotion_distribution: MyEmotionDistribution[];
+  signup_step: string;
+}
+
+export interface MyCharacterUpdateResponse {
+  character_id: string;
+  name: string;
+  changed: boolean;
+  greeting_message: string;
+}
+
+export interface MyProfileUpdateResponse {
+  user_id: string;
+  nickname: string;
+  age_range: string | null;
+  updated_at: string;
+}
+
+export interface MyProfileUpdateParams {
+  nickname?: string;
+  age_range?: string | null;
 }
