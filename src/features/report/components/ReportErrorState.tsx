@@ -22,7 +22,7 @@ import {
 } from '@/constants/theme';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 interface ReportErrorStateProps {
@@ -37,12 +37,17 @@ const REPORT_CHARACTER_WARN_FALLBACK_IMAGE = getReportCharacterWarnImage(
 export function ReportErrorState({ onRetry, onViewPrevious }: ReportErrorStateProps) {
   const characterId = useSelectedCharacterId();
   const characterImage = getReportCharacterWarnImage(characterId);
-  const [imageSource, setImageSource] = useState(characterImage);
+  const [hasImageError, setHasImageError] = useState(false);
+  const imageSource = hasImageError ? REPORT_CHARACTER_WARN_FALLBACK_IMAGE : characterImage;
   const { characterImageSize, warnIconSize } = ReportErrorStateLayout;
 
   const handleCharacterImageError = () => {
-    setImageSource(REPORT_CHARACTER_WARN_FALLBACK_IMAGE);
+    setHasImageError(true);
   };
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [characterId]);
 
   return (
     <View className={ReportErrorStateClasses.root}>
