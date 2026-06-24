@@ -69,6 +69,24 @@ function updateReportQueryFetchCount(context: QueryFunctionContext): void {
   });
 }
 
+function resetReportQueryFetchCount(
+  queryClient: ReturnType<typeof useQueryClient>,
+  queryKey: readonly unknown[]
+): void {
+  const query = queryClient.getQueryCache().find({ queryKey });
+  if (!query) {
+    return;
+  }
+
+  const meta = query.meta as Partial<ReportQueryMeta>;
+  query.setOptions({
+    meta: {
+      maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
+      fetchCount: 0,
+    },
+  });
+}
+
 function createWeeklyReportQueryFn(weekStart: string) {
   return async (context: QueryFunctionContext) => {
     const data = await fetchWeeklyReport(weekStart);
@@ -208,6 +226,7 @@ export function useReport({ period, anchorDate }: UseReportOptions): UseReportRe
     isPollingTimedOut,
     error: activeQuery.error,
     refetch: () => {
+      resetReportQueryFetchCount(queryClient, activeQueryKey);
       void activeQuery.refetch();
     },
   };
