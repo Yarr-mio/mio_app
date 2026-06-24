@@ -26,7 +26,7 @@ import {
 } from '@/constants/theme';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { View } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
@@ -78,15 +78,20 @@ export function ReportInsufficientDataState({
 }: ReportInsufficientDataStateProps) {
   const characterId = useSelectedCharacterId();
   const characterImage = getReportCharacterDataImage(characterId);
-  const [imageSource, setImageSource] = useState(characterImage);
+  const [hasImageError, setHasImageError] = useState(false);
+  const imageSource = hasImageError ? REPORT_CHARACTER_DATA_FALLBACK_IMAGE : characterImage;
 
   const resolvedRequiredCount = requiredCount ?? REPORT_REQUIRED_CHECKIN_COUNT;
   const checkinCardTitle = REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE[period];
   const subtitle = message?.trim() || formatInsufficientDataSubtitle(period, resolvedRequiredCount);
 
   const handleCharacterImageError = () => {
-    setImageSource(REPORT_CHARACTER_DATA_FALLBACK_IMAGE);
+    setHasImageError(true);
   };
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [characterId]);
 
   return (
     <View className={ReportInsufficientDataClasses.container}>
