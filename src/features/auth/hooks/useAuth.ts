@@ -42,7 +42,6 @@ export function useSocialLogin() {
       setAccessToken(res.data.access_token);
 
       if (!res.data.is_new_user && res.data.signup_step === 'COMPLETED' && res.data.user) {
-        console.log('[서버응답] 로그인 유저 데이터', res.data.user);
         useUserStore.getState().setAuthProfile({
           nickname: res.data.user.nickname,
           characterId: res.data.user.preferred_character_id,
@@ -99,10 +98,15 @@ export function useLogout() {
     mutationFn: () => postAuthLogout(),
     onSettled: async () => {
       setAccessToken(null);
-      await storage.refreshToken.delete();
       useUserStore.getState().reset();
-      await useUserStore.persist.clearStorage();
-      onAuthInvalid?.();
+      try {
+        await Promise.allSettled([
+          storage.refreshToken.delete(),
+          useUserStore.persist.clearStorage(),
+        ]);
+      } finally {
+        onAuthInvalid?.();
+      }
     },
   });
 }
