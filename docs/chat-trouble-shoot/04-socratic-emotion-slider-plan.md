@@ -1,5 +1,7 @@
 # 04. 감정 슬라이더 트리거를 `is_socratic` 기반으로 전환 — 백엔드 수정 대응 계획
 
+> ⚠️ **대체됨 (2026-06-25)**: 이 문서는 §5에서 "계약 유지, 판정 로직만 정확해짐(시나리오 A)"을 기본 가정으로 깔았으나, 실제 배포된 변경은 시나리오 B(필드·엔드포인트 자체가 교체됨)였다. 새 스펙 기준 분석/계획은 [05-cbt-completion-emotion-slider-plan.md](./05-cbt-completion-emotion-slider-plan.md) 참고. 본 문서는 배경 기록으로만 남김.
+>
 > 작성일: 2026-06-24
 > 상태: 🟡 백엔드 수정 대기 — 백엔드가 `is_socratic` 판정 로직을 고쳐주기로 인지/확정함 (구체적 수정 내용은 미확정)
 > 관련: [03-backend-fixes-applied.md §8](./03-backend-fixes-applied.md#8-socratic소크라테스식-질문-식별-필드--신규-구현-단순화된-판정-방식-), [CHAT_FRONTEND_FOLLOWUP_PLAN.md §2-2](../CHAT_FRONTEND_FOLLOWUP_PLAN.md#2-2-is_socratic-실연동-여부-결정-필요)(결정 변경 — 본 문서로 대체), [trouble-impl/04-is-socratic-type-only.md](../trouble-impl/04-is-socratic-type-only.md)(이 작업으로 범위 확장), [CHAT_BACKEND_QUESTIONS_NOTION.md §7](../CHAT_BACKEND_QUESTIONS_NOTION.md#7-socratic소크라테스식-질문-식별-필드-추가-요청)

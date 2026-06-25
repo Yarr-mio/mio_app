@@ -10,7 +10,7 @@
 | --- | ---- | ---- | --------- |
 
 | 2 | SSE 응답이 한 글자씩 도착하는데도 화면엔 완료 후 한번에 표시됨 | [02-sse-streaming-not-incremental.md](./02-sse-streaming-not-incremental.md) (원인 확정, 실측 근거: [02-findings-sse-frontend-delivery.md](./02-findings-sse-frontend-delivery.md)) | 원인 확정 — 서버/프록시(nginx) 버퍼링, 백엔드/인프라 조치 필요 |
-| 4 | 모든 AI 응답마다 감정 슬라이더가 뜸 (socratic 여부와 무관하게 트리거됨) | [04-socratic-emotion-slider-plan.md](./04-socratic-emotion-slider-plan.md) | 원인 확정 — 백엔드 `is_socratic` 판정 로직 수정 대기, 수정 후 프론트 연동 필요 |
+| 4 | 모든 AI 응답마다 감정 슬라이더가 뜸 (socratic 여부와 무관하게 트리거됨) | [05-cbt-completion-emotion-slider-plan.md](./05-cbt-completion-emotion-slider-plan.md) (이전 계획: [04-socratic-emotion-slider-plan.md](./04-socratic-emotion-slider-plan.md), 대체됨) | 백엔드 CBT 상태머신 수정 완료([04-cbt-emotion-score-redesign.md](./04-cbt-emotion-score-redesign.md)), 프론트 연동 계획 수립됨 — 구현 대기 |
 
 ## 공통 배경
 

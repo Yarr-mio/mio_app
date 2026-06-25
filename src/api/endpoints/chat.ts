@@ -4,6 +4,7 @@ import type { OnboardingCharacterId } from '@/constants/characters';
 import type { ApiResponse } from '@/types/common';
 import type {
   ActiveSessionResponse,
+  CbtEmotionScoreResponse,
   EndSessionResponse,
   SessionSummaryResponse,
   StartSessionResponse,
@@ -105,6 +106,25 @@ export async function fetchSessionSummary(sessionId: string): Promise<SessionSum
 
   const { data } = await apiClient.get<ApiResponse<SessionSummaryResponse>>(
     `/v1/sessions/${sessionId}/summary`
+  );
+  return data.data;
+}
+
+export async function submitCbtEmotionScore(
+  reconstructionId: string,
+  score: number
+): Promise<CbtEmotionScoreResponse> {
+  if (USE_MOCK) {
+    return {
+      reconstruction_id: reconstructionId,
+      emotion_score_after: score,
+      updated_at: new Date().toISOString(),
+    };
+  }
+
+  const { data } = await apiClient.post<ApiResponse<CbtEmotionScoreResponse>>(
+    `/v1/cbt/reconstructions/${reconstructionId}/emotion-score`,
+    { score }
   );
   return data.data;
 }

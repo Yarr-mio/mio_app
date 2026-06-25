@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { OnboardingCharacterId } from '@/constants/characters';
-import type { ChatMessage, SseCrisisResource } from '@/types/chat';
+import type { ChatMessage, ChatMessageType, SseCrisisResource } from '@/types/chat';
 
 export type SessionPhase = 'idle' | 'active' | 'ended';
 
@@ -15,6 +15,8 @@ interface ChatState {
   isAiTyping: boolean;
   emotionScoringActive: boolean;
   pendingEmotionScore: number;
+  // 활성화된 슬라이더를 어떤 CBT reconstruction에 제출할지 — done 이벤트의 emotion_score_target_id
+  emotionScoreTargetId: string | null;
 }
 
 interface ChatActions {
@@ -32,8 +34,9 @@ interface ChatActions {
     crisisResources?: SseCrisisResource[]
   ) => void;
   confirmStreamingMessageId: (outboundMsgId: string) => void;
+  setMessageType: (msgId: string, type: ChatMessageType) => void;
   setAiTyping: (value: boolean) => void;
-  activateEmotionScoring: (initialScore: number) => void;
+  activateEmotionScoring: (initialScore: number, targetId: string) => void;
   setPendingEmotionScore: (score: number) => void;
   deactivateEmotionScoring: () => void;
   endSession: () => void;
@@ -52,6 +55,7 @@ const initialState: ChatState = {
   isAiTyping: false,
   emotionScoringActive: false,
   pendingEmotionScore: 50,
+  emotionScoreTargetId: null,
 };
 
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
@@ -106,14 +110,25 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
       };
     }),
 
+  // is_socratic 판정(LLM 분류기)이 true인 턴의 AI 메시지를 'socratic'으로 마킹 — SocraticBubble 라벨용
+  setMessageType: (msgId, type) =>
+    set((state) => ({
+      messages: state.messages.map((msg) => (msg.id === msgId ? { ...msg, type } : msg)),
+    })),
+
   setAiTyping: (value) => set({ isAiTyping: value }),
 
-  activateEmotionScoring: (initialScore) =>
-    set({ emotionScoringActive: true, pendingEmotionScore: initialScore }),
+  activateEmotionScoring: (initialScore, targetId) =>
+    set({
+      emotionScoringActive: true,
+      pendingEmotionScore: initialScore,
+      emotionScoreTargetId: targetId,
+    }),
 
   setPendingEmotionScore: (score) => set({ pendingEmotionScore: score }),
 
-  deactivateEmotionScoring: () => set({ emotionScoringActive: false, streamingMessageId: null }),
+  deactivateEmotionScoring: () =>
+    set({ emotionScoringActive: false, streamingMessageId: null, emotionScoreTargetId: null }),
 
   endSession: () => set({ sessionPhase: 'ended', isAiTyping: false }),
 

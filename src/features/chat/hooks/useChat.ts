@@ -7,6 +7,7 @@ import {
   fetchActiveSession,
   fetchSessionSummary,
   startSession,
+  submitCbtEmotionScore,
 } from '@/api/endpoints/chat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { HTTP_STATUS, SESSION_SUMMARY_POLL_INTERVAL_MS } from '@/constants/config';
@@ -72,6 +73,31 @@ export function useEndChatSession() {
     onSuccess: () => {
       useChatStore.getState().endSession();
       router.push('/(main)/chat/summary');
+    },
+  });
+}
+
+export function useSubmitCbtEmotionScore() {
+  return useMutation({
+    mutationFn: ({ reconstructionId, score }: { reconstructionId: string; score: number }) =>
+      submitCbtEmotionScore(reconstructionId, score),
+    onSuccess: () => {
+      useChatStore.getState().deactivateEmotionScoring();
+    },
+    onError: (error) => {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      useChatStore.getState().deactivateEmotionScoring();
+
+      // 409 CBT_SCORE_NOT_REQUIRED: 이미 제출 완료된 것으로 간주, 에러 토스트 없이 조용히 무시
+      // (중복 탭/재시도 시 두 번째 요청은 항상 409 — chat-trouble-shoot/04-cbt-emotion-score-redesign.md §3 참고)
+      if (status === HTTP_STATUS.CONFLICT && errorCode === 'CBT_SCORE_NOT_REQUIRED') {
+        return;
+      }
+
+      // 403/404는 정상 흐름에서 발생하지 않아야 하는 예외 상태 — 재시도해도 다시 실패할 가능성이 높아 패널은 닫고 알림만 표시
+      Alert.alert('제출 실패', '감정 점수를 저장하지 못했어요.');
     },
   });
 }

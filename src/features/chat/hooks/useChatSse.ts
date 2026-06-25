@@ -63,8 +63,6 @@ export function useChatSse(sessionId: string | null) {
     if (!sessionId || isStreaming) return;
 
     const store = useChatStore.getState();
-    const lastMessage = store.messages[store.messages.length - 1];
-    const isSocraticReply = lastMessage?.role === 'ai' && lastMessage.type === 'socratic';
 
     store.addMessage({
       id: `user-${Date.now()}`,
@@ -74,19 +72,9 @@ export function useChatSse(sessionId: string | null) {
       timestamp: new Date().toISOString(),
     });
 
-    if (isSocraticReply) {
-      store.activateEmotionScoring(50);
-      return;
-    }
-
     store.setAiTyping(true);
     setIsStreaming(true);
     void performSendMessage(sessionId, content);
-  }
-
-  function confirmEmotionScore(_score: number) {
-    // TODO: 백엔드 emotion-score 제출 엔드포인트 추가되면 연동 (CHAT_BACKEND_QUESTIONS §6)
-    useChatStore.getState().deactivateEmotionScoring();
   }
 
   // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
@@ -169,8 +157,21 @@ export function useChatSse(sessionId: string | null) {
   function handleDone(data: SseDoneData) {
     resetStreamingState();
 
-    if (typeof data.emotion_score === 'number') {
-      useChatStore.getState().activateEmotionScoring(data.emotion_score);
+    if (data.is_socratic) {
+      useChatStore.getState().setMessageType(data.msg_id, 'socratic');
+    }
+
+    // 소크라테스 CBT 개입이 실제로 끝난 턴에서만 슬라이더를 띄운다 — emotion_score_target_id가 없으면
+    // requires_emotion_score 값과 무관하게 띄우지 않음(reconstruction row 생성 실패 케이스 방어)
+    if (
+      data.finished_reason === 'stop' &&
+      data.cbt_intervention_state === 'completed' &&
+      data.requires_emotion_score &&
+      data.emotion_score_target_id !== null
+    ) {
+      useChatStore
+        .getState()
+        .activateEmotionScoring(data.emotion_score ?? 50, data.emotion_score_target_id);
     }
     if (data.is_crisis_flagged && data.finished_reason === 'replaced_by_guard') {
       handleCrisisFallback();
@@ -330,5 +331,5 @@ export function useChatSse(sessionId: string | null) {
     }
   }
 
-  return { sendMessage, confirmEmotionScore, isStreaming };
+  return { sendMessage, isStreaming };
 }

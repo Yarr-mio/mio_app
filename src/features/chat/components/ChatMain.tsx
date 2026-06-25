@@ -4,7 +4,7 @@ import { ChatBackground } from '@/components/themed/ChatBackground';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useChatSse } from '@/features/chat/hooks/useChatSse';
-import { useEndChatSession } from '@/features/chat/hooks/useChat';
+import { useEndChatSession, useSubmitCbtEmotionScore } from '@/features/chat/hooks/useChat';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
 import { ChatInputBar } from '@/features/chat/components/ChatInputBar';
 import { EmotionScorePanel } from '@/features/chat/components/EmotionScorePanel';
@@ -19,13 +19,20 @@ export function ChatMain() {
   const isAiTyping = useChatStore((s) => s.isAiTyping);
   const emotionScoringActive = useChatStore((s) => s.emotionScoringActive);
   const pendingEmotionScore = useChatStore((s) => s.pendingEmotionScore);
+  const emotionScoreTargetId = useChatStore((s) => s.emotionScoreTargetId);
   const character = getOnboardingCharacterById(characterId);
   // session_meta가 만든 빈 AI placeholder는 실제 콘텐츠가 도착하기 전까지 렌더링에서 제외 —
   // 그 사이에는 TypingIndicator(isAiTyping)만 보여준다
   const visibleMessages = messages.filter((m) => !(m.role === 'ai' && m.content === ''));
 
-  const { sendMessage, confirmEmotionScore, isStreaming } = useChatSse(sessionId);
+  const { sendMessage, isStreaming } = useChatSse(sessionId);
   const { mutate: endChatSession } = useEndChatSession();
+  const { mutate: submitEmotionScore } = useSubmitCbtEmotionScore();
+
+  function handleConfirmEmotionScore(score: number) {
+    if (!emotionScoreTargetId) return;
+    submitEmotionScore({ reconstructionId: emotionScoreTargetId, score });
+  }
 
   return (
     <View className="flex-1 bg-midnight">
@@ -54,7 +61,10 @@ export function ChatMain() {
             contentContainerClassName="gap-4 px-4 py-4"
           />
           {emotionScoringActive ? (
-            <EmotionScorePanel initialScore={pendingEmotionScore} onConfirm={confirmEmotionScore} />
+            <EmotionScorePanel
+              initialScore={pendingEmotionScore}
+              onConfirm={handleConfirmEmotionScore}
+            />
           ) : (
             <ChatInputBar onSend={sendMessage} disabled={isStreaming} />
           )}

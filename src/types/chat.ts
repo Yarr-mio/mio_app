@@ -46,8 +46,21 @@ export interface SseDoneData {
   // optional — 필드 자체가 생략될 수 있음(undefined). null이 아니므로 `!== null` 체크로는 못 걸러냄
   emotion_score?: number;
   is_crisis_flagged: boolean;
-  // 판정 로직이 단순(AI 응답에 물음표 포함 여부)해 오탐 위험이 커 실연동 보류 중 — CHAT_FRONTEND_FOLLOWUP_PLAN.md §2-2 참고
+  // LLM 분류기(CbtMetadataClassifier) 기반 판정 — AI가 소크라테스식 질문을 던진 턴에서만 true.
+  // cbt_intervention_state==='completed'와는 별개 신호(완료 턴은 보통 false) — chat-trouble-shoot/04-cbt-emotion-score-redesign.md §5 참고
   is_socratic: boolean;
+  cbt_intervention_state: 'none' | 'socratic_asked' | 'followup_needed' | 'completed';
+  completion_reason:
+    | 'user_reframed_thought'
+    | 'user_declined'
+    | 'max_questions_reached'
+    | 'stabilized'
+    | 'not_applicable'
+    | null;
+  requires_emotion_score: boolean;
+  // emotion-score 제출 엔드포인트(POST /v1/cbt/reconstructions/{id}/emotion-score)의 path variable
+  emotion_score_target_id: string | null;
+  emotion_score_phase: 'after' | null;
   finished_reason: 'stop' | 'crisis_flow' | 'security_refusal' | 'replaced_by_guard' | 'error';
 }
 
@@ -92,4 +105,10 @@ export interface SessionSummaryResponse {
   // 인지왜곡 유형 — 구분자 포맷 불명 (CHAT_BACKEND_QUESTIONS §8 확인 전까지 raw 문자열 그대로 표시)
   bias_types_detected: string | null;
   cbt_intervened: boolean | null;
+}
+
+export interface CbtEmotionScoreResponse {
+  reconstruction_id: string;
+  emotion_score_after: number;
+  updated_at: string;
 }
