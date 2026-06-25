@@ -44,7 +44,9 @@ const initialState: ChatState = {
   sessionPhase: 'idle',
   sessionId: null,
   previousSessionId: null,
-  characterId: 'mio', // TODO: useCharacter() 훅으로 서버에서 수신 후 대체
+  // 세션 시작 전엔 아무도 이 기본값을 읽지 않음(SessionStart는 useSelectedCharacterId() 사용) —
+  // startSession() 호출 시 서버 응답(character_id)으로 즉시 덮어써짐
+  characterId: 'mio',
   messages: [],
   streamingMessageId: null,
   isAiTyping: false,
