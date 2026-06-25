@@ -6,7 +6,9 @@ import { PrimaryColors } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -26,12 +28,48 @@ export function SessionSummary() {
   const storeSessionId = useChatStore((s) => s.sessionId);
   const previousSessionId = useChatStore((s) => s.previousSessionId);
   const sessionId = routeSessionId ?? storeSessionId;
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
   const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
   const { data: previousSummary } = useSessionSummary(previousSessionId);
 
+  // iOS 스와이프 백 차단 — `_layout.tsx`의 정적 옵션만으로는 적용이 누락되는 경우가 있어 동적으로도 보강
+  // (onboarding/Step1EmotionScreen.tsx와 동일 패턴)
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: false });
+  }, [navigation]);
+
+  // Android 하드웨어 백 / router.back() 같은 프로그램적 뒤로가기(POP/GO_BACK)만 차단한다. usePreventRemove는
+  // 액션 타입을 가리지 않고 모두 막아서 SessionEnd의 dismissAll()(POP_TO_TOP)까지 무효화시켰다
+  // (chat-trouble-shoot/09) — beforeRemove를 직접 구독해 액션 타입으로 구분한다. sessionId가 없을 때는
+  // (자가복구 redirect가 동작해야 하므로) 리스너 자체를 비활성화 — 기존 !!sessionId 게이트와 동등하게 유지
+  useEffect(() => {
+    if (!sessionId) return;
+    return navigation.addListener('beforeRemove', (e) => {
+      if (e.data.action.type === 'POP' || e.data.action.type === 'GO_BACK') {
+        e.preventDefault();
+      }
+    });
+  }, [navigation, sessionId]);
+
+  // sessionId 없이 마운트되는 경로가 있다면(chat-trouble-shoot/07 참고, 정확한 트리거 미확정) 검은
+  // 화면으로 멈춰있지 않도록 index로 돌려보내 기존 활성 세션 판별 로직이 다시 처리하게 한다.
+  // isFocused 가드 필수 — 이 화면이 블러된 채 스택에 남아있는 동안 reset()으로 sessionId가 사라지면
+  // (chat-trouble-shoot/08 원인 D) 보고 있지도 않은 화면에서 추가 내비게이션이 발생해 다른 화면(홈 등)을
+  // 덮어써버림
+  useEffect(() => {
+    if (!sessionId && isFocused) {
+      router.replace('/(main)/chat');
+    }
+  }, [sessionId, isFocused]);
+
   if (!sessionId) {
-    return null;
+    return (
+      <View className="flex-1 bg-midnight">
+        <ChatBackground />
+      </View>
+    );
   }
 
   if (isLoading || !summary || summary.summary_status === 'pending') {

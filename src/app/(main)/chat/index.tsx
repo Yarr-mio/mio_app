@@ -49,7 +49,9 @@ export default function ChatScreen() {
     })();
   }, [activeSession, startSession]);
 
-  if (isLoading) {
+  // sessionPhase가 'ended'인 동안은 요약 화면으로 전환 중인 과도기 상태 — 이 화면이 잠깐이라도
+  // 보이면(전환 애니메이션, 뒤로 스와이프 등) "대화 시작하기" 화면이 깜빡이지 않도록 빈 배경만 보여준다
+  if (isLoading || sessionPhase === 'ended') {
     return (
       <View className="flex-1 bg-midnight">
         <ChatBackground />

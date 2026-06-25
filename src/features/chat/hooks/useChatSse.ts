@@ -99,10 +99,6 @@ export function useChatSse(sessionId: string | null) {
   }
 
   function handleDelta(data: SseDeltaData) {
-    // ★ 진단용 임시 로그 — 원인 확정되면 제거
-    console.log(
-      `[sse] delta dispatched — +${Date.now() - sendStartedAtRef.current}ms elapsed, chunk="${data.chunk}"`
-    );
     const store = useChatStore.getState();
     store.confirmStreamingMessageId(data.msg_id);
     store.appendDelta(data.msg_id, data.chunk);
@@ -118,6 +114,10 @@ export function useChatSse(sessionId: string | null) {
   }
 
   function handleCrisis(data: SseCrisisData) {
+    // ★ 진단용 임시 로그 — 원인 확정되면 제거
+    console.log(
+      `[sse] crisis dispatched — +${Date.now() - sendStartedAtRef.current}ms elapsed, severity=${data.severity}, hotlines=${data.resources?.hotlines?.length ?? 0}`
+    );
     // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
     const store = useChatStore.getState();
     store.setAiTyping(false);
@@ -156,6 +156,11 @@ export function useChatSse(sessionId: string | null) {
 
   function handleDone(data: SseDoneData) {
     resetStreamingState();
+
+    // ★ 진단용 임시 로그 — CBT 상태머신 필드 실측용(모든 응답마다 socratic UI가 뜨는 문제 원인 확인). 원인 확정되면 제거
+    console.log(
+      `[sse] done dispatched — msg_id=${data.msg_id}, is_socratic=${data.is_socratic}, cbt_intervention_state=${data.cbt_intervention_state}, completion_reason=${data.completion_reason}, requires_emotion_score=${data.requires_emotion_score}, emotion_score_target_id=${data.emotion_score_target_id}, finished_reason=${data.finished_reason}`
+    );
 
     if (data.is_socratic) {
       useChatStore.getState().setMessageType(data.msg_id, 'socratic');
@@ -218,15 +223,16 @@ export function useChatSse(sessionId: string | null) {
     const decoder = new TextDecoder();
     let buffer = '';
     let receivedDone = false;
-    let chunkIndex = 0; // ★ 진단용 임시 — 원인 확정되면 제거
+    // ★ 진단용 임시 집계 — 청크/델타를 매번 찍지 않고 모아서 한 번에 로그. 원인 확정되면 제거
+    let networkChunkCount = 0;
+    let networkByteTotal = 0;
+    let deltaEventCount = 0;
+    let deltaCharTotal = 0;
 
     while (true) {
       const { done, value } = await reader.read();
-      // ★ 진단용 임시 로그 — 청크별 프론트 도착 시각(상대/절대) 확인용. 원인 확정되면 제거
-      console.log(
-        `[sse] chunk #${chunkIndex} arrived — +${Date.now() - sendStartedAtRef.current}ms elapsed, at ${new Date().toISOString()}, done=${done}, bytes=${value?.length ?? 0}`
-      );
-      chunkIndex += 1;
+      networkChunkCount += 1;
+      networkByteTotal += value?.length ?? 0;
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
@@ -244,6 +250,8 @@ export function useChatSse(sessionId: string | null) {
               handleSessionMeta(parsed.data as SseSessionMetaData);
               break;
             case 'delta':
+              deltaEventCount += 1;
+              deltaCharTotal += (parsed.data as SseDeltaData).chunk.length;
               handleDelta(parsed.data as SseDeltaData);
               break;
             case 'delta.replace':
@@ -262,6 +270,11 @@ export function useChatSse(sessionId: string | null) {
         separatorIndex = buffer.indexOf('\n\n');
       }
     }
+
+    // ★ 진단용 임시 로그 — 원인 확정되면 제거
+    console.log(
+      `[sse] stream consumed — +${Date.now() - sendStartedAtRef.current}ms elapsed, networkChunks=${networkChunkCount}, networkBytes=${networkByteTotal}, deltaEvents=${deltaEventCount}, deltaChars=${deltaCharTotal}`
+    );
 
     return receivedDone;
   }

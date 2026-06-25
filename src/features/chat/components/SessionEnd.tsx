@@ -5,13 +5,35 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
+import { useCallback, useEffect } from 'react';
 import { View } from 'react-native';
 
 export function SessionEnd() {
-  const characterId = useChatStore((s) => s.characterId);
+  // SessionStart와 동일하게 store가 아닌 여기서 읽는다 — store의 characterId는 reset() 시 기본값('mio')으로
+  // 돌아가는데, 이 화면은 이탈 시 reset()이 돌면서도 (수정 전) 스택에 남아 재노출될 수 있었음
+  // (chat-trouble-shoot/08 원인 C). dismissAll() 수정으로 재노출 자체는 막혔지만 이중 안전망으로 유지
+  const characterId = useSelectedCharacterId();
   const character = getOnboardingCharacterById(characterId);
+  const navigation = useNavigation();
+
+  // iOS 스와이프 백 차단 — `_layout.tsx`의 정적 옵션만으로는 적용이 누락되는 경우가 있어 동적으로도 보강
+  // (onboarding/Step1EmotionScreen.tsx와 동일 패턴)
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: false });
+  }, [navigation]);
+
+  // Android 하드웨어 백 / router.back() 같은 프로그램적 뒤로가기(POP/GO_BACK)만 차단한다. usePreventRemove는
+  // 액션 타입을 가리지 않고 모두 막아서 handleGoHome의 dismissAll()(POP_TO_TOP)까지 무효화시켰다
+  // (chat-trouble-shoot/09) — beforeRemove를 직접 구독해 액션 타입으로 구분한다.
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', (e) => {
+      if (e.data.action.type === 'POP' || e.data.action.type === 'GO_BACK') {
+        e.preventDefault();
+      }
+    });
+  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -29,7 +51,10 @@ export function SessionEnd() {
   );
 
   function handleGoHome() {
-    // reset은 useFocusEffect cleanup에서 처리되므로 navigation만 호출
+    // 탭 전환(JUMP_TO) 전에, 아직 chat 탭이 포커스된 상태에서 먼저 스택을 index로 비운다 — 순서를
+    // 바꾸면(탭 전환 후 호출) chat이 더 이상 "현재" 스택이 아니라 dismissAll() 타겟이 보장되지 않음
+    // (chat-trouble-shoot/08 원인 A). reset()은 useFocusEffect cleanup에서 처리됨
+    router.dismissAll();
     router.replace('/(main)/home');
   }
 

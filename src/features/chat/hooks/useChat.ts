@@ -68,10 +68,18 @@ export function useStartChatSession() {
 }
 
 export function useEndChatSession() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (sessionId: string) => endSession(sessionId),
     onSuccess: () => {
       useChatStore.getState().endSession();
+      // 종료된 세션이 activeSession 캐시(staleTime 5분)에 남아있으면, 그 안에 chat/index.tsx가 새로
+      // 마운트될 때 이미 끝난 세션을 다시 활성 세션으로 착각해 startSession()을 재호출할 수 있다
+      // (chat-trouble-shoot/08 원인 E)
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
+      // SessionEnd의 dismissAll()이 스택 루트(index)로 돌아간다는 전제를 깨지 않기 위해 push 유지 —
+      // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당
       router.push('/(main)/chat/summary');
     },
   });

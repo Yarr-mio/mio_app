@@ -1,4 +1,5 @@
-import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
+import { useEffect } from 'react';
+import { AppState, FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { getOnboardingCharacterById } from '@/constants/characters';
@@ -28,6 +29,18 @@ export function ChatMain() {
   const { sendMessage, isStreaming } = useChatSse(sessionId);
   const { mutate: endChatSession } = useEndChatSession();
   const { mutate: submitEmotionScore } = useSubmitCbtEmotionScore();
+
+  // 앱이 백그라운드로 전환되면(홈으로 나가기, 강제 종료 직전 단계 등) 대화 화면 이탈로 간주해 세션 종료 —
+  // 'inactive'는 제어 센터/알림 등 일시적 전환이라 제외, 완전한 백그라운드 진입만 트리거로 사용
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'background' && sessionId) {
+        endChatSession(sessionId);
+      }
+    });
+
+    return () => subscription.remove();
+  }, [sessionId, endChatSession]);
 
   function handleConfirmEmotionScore(score: number) {
     if (!emotionScoreTargetId) return;
