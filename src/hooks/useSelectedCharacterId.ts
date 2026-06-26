@@ -3,7 +3,7 @@ import {
   getCharacterNameById,
   toOnboardingCharacterId,
 } from '@/constants/characters';
-import { useUserStore } from '@/store/userStore';
+import { resolveStoredNickname, useUserStore } from '@/store/userStore';
 
 export function useSelectedCharacterId() {
   const authProfileCharacterId = useUserStore((state) => state.authProfile?.characterId);
@@ -20,8 +20,8 @@ export function useSelectedCharacterName() {
 }
 
 export function useSelectedNickname() {
-  const authProfileNickname = useUserStore((state) => state.authProfile?.nickname);
-  const onboardingNickname = useUserStore((state) => state.onboardingResult?.nickname);
+  const authProfile = useUserStore((state) => state.authProfile);
+  const onboardingResult = useUserStore((state) => state.onboardingResult);
 
-  return authProfileNickname ?? onboardingNickname ?? null;
+  return resolveStoredNickname(authProfile, onboardingResult);
 }

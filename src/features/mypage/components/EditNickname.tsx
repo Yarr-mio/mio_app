@@ -1,7 +1,5 @@
 import { CloseIcon } from '@/assets/icons';
 import UserIcon from '@/assets/icons/user.svg';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,54 +7,64 @@ import { BackHeader } from '@/components/layout/BackHeader';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
-import { ONBOARDING_DEFAULT_CHARACTER_ID } from '@/constants/characters';
 import {
   EditNicknameClasses,
   EditNicknameLayout,
   FgColors,
   InputColors,
+  NicknameDuplicateCheckClasses,
   PressableConfig,
   ScreenSpacing,
+  SignupInfoLayout,
 } from '@/constants/theme';
 import { ProfileAvatarCircle } from '@/features/mypage/components/ProfileAvatarCircle';
-import { useUserStore } from '@/store/userStore';
+import { useEditNickname } from '@/features/mypage/hooks/useEditNickname';
+import { cn } from '@/utils/cn';
 
 const { avatarSize, userIconSize, maxLength, clearIconSize } = EditNicknameLayout;
+const NICKNAME_MAX_LENGTH = SignupInfoLayout.nicknameMaxLength;
+const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
+const NICKNAME_HINT_DEFAULT = `닉네임은 ${NICKNAME_MIN_LENGTH}자 이상, 최대 ${NICKNAME_MAX_LENGTH}자까지 가능해요`;
+const NICKNAME_HINT_DUPLICATE = '중복된 닉네임입니다';
+const NICKNAME_HINT_AVAILABLE = '사용 가능한 닉네임입니다';
+
+function resolveNicknameHintText(isDuplicateConflict: boolean, isAvailable: boolean): string {
+  if (isDuplicateConflict) {
+    return NICKNAME_HINT_DUPLICATE;
+  }
+
+  if (isAvailable) {
+    return NICKNAME_HINT_AVAILABLE;
+  }
+
+  return NICKNAME_HINT_DEFAULT;
+}
+
+function resolveNicknameHintClassName(isDuplicateConflict: boolean, isAvailable: boolean): string {
+  if (isDuplicateConflict) {
+    return NicknameDuplicateCheckClasses.errorHint;
+  }
+
+  if (isAvailable) {
+    return NicknameDuplicateCheckClasses.availableText;
+  }
+
+  return 'text-label';
+}
 
 export function EditNicknameScreen() {
-  const router = useRouter();
   const { bottom } = useSafeAreaInsets();
-  const authProfile = useUserStore((state) => state.authProfile);
-  const setAuthProfile = useUserStore((state) => state.setAuthProfile);
-  const [nickname, setNickname] = useState(authProfile?.nickname ?? '');
-
-  const trimmedNickname = nickname.trim();
-  const initialNickname = authProfile?.nickname ?? '';
-  const canSave = trimmedNickname.length > 0 && trimmedNickname !== initialNickname;
+  const {
+    nickname,
+    isDuplicateConflict,
+    isAvailable,
+    canSave,
+    isPending,
+    handleNicknameChange,
+    handleClear,
+    handleSave,
+  } = useEditNickname();
   const bottomPadding = Math.max(bottom, ScreenSpacing.bottomInsetMin);
-
-  const handleNicknameChange = (text: string) => {
-    setNickname(text.slice(0, maxLength));
-  };
-
-  const handleClear = () => {
-    setNickname('');
-  };
-
-  const handleSave = () => {
-    if (!canSave) {
-      return;
-    }
-
-    // TODO 추후 마이페이지 연동 작업 진행할 것
-    // 현재는 로컬 store(authProfile)만 갱신하고 서버에는 반영되지 않음
-    // PATCH /v1/users/me 연동 후 setAuthProfile 호출을 서버 응답 성공 시점으로 이동 필요
-    setAuthProfile({
-      nickname: trimmedNickname,
-      characterId: authProfile?.characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID,
-    });
-    router.back();
-  };
 
   return (
     <View className="flex-1">
@@ -103,8 +111,11 @@ export function EditNicknameScreen() {
           </View>
 
           <View className="flex-row items-center justify-between px-2">
-            <ThemedText type="smallRegular" className="text-label">
-              닉네임 설정은 최대 {maxLength}자까지 가능해요
+            <ThemedText
+              type="smallRegular"
+              className={cn(resolveNicknameHintClassName(isDuplicateConflict, isAvailable))}
+            >
+              {resolveNicknameHintText(isDuplicateConflict, isAvailable)}
             </ThemedText>
             <ThemedText type="smallRegular" className="text-label">
               {nickname.length}/{maxLength}
@@ -115,7 +126,7 @@ export function EditNicknameScreen() {
 
       {/* safe area 대응 — 인라인 style 불가피 */}
       <View className="px-6 pt-2" style={{ paddingBottom: bottomPadding }}>
-        <Button disabled={!canSave} onPress={handleSave}>
+        <Button disabled={!canSave || isPending} onPress={handleSave}>
           저장
         </Button>
       </View>

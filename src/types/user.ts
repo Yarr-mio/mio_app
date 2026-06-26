@@ -71,3 +71,29 @@ export interface MyProfileUpdateParams {
   nickname?: string;
   age_range?: string | null;
 }
+
+export interface CharacterSummary {
+  character_id: string;
+  name: string;
+  animal: string;
+  description: string;
+}
+
+export interface UserCharacter {
+  character_id: string;
+  name: string;
+  animal: string;
+  description: string;
+}
+
+export interface ChangeCharacterParams {
+  character_id: string;
+}
+
+export interface NotificationSettings {
+  push_enabled: boolean;
+}
+
+export interface NotificationSettingsUpdateParams {
+  push_enabled: boolean;
+}

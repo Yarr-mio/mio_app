@@ -8,10 +8,14 @@ import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
-import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
+import {
+  useMyPage,
+  useNotificationSettings,
+  useUpdateNotificationSettings,
+} from '@/features/mypage/hooks/useMypage';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
 const FALLBACK_NICKNAME = '사용자';
@@ -20,15 +24,27 @@ const FALLBACK_JOINED_AT = '2026-01-01';
 
 export function SettingsScreen() {
   const router = useRouter();
-  const nickname = useSelectedNickname() ?? FALLBACK_NICKNAME;
-  const [pushEnabled, setPushEnabled] = useState(true);
+  const { data: myPageData } = useMyPage();
+  const { data: notificationSettings } = useNotificationSettings();
+  const { mutate: updateNotificationSettings } = useUpdateNotificationSettings();
 
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
 
+  const nickname = myPageData?.nickname ?? FALLBACK_NICKNAME;
+  const characterLabel = myPageData
+    ? `${myPageData.preferred_character.name}와 함께`
+    : `${partner.name}와 함께`;
+
   // TODO: userStore에 joinedAt 추가 필요
   const joinedAt = FALLBACK_JOINED_AT;
   const joinedAtLabel = `${format(parseISO(joinedAt), 'yyyy-MM-dd')} 시작`;
+
+  const pushEnabled = notificationSettings?.push_enabled ?? true;
+
+  const handlePushToggle = (value: boolean) => {
+    updateNotificationSettings({ push_enabled: value });
+  };
 
   return (
     <View className="flex-1">
@@ -46,7 +62,7 @@ export function SettingsScreen() {
 
           <UserProfileCard
             nickname={nickname}
-            characterLabel={`${partner.name}와 함께`}
+            characterLabel={characterLabel}
             joinedAtLabel={joinedAtLabel}
             onEditPress={() => router.push(MAIN_ROUTES.editNickname)}
           />
@@ -67,7 +83,7 @@ export function SettingsScreen() {
             <ThemedText type="smallTitle" className="mb-2 text-badge">
               알림
             </ThemedText>
-            <NotificationCard enabled={pushEnabled} onToggle={setPushEnabled} />
+            <NotificationCard enabled={pushEnabled} onToggle={handlePushToggle} />
           </View>
 
           <View className="mt-6">

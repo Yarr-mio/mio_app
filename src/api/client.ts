@@ -2,8 +2,10 @@ import axios, { create, type AxiosError, type InternalAxiosRequestConfig } from 
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+import queryClient from '@/api/queryClient';
 import { API_BASE_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
+import { useUserStore } from '@/store/userStore';
 import type { AuthRefreshResponse } from '@/types/auth';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
 import { storage } from '@/utils/storage';
@@ -13,10 +15,12 @@ declare module 'axios' {
     _retry?: boolean;
     _skipAuthRefresh?: boolean;
     _skipAuthInjection?: boolean;
+    _skipAuthRedirect?: boolean;
   }
   export interface AxiosRequestConfig {
     _skipAuthRefresh?: boolean;
     _skipAuthInjection?: boolean;
+    _skipAuthRedirect?: boolean;
   }
 }
 
@@ -188,7 +192,9 @@ async function refreshAccessToken(): Promise<string> {
  */
 async function clearLocalAuthAndRedirect(): Promise<void> {
   useAuthStore.getState().setAccessToken(null);
-  await storage.refreshToken.delete();
+  useUserStore.getState().reset();
+  await Promise.allSettled([storage.refreshToken.delete(), useUserStore.persist.clearStorage()]);
+  queryClient.clear();
 
   const handler = useAuthStore.getState().onAuthInvalid;
   handler?.();
@@ -216,7 +222,10 @@ apiClient.interceptors.response.use(
     }
 
     if (errorCode === 'REFRESH_TOKEN_INVALID') {
-      await clearLocalAuthAndRedirect();
+      // 배경 동기화 등 _skipAuthRedirect 요청은 강제 로그아웃에서 제외
+      if (!originalRequest._skipAuthRedirect) {
+        await clearLocalAuthAndRedirect();
+      }
       throw error;
     }
 
@@ -245,6 +254,11 @@ apiClient.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`;
       return await apiClient(originalRequest);
     } catch (refreshError) {
+      // 배경 동기화 등 _skipAuthRedirect 요청은 refresh 실패해도 강제 로그아웃하지 않음
+      if (originalRequest._skipAuthRedirect) {
+        throw refreshError;
+      }
+
       if (!authInvalidationPromise) {
         authInvalidationPromise = clearLocalAuthAndRedirect().finally(() => {
           authInvalidationPromise = null;
