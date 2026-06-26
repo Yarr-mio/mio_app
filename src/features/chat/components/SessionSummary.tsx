@@ -1,3 +1,4 @@
+import { queryKeys } from '@/api/queryKeys';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -7,9 +8,11 @@ import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useIsFocused } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
+import type { SessionSummaryResponse } from '@/types/chat';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -32,7 +35,13 @@ export function SessionSummary() {
   const isFocused = useIsFocused();
 
   const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
-  const { data: previousSummary } = useSessionSummary(previousSessionId);
+  // 직전 세션은 화면에 그리는 대상이 아니라 감정 변화율 계산용 숫자만 필요하다. useSessionSummary로 다시
+  // 부르면 GET .../summary의 부수효과로 그 세션을 "열람" 처리해버리므로, 이미 캐시된 값만 읽고
+  // 없으면(예: 두 세션 사이 앱 재시작) 비교 없이 넘어간다
+  const queryClient = useQueryClient();
+  const previousSummary = previousSessionId
+    ? queryClient.getQueryData<SessionSummaryResponse>(queryKeys.chat.session(previousSessionId))
+    : undefined;
 
   // iOS 스와이프 백 차단 — `_layout.tsx`의 정적 옵션만으로는 적용이 누락되는 경우가 있어 동적으로도 보강
   // (onboarding/Step1EmotionScreen.tsx와 동일 패턴)

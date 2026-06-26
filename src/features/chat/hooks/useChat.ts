@@ -10,7 +10,11 @@ import {
   submitCbtEmotionScore,
 } from '@/api/endpoints/chat';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { HTTP_STATUS, SESSION_SUMMARY_POLL_INTERVAL_MS } from '@/constants/config';
+import {
+  HTTP_STATUS,
+  SESSION_SUMMARY_CACHE_GC_TIME_MS,
+  SESSION_SUMMARY_POLL_INTERVAL_MS,
+} from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type { ActiveSessionResponse } from '@/types/chat';
@@ -112,6 +116,11 @@ export function useSubmitCbtEmotionScore() {
 
 // summary_status==='pending'이면 일정 주기로 재조회, done/viewed/failed면 멈춤.
 // sessionId는 chatStore.sessionId뿐 아니라 라우트로 받은 last_ended_session_id로도 호출 가능 (05번 작업의 재진입 리다이렉트)
+//
+// 주의: 이 훅의 호출 자체가 GET .../summary의 부수효과로 서버 summary_status를 done→viewed로 확정시킨다.
+// 반드시 해당 세션 요약을 화면에 실제로 그릴 때만 호출할 것 — 다른 세션 값을 참고용으로 가져오려는 목적으로는
+// 쓰지 말고, 캐시에 남은 값만 필요하면 queryClient.getQueryData(queryKeys.chat.session(id))로 읽는다
+// (SessionSummary.tsx의 직전 세션 조회 참고).
 export function useSessionSummary(sessionId: string | null | undefined) {
   return useQuery({
     queryKey: queryKeys.chat.session(sessionId ?? 'none'),
@@ -119,5 +128,7 @@ export function useSessionSummary(sessionId: string | null | undefined) {
     enabled: !!sessionId,
     refetchInterval: (query) =>
       query.state.data?.summary_status === 'pending' ? SESSION_SUMMARY_POLL_INTERVAL_MS : false,
+    // 다음 세션 요약 화면이 감정 변화율 비교용으로 이 캐시를 다시 읽을 수 있도록 기본보다 길게 유지
+    gcTime: SESSION_SUMMARY_CACHE_GC_TIME_MS,
   });
 }

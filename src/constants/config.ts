@@ -56,6 +56,13 @@ export const SPLASH_DURATION_MS = 2500;
 export const SESSION_SUMMARY_POLL_INTERVAL_MS = 3000;
 
 /**
+ * 화면에 한 번 그려진 세션 요약을 쿼리 캐시에 유지하는 시간(ms).
+ * 다음 세션 요약 화면이 감정 변화율 비교용으로 이 값을 다시 읽는데, 두 세션 사이의 간격이
+ * 기본 gcTime(5분)보다 긴 경우가 많아 넉넉하게 24시간으로 잡는다.
+ */
+export const SESSION_SUMMARY_CACHE_GC_TIME_MS = 1000 * 60 * 60 * 24;
+
+/**
  * 채팅 SSE 스트림 안전 타임아웃(ms).
  * 서버 SseEmitter 타임아웃이 60초라 그보다 약간 길게 잡아, 연결이 완전히 멈춰버리는 극단적 케이스에서만 클라이언트가 직접 중단시킨다.
  */
