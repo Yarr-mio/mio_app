@@ -24,7 +24,10 @@ export function useEditNickname() {
 
   const trimmedNickname = nickname.trim();
   const canSave =
-    trimmedNickname.length > 0 && trimmedNickname !== initialNickname && !isDuplicateConflict;
+    trimmedNickname.length >= NICKNAME_MIN_LENGTH &&
+    trimmedNickname !== initialNickname &&
+    isAvailable &&
+    !isDuplicateConflict;
 
   useEffect(() => {
     if (trimmedNickname.length < NICKNAME_MIN_LENGTH) {

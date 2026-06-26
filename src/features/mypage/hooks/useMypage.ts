@@ -76,7 +76,7 @@ export function useMyCharacter() {
 
   const query = useQuery({
     queryKey: queryKeys.my.character(),
-    queryFn: fetchMyCharacter,
+    queryFn: () => fetchMyCharacter(),
     enabled: Boolean(accessToken),
   });
 
@@ -91,7 +91,7 @@ export function useChangeCharacter() {
 
   return useMutation({
     mutationFn: (params: ChangeCharacterParams) => changeMyCharacter(params),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       const authProfile = useUserStore.getState().authProfile;
 
       useUserStore.getState().setAuthProfile({
@@ -99,8 +99,13 @@ export function useChangeCharacter() {
         characterId: response.character_id,
       });
 
-      void queryClient.invalidateQueries({ queryKey: queryKeys.my.profile() });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.my.character() });
+      await Promise.all([
+        queryClient.fetchQuery({ queryKey: queryKeys.my.profile(), queryFn: fetchMyPage }),
+        queryClient.fetchQuery({
+          queryKey: queryKeys.my.character(),
+          queryFn: () => fetchMyCharacter(),
+        }),
+      ]);
       router.back();
     },
     onError: (error) => {

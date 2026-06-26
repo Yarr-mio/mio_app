@@ -12,10 +12,11 @@ export async function fetchCharacters(): Promise<CharacterSummary[]> {
   return data.data;
 }
 
-export async function fetchMyCharacter(): Promise<UserCharacter> {
-  // 배경 동기화 전용 요청이므로 401 시 강제 로그아웃 리다이렉트에서 제외
+export async function fetchMyCharacter(options?: {
+  skipAuthRedirect?: boolean;
+}): Promise<UserCharacter> {
   const { data } = await apiClient.get<ApiResponse<UserCharacter>>('/v1/user/character', {
-    _skipAuthRedirect: true,
+    _skipAuthRedirect: options?.skipAuthRedirect,
   });
   return data.data;
 }

@@ -134,7 +134,7 @@ export function useWithdraw() {
 
   return useMutation<AuthWithdrawResponse, Error, void>({
     mutationFn: () => deleteAuthWithdraw(),
-    onSettled: async () => {
+    onSuccess: async () => {
       setAccessToken(null);
       useUserStore.getState().reset();
       try {

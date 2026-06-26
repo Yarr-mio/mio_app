@@ -14,19 +14,18 @@ import {
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
-import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
 const FALLBACK_NICKNAME = '사용자';
-// TODO: userStore에 joinedAt 추가 필요
-const FALLBACK_JOINED_AT = '2026-01-01';
+const JOINED_AT_PLACEHOLDER = '확인 중';
 
 export function SettingsScreen() {
   const router = useRouter();
   const { data: myPageData } = useMyPage();
   const { data: notificationSettings } = useNotificationSettings();
-  const { mutate: updateNotificationSettings } = useUpdateNotificationSettings();
+  const { mutate: updateNotificationSettings, isPending: isNotificationUpdatePending } =
+    useUpdateNotificationSettings();
 
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
@@ -36,13 +35,14 @@ export function SettingsScreen() {
     ? `${myPageData.preferred_character.name}와 함께`
     : `${partner.name}와 함께`;
 
-  // TODO: userStore에 joinedAt 추가 필요
-  const joinedAt = FALLBACK_JOINED_AT;
-  const joinedAtLabel = `${format(parseISO(joinedAt), 'yyyy-MM-dd')} 시작`;
+  const joinedAtLabel = JOINED_AT_PLACEHOLDER;
 
   const pushEnabled = notificationSettings?.push_enabled ?? true;
 
   const handlePushToggle = (value: boolean) => {
+    if (isNotificationUpdatePending) {
+      return;
+    }
     updateNotificationSettings({ push_enabled: value });
   };
 
@@ -83,7 +83,11 @@ export function SettingsScreen() {
             <ThemedText type="smallTitle" className="mb-2 text-badge">
               알림
             </ThemedText>
-            <NotificationCard enabled={pushEnabled} onToggle={handlePushToggle} />
+            <NotificationCard
+              enabled={pushEnabled}
+              disabled={isNotificationUpdatePending}
+              onToggle={handlePushToggle}
+            />
           </View>
 
           <View className="mt-6">
