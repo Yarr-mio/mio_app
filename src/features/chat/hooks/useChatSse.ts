@@ -42,8 +42,6 @@ export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   // 화면 이탈/언마운트 시 진행 중인 스트림을 취소하기 위해 보관
   const abortRef = useRef<AbortController | null>(null);
-  // ★ SSE 스트리밍 타이밍 진단용 임시 ref — 원인 확정되면 제거
-  const sendStartedAtRef = useRef<number>(0);
 
   // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
   useEffect(() => {
@@ -80,10 +78,6 @@ export function useChatSse(sessionId: string | null) {
   // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
   // outboundMsgId 대신 placeholder id로 빈 AI 메시지를 추적하고, 최초 delta 수신 시 확정한다
   function handleSessionMeta(data: SseSessionMetaData) {
-    // ★ 진단용 임시 로그 — 원인 확정되면 제거
-    console.log(
-      `[sse] session_meta dispatched — +${Date.now() - sendStartedAtRef.current}ms elapsed`
-    );
     const placeholderId = `pending-ai-${data.message_id}`;
     const store = useChatStore.getState();
     store.addMessage({
@@ -114,10 +108,6 @@ export function useChatSse(sessionId: string | null) {
   }
 
   function handleCrisis(data: SseCrisisData) {
-    // ★ 진단용 임시 로그 — 원인 확정되면 제거
-    console.log(
-      `[sse] crisis dispatched — +${Date.now() - sendStartedAtRef.current}ms elapsed, severity=${data.severity}, hotlines=${data.resources?.hotlines?.length ?? 0}`
-    );
     // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
     const store = useChatStore.getState();
     store.setAiTyping(false);
@@ -156,11 +146,6 @@ export function useChatSse(sessionId: string | null) {
 
   function handleDone(data: SseDoneData) {
     resetStreamingState();
-
-    // ★ 진단용 임시 로그 — CBT 상태머신 필드 실측용(모든 응답마다 socratic UI가 뜨는 문제 원인 확인). 원인 확정되면 제거
-    console.log(
-      `[sse] done dispatched — msg_id=${data.msg_id}, is_socratic=${data.is_socratic}, cbt_intervention_state=${data.cbt_intervention_state}, completion_reason=${data.completion_reason}, requires_emotion_score=${data.requires_emotion_score}, emotion_score_target_id=${data.emotion_score_target_id}, finished_reason=${data.finished_reason}`
-    );
 
     if (data.is_socratic) {
       useChatStore.getState().setMessageType(data.msg_id, 'socratic');
@@ -223,16 +208,9 @@ export function useChatSse(sessionId: string | null) {
     const decoder = new TextDecoder();
     let buffer = '';
     let receivedDone = false;
-    // ★ 진단용 임시 집계 — 청크/델타를 매번 찍지 않고 모아서 한 번에 로그. 원인 확정되면 제거
-    let networkChunkCount = 0;
-    let networkByteTotal = 0;
-    let deltaEventCount = 0;
-    let deltaCharTotal = 0;
 
     while (true) {
       const { done, value } = await reader.read();
-      networkChunkCount += 1;
-      networkByteTotal += value?.length ?? 0;
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
@@ -250,8 +228,6 @@ export function useChatSse(sessionId: string | null) {
               handleSessionMeta(parsed.data as SseSessionMetaData);
               break;
             case 'delta':
-              deltaEventCount += 1;
-              deltaCharTotal += (parsed.data as SseDeltaData).chunk.length;
               handleDelta(parsed.data as SseDeltaData);
               break;
             case 'delta.replace':
@@ -271,11 +247,6 @@ export function useChatSse(sessionId: string | null) {
       }
     }
 
-    // ★ 진단용 임시 로그 — 원인 확정되면 제거
-    console.log(
-      `[sse] stream consumed — +${Date.now() - sendStartedAtRef.current}ms elapsed, networkChunks=${networkChunkCount}, networkBytes=${networkByteTotal}, deltaEvents=${deltaEventCount}, deltaChars=${deltaCharTotal}`
-    );
-
     return receivedDone;
   }
 
@@ -287,8 +258,6 @@ export function useChatSse(sessionId: string | null) {
       timedOut = true;
       controller.abort();
     }, SSE_STREAM_SAFETY_TIMEOUT_MS);
-    // ★ 진단용 임시 — 원인 확정되면 제거
-    sendStartedAtRef.current = Date.now();
 
     try {
       const accessToken = useAuthStore.getState().accessToken;
@@ -303,11 +272,6 @@ export function useChatSse(sessionId: string | null) {
         body: JSON.stringify({ content }),
         signal: controller.signal,
       });
-
-      // ★ 진단용 임시 로그 — 원인 확정되면 제거
-      console.log(
-        `[sse] response headers — +${Date.now() - sendStartedAtRef.current}ms elapsed, status=${res.status}, content-type=${res.headers.get('content-type')}, content-encoding=${res.headers.get('content-encoding')}, transfer-encoding=${res.headers.get('transfer-encoding')}`
-      );
 
       const contentType = res.headers.get('content-type') ?? '';
       if (contentType.includes('application/json')) {
