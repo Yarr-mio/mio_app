@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { AUTH_ROUTES, type AuthRoute } from '@/constants/routes';
 import { useRefreshToken } from '@/features/auth/hooks/useAuth';
 import { restoreSession } from '@/features/auth/services/restoreSession';
+import { syncAuthProfileCharacterFromServer } from '@/features/auth/services/syncAuthProfileCharacter';
 import { resolveRouteFromSignupStatus } from '@/features/auth/services/signupNavigation';
 import { isCurrentAuthRoute } from '@/features/auth/utils/isCurrentAuthRoute';
 import { useAuthStore } from '@/store/authStore';
@@ -61,6 +62,10 @@ export function useSplashAuth() {
         await storage.refreshToken.delete();
       },
     });
+
+    if (useAuthStore.getState().accessToken) {
+      void syncAuthProfileCharacterFromServer();
+    }
   };
 
   return { handleFinish };

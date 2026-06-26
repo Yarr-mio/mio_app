@@ -22,6 +22,7 @@ import {
   useQueryClient,
   type QueryFunctionContext,
 } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 interface ReportQueryMeta {
   maxAttempts: number;
@@ -108,25 +109,41 @@ interface ReportQueryOptions {
 }
 
 export function useWeeklyReport(weekStart: string, options?: ReportQueryOptions) {
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.report.weekly(weekStart),
     queryFn: createWeeklyReportQueryFn(weekStart),
-    enabled: options?.enabled ?? true,
+    enabled: (options?.enabled ?? true) && weekStart.length > 0,
     placeholderData: keepPreviousData,
     meta: { maxAttempts: REPORT_POLL_MAX_ATTEMPTS },
     refetchInterval: (query) => getReportPollingInterval(query),
   });
+
+  useEffect(() => {
+    if (query.error) {
+      console.error('[useWeeklyReport]', query.error);
+    }
+  }, [query.error]);
+
+  return query;
 }
 
 export function useMonthlyReport(monthStart: string, options?: ReportQueryOptions) {
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.report.monthly(monthStart),
     queryFn: createMonthlyReportQueryFn(monthStart),
-    enabled: options?.enabled ?? true,
+    enabled: (options?.enabled ?? true) && monthStart.length > 0,
     placeholderData: keepPreviousData,
     meta: { maxAttempts: REPORT_POLL_MAX_ATTEMPTS },
     refetchInterval: (query) => getReportPollingInterval(query),
   });
+
+  useEffect(() => {
+    if (query.error) {
+      console.error('[useMonthlyReport]', query.error);
+    }
+  }, [query.error]);
+
+  return query;
 }
 
 interface UseEmotionTrendOptions {
@@ -156,11 +173,19 @@ export function useEmotionTrend({ period, anchorDate, enabled = true }: UseEmoti
       ? (params.week_start ?? '')
       : (params.month_start ?? '');
 
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.report.emotionTrend(params.period, periodStart),
     queryFn: () => fetchEmotionTrend(params),
     enabled: enabled && periodStart.length > 0,
   });
+
+  useEffect(() => {
+    if (query.error) {
+      console.error('[useEmotionTrend]', query.error);
+    }
+  }, [query.error]);
+
+  return query;
 }
 
 interface UseReportOptions {
