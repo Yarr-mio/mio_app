@@ -184,29 +184,33 @@ async function refreshAccessToken(): Promise<string> {
 }
 
 /**
- * 로컬 인증정보 삭제 + 로그인 화면 이동(콜백).
+ * 로컬 인증정보 삭제
  *
  * - accessToken: 메모리에서 제거
  * - refreshToken: Secure Storage에서 제거
- * - 라우팅: `app/_layout.tsx`에서 등록된 `onAuthInvalid` 콜백 실행
  */
-async function clearLocalAuthAndRedirect(): Promise<void> {
+async function clearLocalAuth(): Promise<void> {
   useAuthStore.getState().setAccessToken(null);
   useUserStore.getState().reset();
   await Promise.allSettled([storage.refreshToken.delete(), useUserStore.persist.clearStorage()]);
   queryClient.clear();
+}
 
+/**
+ * 인증 무효화 알림 — `app/_layout.tsx`에서 등록된 `onAuthInvalid` 콜백 실행
+ */
+function notifyAuthInvalid(): void {
   const handler = useAuthStore.getState().onAuthInvalid;
   handler?.();
 }
 
 /**
  * Response interceptor:
- * - 401 + AUTH_TOKEN_EXPIRED → refresh → 원 요청 1회 재시도
+ * - 401 + AUTH_TOKEN_EXPIRED -> refresh -> 원 요청 1회 재시도
  * - 401 + REFRESH_TOKEN_INVALID: 강제 로그아웃 (_skipAuthRefresh 요청 포함)
  *
  * 동시성:
- * - 여러 요청이 동시에 401을 맞아도 refresh는 1번만 수행하도록 `refreshPromise`로 병합한다.
+ * - 여러 요청이 동시에 401을 맞아도 refresh는 1번만 수행하도록 `refreshPromise`로 병합
  */
 apiClient.interceptors.response.use(
   (response) => response,
@@ -222,9 +226,9 @@ apiClient.interceptors.response.use(
     }
 
     if (errorCode === 'REFRESH_TOKEN_INVALID') {
-      // 배경 동기화 등 _skipAuthRedirect 요청은 강제 로그아웃에서 제외
+      await clearLocalAuth();
       if (!originalRequest._skipAuthRedirect) {
-        await clearLocalAuthAndRedirect();
+        notifyAuthInvalid();
       }
       throw error;
     }
@@ -254,17 +258,16 @@ apiClient.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`;
       return await apiClient(originalRequest);
     } catch (refreshError) {
-      // 배경 동기화 등 _skipAuthRedirect 요청은 refresh 실패해도 강제 로그아웃하지 않음
-      if (originalRequest._skipAuthRedirect) {
-        throw refreshError;
-      }
-
       if (!authInvalidationPromise) {
-        authInvalidationPromise = clearLocalAuthAndRedirect().finally(() => {
+        authInvalidationPromise = clearLocalAuth().finally(() => {
           authInvalidationPromise = null;
         });
       }
       await authInvalidationPromise;
+
+      if (!originalRequest._skipAuthRedirect) {
+        notifyAuthInvalid();
+      }
       throw refreshError;
     }
   }
