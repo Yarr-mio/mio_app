@@ -5,6 +5,7 @@ import { AUTH_ROUTES } from '@/constants/routes';
 import { useSignupComplete, useSignupStatus } from '@/features/auth/hooks/useAuth';
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
+import { commitAuthProfileFromStoredSelection } from '@/store/userStore';
 
 const COMPLETE_SUBMIT_ERROR_MESSAGE = '회원가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
 
@@ -26,6 +27,7 @@ export function useSignupCompleteSubmit() {
       const statusResponse = await signupStatus.mutateAsync();
 
       if (statusResponse.data.signup_step === 'COMPLETED') {
+        commitAuthProfileFromStoredSelection();
         router.replace(AUTH_ROUTES.home);
         return;
       }
