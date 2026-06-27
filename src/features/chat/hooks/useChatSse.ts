@@ -1,3 +1,4 @@
+import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
@@ -8,7 +9,9 @@ import type {
   SseDoneData,
   SseSessionMetaData,
 } from '@/types/chat';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
+import { router } from 'expo-router';
 // 글로벌 fetch는 RN에서 response.body.getReader() 스트리밍을 지원하지 않음 — expo/fetch는 WinterCG 호환 구현으로 스트리밍 지원
 import { fetch } from 'expo/fetch';
 import { useEffect, useRef, useState } from 'react';
@@ -42,6 +45,7 @@ export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   // 화면 이탈/언마운트 시 진행 중인 스트림을 취소하기 위해 보관
   const abortRef = useRef<AbortController | null>(null);
+  const queryClient = useQueryClient();
 
   // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
   useEffect(() => {
@@ -170,7 +174,7 @@ export function useChatSse(sessionId: string | null) {
   }
 
   // 동기 검증 실패(SSE_SPEC.md §2-1) — 스트림이 열리기 전에 JSON ErrorResponse로 즉시 응답됨
-  function handleSyncValidationError(status: number) {
+  function handleSyncValidationError(status: number, currentSessionId: string) {
     if (status === 429) {
       Alert.alert(
         '잠시만 기다려 주세요',
@@ -191,9 +195,13 @@ export function useChatSse(sessionId: string | null) {
       return;
     }
     if (status === 410) {
-      // 세션이 이미 종료된 상태 — 서버 상태에 맞춰 클라이언트 세션도 종료 처리
+      // 30분 무응답 자동 종료 등으로 서버가 클라이언트도 모르게 세션을 먼저 끝낸 경우 — 클라이언트
+      // 세션도 종료 처리하고, activeSession 캐시를 무효화한 뒤 곧장 요약 화면으로 이동시켜
+      // chat/index.tsx가 빈 화면에 멈춰버리는 막다른 길(sessionPhase==='ended'만 보고 전환을 가정)을 막는다
       useChatStore.getState().endSession();
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
       Alert.alert('대화가 이미 종료됐어요', '대화 요약을 확인해 주세요.');
+      router.push({ pathname: '/(main)/chat/summary', params: { sessionId: currentSessionId } });
       return;
     }
     if (status === 400) {
@@ -276,7 +284,7 @@ export function useChatSse(sessionId: string | null) {
       const contentType = res.headers.get('content-type') ?? '';
       if (contentType.includes('application/json')) {
         resetStreamingState();
-        handleSyncValidationError(res.status);
+        handleSyncValidationError(res.status, currentSessionId);
         return;
       }
 
