@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
+import { useEffect } from 'react';
+import { AppState, Alert } from 'react-native';
 import { queryKeys } from '@/api/queryKeys';
 import {
   endSession,
@@ -20,6 +21,20 @@ import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readA
 import type { ActiveSessionResponse } from '@/types/chat';
 
 export function useActiveSession() {
+  const queryClient = useQueryClient();
+
+  // 화면을 띄워둔 채 30분 idle 자동종료 등 서버측 비동기 종료가 일어나면 클라이언트는 알 길이 없으므로,
+  // 포그라운드로 돌아올 때마다 강제로 재조회해 생존 여부를 다시 확인한다
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
+      }
+    });
+
+    return () => subscription.remove();
+  }, [queryClient]);
+
   return useQuery({
     queryKey: queryKeys.chat.activeSession(),
     queryFn: fetchActiveSession,
