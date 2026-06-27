@@ -18,6 +18,39 @@ export function setMockStartSessionError(code: MockStartSessionErrorCode | null)
   mockStartSessionErrorCode = code;
 }
 
+// TODO mock 전용: 30분 idle 자동종료로 서버가 먼저 세션을 끝낸 뒤 메시지를 보내는 케이스(SSE 410)
+// 수동 확인용 트리거. 한 번 소비되면 자동으로 해제되어 이후 정상 전송에는 영향을 주지 않음
+export type MockSendMessageErrorCode = 'GONE';
+let mockSendMessageErrorCode: MockSendMessageErrorCode | null = null;
+
+export function setMockSendMessageErrorCode(code: MockSendMessageErrorCode | null): void {
+  mockSendMessageErrorCode = code;
+}
+
+export function consumeMockSendMessageErrorCode(): MockSendMessageErrorCode | null {
+  const code = mockSendMessageErrorCode;
+  mockSendMessageErrorCode = null;
+  return code;
+}
+
+// TODO mock 전용: 자동 종료 이후 사용자가 수동으로 "종료"를 다시 누르는 케이스 수동 확인용 트리거.
+// 한 번 소비되면 자동으로 해제됨
+export type MockEndSessionErrorCode = 'GONE' | 'NOT_FOUND';
+let mockEndSessionErrorCode: MockEndSessionErrorCode | null = null;
+
+export function setMockEndSessionErrorCode(code: MockEndSessionErrorCode | null): void {
+  mockEndSessionErrorCode = code;
+}
+
+// TODO mock 전용: 포그라운드 복귀 시 activeSession 재조회가 "서버가 먼저 세션을 종료함"을 감지하는지
+// 확인하는 트리거. 다음 fetchActiveSession 호출 한 번에만 적용되고 자동 해제됨 — 토글 후 앱을
+// 백그라운드/포그라운드로 전환해 chat/index.tsx의 재진입 리다이렉트가 동작하는지 확인한다
+let mockActiveSessionEndedSessionId: string | null = null;
+
+export function setMockActiveSessionEndedOnNextFetch(sessionId: string | null): void {
+  mockActiveSessionEndedSessionId = sessionId;
+}
+
 // axios.isAxiosError()는 isAxiosError === true 여부만 보므로, 실제 axios 요청 없이도 동일한 모양으로 흉내낼 수 있음
 function mockApiError(status: number, code: string) {
   return { isAxiosError: true, response: { status, data: { error: { code } } } };
@@ -25,6 +58,21 @@ function mockApiError(status: number, code: string) {
 
 export async function fetchActiveSession(): Promise<ActiveSessionResponse> {
   if (USE_MOCK) {
+    if (mockActiveSessionEndedSessionId) {
+      const endedSessionId = mockActiveSessionEndedSessionId;
+      mockActiveSessionEndedSessionId = null;
+      return {
+        session_id: null,
+        character_id: null,
+        status: null,
+        started_at: null,
+        last_message_at: null,
+        message_count: null,
+        last_summary_status: 'pending',
+        last_ended_session_id: endedSessionId,
+      };
+    }
+
     // 활성 세션 없음 — 서버는 세션이 없어도 항상 객체를 반환하고 필드를 null로 채운다
     return {
       session_id: null,
@@ -72,6 +120,13 @@ export async function startSession(
 
 export async function endSession(sessionId: string): Promise<EndSessionResponse> {
   if (USE_MOCK) {
+    if (mockEndSessionErrorCode) {
+      const status = mockEndSessionErrorCode === 'GONE' ? 410 : 404;
+      const code = mockEndSessionErrorCode;
+      mockEndSessionErrorCode = null;
+      throw mockApiError(status, code);
+    }
+
     return {
       session_id: sessionId,
       status: 'ended',
