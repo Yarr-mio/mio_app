@@ -7,13 +7,14 @@ import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignu
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingCharacter } from '@/features/onboarding/hooks/useOnboarding';
-import { useUserStore } from '@/store/userStore';
+import { resolveStoredNickname, useUserStore } from '@/store/userStore';
 
 export function useOnboardingStep4Submit() {
   const router = useRouter();
   const onboardingCharacter = useOnboardingCharacter();
   const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
   const patchOnboardingCharacterId = useUserStore((state) => state.patchOnboardingCharacterId);
+  const setAuthProfile = useUserStore((state) => state.setAuthProfile);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => {
@@ -25,8 +26,19 @@ export function useOnboardingStep4Submit() {
 
     try {
       const response = await onboardingCharacter.mutateAsync({ character_id: characterId });
-      const preferredCharacterId = response.data.preferred_character_id;
+      // 응답의 preferred_character_id 우선, 없으면 요청한 characterId 사용
+      const preferredCharacterId = response.data.preferred_character_id ?? characterId;
       patchOnboardingCharacterId(preferredCharacterId);
+
+      // authProfile.characterId가 useSelectedCharacterId에서 우선순위가 높으므로
+      // 선택한 캐릭터로 함께 갱신해 완료 화면에 정확히 반영되도록
+      const { authProfile, onboardingResult } = useUserStore.getState();
+      const nickname = resolveStoredNickname(authProfile, onboardingResult);
+      setAuthProfile({
+        nickname: nickname ?? '',
+        characterId: preferredCharacterId,
+      });
+
       router.push(AUTH_ROUTES.onboardingComplete);
     } catch (submitError) {
       if (isSignupStepInvalidError(submitError)) {

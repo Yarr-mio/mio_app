@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
 import {
+  deleteAuthWithdraw,
   getAuthNicknameDuplicateCheck,
   getAuthSignupStatus,
   postAuthLogin,
@@ -10,8 +11,10 @@ import {
   postAuthSignupConsent,
   postAuthSignupProfile,
 } from '@/api/endpoints/auth';
+import queryClient from '@/api/queryClient';
+import { syncAuthProfileCharacterFromServer } from '@/features/auth/services/syncAuthProfileCharacter';
 import { useAuthStore } from '@/store/authStore';
-import { useUserStore } from '@/store/userStore';
+import { commitAuthProfileFromStoredSelection, useUserStore } from '@/store/userStore';
 import type {
   AuthLoginResponse,
   AuthNicknameDuplicateCheckResponse,
@@ -21,6 +24,7 @@ import type {
   AuthSignupProfileRequest,
   AuthSignupProfileResponse,
   AuthSignupStatusResponse,
+  AuthWithdrawResponse,
   SocialProvider,
 } from '@/types/auth';
 import { storage } from '@/utils/storage';
@@ -38,6 +42,10 @@ export function useSocialLogin() {
   return useMutation<AuthLoginResponse, Error, SocialLoginInput>({
     mutationFn: (input) => postAuthLogin(input),
     onSuccess: async (res) => {
+      // 이전 계정 잔존 데이터 제거 (authProfile, onboardingResult, 서버 쿼리 캐시)
+      useUserStore.getState().reset();
+      queryClient.clear();
+
       await storage.refreshToken.set(res.data.refresh_token);
       setAccessToken(res.data.access_token);
 
@@ -46,6 +54,7 @@ export function useSocialLogin() {
           nickname: res.data.user.nickname,
           characterId: res.data.user.preferred_character_id,
         });
+        void syncAuthProfileCharacterFromServer();
       }
     },
   });
@@ -86,6 +95,9 @@ export function useSignupStatus() {
 export function useSignupComplete() {
   return useMutation<AuthSignupCompleteResponse, Error, void>({
     mutationFn: () => postAuthSignupComplete(),
+    onSuccess: () => {
+      commitAuthProfileFromStoredSelection();
+    },
   });
 }
 
@@ -105,8 +117,38 @@ export function useLogout() {
           useUserStore.persist.clearStorage(),
         ]);
       } finally {
+        queryClient.clear();
         onAuthInvalid?.();
       }
+    },
+    onError: (error) => {
+      console.error('[useLogout]', error);
+    },
+  });
+}
+
+// 회원 탈퇴
+export function useWithdraw() {
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const onAuthInvalid = useAuthStore((s) => s.onAuthInvalid);
+
+  return useMutation<AuthWithdrawResponse, Error, void>({
+    mutationFn: () => deleteAuthWithdraw(),
+    onSuccess: async () => {
+      setAccessToken(null);
+      useUserStore.getState().reset();
+      try {
+        await Promise.allSettled([
+          storage.refreshToken.delete(),
+          useUserStore.persist.clearStorage(),
+        ]);
+      } finally {
+        queryClient.clear();
+        onAuthInvalid?.();
+      }
+    },
+    onError: (error) => {
+      console.error('[useWithdraw]', error);
     },
   });
 }

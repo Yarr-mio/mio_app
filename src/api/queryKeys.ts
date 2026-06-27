@@ -26,5 +26,8 @@ export const queryKeys = {
   },
   my: {
     profile: () => ['my', 'profile'] as const,
+    characters: () => ['my', 'characters'] as const,
+    character: () => ['my', 'character'] as const,
+    notificationSettings: () => ['my', 'notificationSettings'] as const,
   },
 };

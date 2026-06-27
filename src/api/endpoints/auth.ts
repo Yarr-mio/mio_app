@@ -14,6 +14,7 @@ import type {
   AuthSignupProfileRequest,
   AuthSignupProfileResponse,
   AuthSignupStatusResponse,
+  AuthWithdrawResponse,
   SignupStep,
 } from '@/types/auth';
 import type { ApiMeta } from '@/types/common';
@@ -223,5 +224,18 @@ export async function postAuthLogout(
   }
 
   const { data } = await apiClient.post<AuthLogoutResponse>('/v1/auth/logout', body);
+  return data;
+}
+
+/**
+ * DELETE /v1/auth/withdraw
+ */
+export async function deleteAuthWithdraw(): Promise<AuthWithdrawResponse> {
+  if (USE_MOCK) {
+    setMockSignupStep('SOCIAL_AUTHENTICATED');
+    return { data: { success: true }, meta: createMockMeta() };
+  }
+
+  const { data } = await apiClient.delete<AuthWithdrawResponse>('/v1/auth/withdraw');
   return data;
 }

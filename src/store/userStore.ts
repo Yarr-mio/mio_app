@@ -1,4 +1,7 @@
-import type { OnboardingCharacterId } from '@/constants/characters';
+import {
+  ONBOARDING_DEFAULT_CHARACTER_ID,
+  type OnboardingCharacterId,
+} from '@/constants/characters';
 import {
   ONBOARDING_CONCERN_OPTIONS,
   type OnboardingConcernType,
@@ -41,6 +44,20 @@ const INITIAL_STATE = {
   authProfile: null,
   onboardingResult: null,
 } as const;
+
+function pickTrimmedNickname(nickname: string | null | undefined): string | null {
+  const trimmed = nickname?.trim();
+  return trimmed ? trimmed : null;
+}
+
+export function resolveStoredNickname(
+  authProfile: AuthProfile | null,
+  onboardingResult: UserOnboardingSelectionResult | null
+): string | null {
+  return (
+    pickTrimmedNickname(authProfile?.nickname) ?? pickTrimmedNickname(onboardingResult?.nickname)
+  );
+}
 
 function createEmptyOnboardingResult(): UserOnboardingSelectionResult {
   return {
@@ -181,6 +198,21 @@ export const useUserStore = create<UserState>()(
     }
   )
 );
+
+export function commitAuthProfileFromStoredSelection(): void {
+  const { authProfile, onboardingResult, setAuthProfile } = useUserStore.getState();
+  const nickname = resolveStoredNickname(authProfile, onboardingResult);
+  const characterId = authProfile?.characterId ?? onboardingResult?.characterId;
+
+  if (!nickname && !characterId) {
+    return;
+  }
+
+  setAuthProfile({
+    nickname: nickname ?? '',
+    characterId: characterId ?? ONBOARDING_DEFAULT_CHARACTER_ID,
+  });
+}
 
 export const userStoreUtils = {
   normalizeConcernTypes,

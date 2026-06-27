@@ -4,6 +4,7 @@ import { View, useColorScheme } from 'react-native';
 
 import SplashScreen from '@/features/auth/components/SplashScreen';
 import { useSplashAuth } from '@/features/auth/hooks/useSplashAuth';
+import { useSyncAuthProfileOnForeground } from '@/features/auth/hooks/useSyncAuthProfileOnForeground';
 import { useAuthStore } from '@/store/authStore';
 
 export function RootAppContent() {
@@ -11,6 +12,8 @@ export function RootAppContent() {
   const splashDone = useAuthStore((s) => s.splashDone);
   const setSplashDone = useAuthStore((s) => s.setSplashDone);
   const splashAuth = useSplashAuth();
+
+  useSyncAuthProfileOnForeground();
 
   const handleSplashFinish = async () => {
     await splashAuth.handleFinish();
