@@ -156,6 +156,23 @@ export async function fetchSessionSummary(sessionId: string): Promise<SessionSum
       avg_emotion_score: 45,
       bias_types_detected: '재앙화, 흑백논리',
       cbt_intervened: true,
+      dominant_emotion: 'anxious',
+      todos: [
+        {
+          todo_id: 'mock-todo-1',
+          action_text: '잠들기 전 5분, 오늘 잘한 일 하나 적어보기',
+          category: '인지_재구성',
+          difficulty: 2,
+          estimated_minutes: 5,
+        },
+        {
+          todo_id: 'mock-todo-2',
+          action_text: '점심시간에 10분 산책하기',
+          category: '행동_활성화',
+          difficulty: 1,
+          estimated_minutes: 10,
+        },
+      ],
     };
   }
 

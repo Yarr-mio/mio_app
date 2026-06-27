@@ -1,4 +1,5 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
+import type { EmotionType } from '@/types/checkin';
 
 export type ChatMessageRole = 'user' | 'ai';
 export type ChatMessageType = 'normal' | 'socratic' | 'crisis';
@@ -94,6 +95,16 @@ export interface EndSessionResponse {
   summary_status: SummaryStatus;
 }
 
+// GET /v1/todos의 TodoResponse와 다른 축약형 — status/created_at/character_comment 없음 (읽기 전용 표시만 가능)
+export interface SessionTodoItem {
+  todo_id: string;
+  action_text: string;
+  // 카테고리(심리_안정/인지_재구성/행동_활성화) 포맷 미확정 — bias_types_detected와 동일하게 raw 문자열 그대로 표시
+  category: string;
+  difficulty: number;
+  estimated_minutes: number;
+}
+
 export interface SessionSummaryResponse {
   session_id: string;
   summary_status: SummaryStatus;
@@ -105,6 +116,10 @@ export interface SessionSummaryResponse {
   // 인지왜곡 유형 — 구분자 포맷 불명 (CHAT_BACKEND_QUESTIONS §8 확인 전까지 raw 문자열 그대로 표시)
   bias_types_detected: string | null;
   cbt_intervened: boolean | null;
+  // pending이거나 ExtractorLLM이 유효한 코드를 못 뽑은 경우 null (둘 다 정상)
+  dominant_emotion: EmotionType | null;
+  // pending에도 항상 [] — null은 절대 안 옴
+  todos: SessionTodoItem[];
 }
 
 export interface CbtEmotionScoreResponse {

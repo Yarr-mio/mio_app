@@ -5,7 +5,9 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { PrimaryColors } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
+import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
+import { EMOTION_META } from '@/constants/emotions';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -129,19 +131,28 @@ export function SessionSummary() {
             오늘 대화 요약
           </ThemedText>
 
-          {summary.avg_emotion_score !== null && (
+          {(summary.avg_emotion_score !== null || summary.dominant_emotion !== null) && (
             <SectionCard title="주요 감정">
-              <View className="flex-row items-end gap-2">
-                <ThemedText type="title" className="text-primary">
-                  {summary.avg_emotion_score}
-                </ThemedText>
-                <ThemedText type="small" className="text-chat-subtext mb-1">
-                  / 100
-                </ThemedText>
-                {percentChange !== null && (
-                  <ThemedText type="small" className="text-chat-subtext mb-1 ml-auto">
-                    {percentChange > 0 ? `+${percentChange}%` : `${percentChange}%`}
+              <View className="gap-2">
+                {summary.dominant_emotion !== null && (
+                  <ThemedText type="smallBold" className="text-fg-sub">
+                    {EMOTION_META[summary.dominant_emotion].label}
                   </ThemedText>
+                )}
+                {summary.avg_emotion_score !== null && (
+                  <View className="flex-row items-end gap-2">
+                    <ThemedText type="title" className="text-primary">
+                      {summary.avg_emotion_score}
+                    </ThemedText>
+                    <ThemedText type="small" className="text-chat-subtext mb-1">
+                      / 100
+                    </ThemedText>
+                    {percentChange !== null && (
+                      <ThemedText type="small" className="text-chat-subtext mb-1 ml-auto">
+                        {percentChange > 0 ? `+${percentChange}%` : `${percentChange}%`}
+                      </ThemedText>
+                    )}
+                  </View>
                 )}
               </View>
             </SectionCard>
@@ -167,6 +178,12 @@ export function SessionSummary() {
                   </ThemedText>
                 )}
               </View>
+            </SectionCard>
+          )}
+
+          {summary.todos.length > 0 && (
+            <SectionCard title="추천 Todo">
+              <SessionTodoList todos={summary.todos} />
             </SectionCard>
           )}
 
