@@ -1,7 +1,6 @@
-import { consumeMockSendMessageErrorCode } from '@/api/endpoints/chat';
 import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS, USE_MOCK } from '@/constants/config';
+import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import type {
   SseCrisisData,
@@ -260,14 +259,6 @@ export function useChatSse(sessionId: string | null) {
   }
 
   async function performSendMessage(currentSessionId: string, content: string) {
-    // TODO mock 전용: 30분 자동종료(SSE 410) 경로를 실제 대기 없이 즉시 확인하기 위한 트리거 소비.
-    // 실제 fetch 없이 동기 검증 실패와 동일한 분기를 그대로 태운다
-    if (USE_MOCK && consumeMockSendMessageErrorCode() === 'GONE') {
-      resetStreamingState();
-      handleSyncValidationError(410, currentSessionId);
-      return;
-    }
-
     const controller = new AbortController();
     abortRef.current = controller;
     let timedOut = false;

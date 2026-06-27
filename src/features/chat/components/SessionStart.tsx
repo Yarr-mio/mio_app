@@ -4,50 +4,9 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { getOnboardingCharacterById } from '@/constants/characters';
-import { setMockStartSessionError } from '@/api/endpoints/chat';
-import { USE_MOCK } from '@/constants/config';
 import { useStartChatSession } from '@/features/chat/hooks/useChat';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
-import type { OnboardingCharacterId } from '@/constants/characters';
-import { Pressable, View } from 'react-native';
-
-// TODO mock 전용: 10번 작업(세션 시작 에러 분기) 수동 확인용 임시 버튼. 11번 작업(실제 SSE 연동)에서 제거
-function MockStartSessionErrorButtons({
-  characterId,
-  onStart,
-}: {
-  characterId: OnboardingCharacterId;
-  onStart: (characterId: OnboardingCharacterId) => void;
-}) {
-  if (!USE_MOCK) return null;
-
-  const triggers = [
-    { label: '온보딩 필요', code: 'ONBOARDING_REQUIRED' as const },
-    { label: '이미 진행중', code: 'SESSION_ALREADY_ACTIVE' as const },
-    { label: '기타 에러', code: 'OTHER' as const },
-  ];
-
-  return (
-    <View className="flex-row justify-center gap-2">
-      {triggers.map((trigger) => (
-        <Pressable
-          key={trigger.code}
-          onPress={() => {
-            setMockStartSessionError(trigger.code);
-            onStart(characterId);
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={`${trigger.label} 에러 테스트`}
-          className="px-3 py-1.5 rounded-xl border border-line-md"
-        >
-          <ThemedText type="small" className="text-fg-dim">
-            {trigger.label}
-          </ThemedText>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
+import { View } from 'react-native';
 
 export function SessionStart() {
   const characterId = useSelectedCharacterId();
@@ -74,15 +33,11 @@ export function SessionStart() {
           </ThemedText>
         </View>
         <View className="px-8 pb-6 gap-3">
-          <MockStartSessionErrorButtons characterId={characterId} onStart={startSession} />
           <Button
             variant="primary"
             size="lg"
             loading={isPending}
-            onPress={() => {
-              setMockStartSessionError(null);
-              startSession(characterId);
-            }}
+            onPress={() => startSession(characterId)}
           >
             대화 시작하기
           </Button>
