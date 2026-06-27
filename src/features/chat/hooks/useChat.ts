@@ -89,17 +89,31 @@ export function useStartChatSession() {
 export function useEndChatSession() {
   const queryClient = useQueryClient();
 
+  function handleSessionEnded() {
+    useChatStore.getState().endSession();
+    // 종료된 세션이 activeSession 캐시(staleTime 5분)에 남아있으면, 그 안에 chat/index.tsx가 새로
+    // 마운트될 때 이미 끝난 세션을 다시 활성 세션으로 착각해 startSession()을 재호출할 수 있다
+    // (chat-trouble-shoot/08 원인 E)
+    queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
+    // SessionEnd의 dismissAll()이 스택 루트(index)로 돌아간다는 전제를 깨지 않기 위해 push 유지 —
+    // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당
+    router.push('/(main)/chat/summary');
+  }
+
   return useMutation({
     mutationFn: (sessionId: string) => endSession(sessionId),
-    onSuccess: () => {
-      useChatStore.getState().endSession();
-      // 종료된 세션이 activeSession 캐시(staleTime 5분)에 남아있으면, 그 안에 chat/index.tsx가 새로
-      // 마운트될 때 이미 끝난 세션을 다시 활성 세션으로 착각해 startSession()을 재호출할 수 있다
-      // (chat-trouble-shoot/08 원인 E)
-      queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
-      // SessionEnd의 dismissAll()이 스택 루트(index)로 돌아간다는 전제를 깨지 않기 위해 push 유지 —
-      // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당
-      router.push('/(main)/chat/summary');
+    onSuccess: handleSessionEnded,
+    onError: (error) => {
+      const status = readApiHttpStatus(error);
+
+      // 30분 무응답 자동 종료 등으로 서버가 이미 세션을 끝낸 뒤 사용자가 수동 종료를 시도한 경우 —
+      // 성공과 동일하게 처리해 동일한 요약 화면 이동 로직을 타게 한다
+      if (status === HTTP_STATUS.GONE || status === HTTP_STATUS.NOT_FOUND) {
+        handleSessionEnded();
+        return;
+      }
+
+      Alert.alert('종료 실패', '잠시 후 다시 시도해 주세요.');
     },
   });
 }
