@@ -13,6 +13,8 @@ import {
 } from '@/api/endpoints/auth';
 import queryClient from '@/api/queryClient';
 import { syncAuthProfileCharacterFromServer } from '@/features/auth/services/syncAuthProfileCharacter';
+import { useUnregisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
+import { getNativeDevicePushTokenAsync, getRememberedPushToken } from '@/notifications/fcm';
 import { useAuthStore } from '@/store/authStore';
 import { commitAuthProfileFromStoredSelection, useUserStore } from '@/store/userStore';
 import type {
@@ -105,10 +107,21 @@ export function useSignupComplete() {
 export function useLogout() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
   const onAuthInvalid = useAuthStore((s) => s.onAuthInvalid);
+  const { mutateAsync: unregisterDeviceToken } = useUnregisterNotificationDevice();
 
   return useMutation({
     mutationFn: () => postAuthLogout(),
     onSettled: async () => {
+      const token =
+        (await getRememberedPushToken()) ??
+        (await getNativeDevicePushTokenAsync().catch(() => null));
+
+      if (token) {
+        await unregisterDeviceToken({ token }).catch((error) => {
+          console.error('[useLogout:unregisterNotificationDevice]', error);
+        });
+      }
+
       setAccessToken(null);
       useUserStore.getState().reset();
       try {

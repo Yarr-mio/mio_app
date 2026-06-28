@@ -1,24 +1,73 @@
+import { NotificationIcon } from '@/assets/icons';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { AppModal } from '@/components/ui/AppModal';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
-import { OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
+import { NotificationModalColors, NOTIFICATION_MODAL } from '@/constants/notifications';
+import { AUTH_ROUTES } from '@/constants/routes';
+import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
+import { useRegisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
 import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import { getNativeDevicePushTokenAsync } from '@/notifications/fcm';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function OnboardingCompleteScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const characterId = useSelectedCharacterId();
   const character = getOnboardingCharacterById(characterId);
-  const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit();
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
+  const [signupCompleted, setSignupCompleted] = useState(false);
+  const [notificationPending, setNotificationPending] = useState(false);
+  const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
+  const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit({
+    onSuccess: () => {
+      setSignupCompleted(true);
+      setNotificationModalVisible(true);
+    },
+  });
 
   const handleStart = () => {
+    if (signupCompleted) {
+      router.replace(AUTH_ROUTES.home);
+      return;
+    }
+
     clearError();
     void submit();
+  };
+
+  const handleNotificationConfirm = () => {
+    if (notificationPending) {
+      return;
+    }
+
+    setNotificationPending(true);
+    void getNativeDevicePushTokenAsync({ requestPermission: true })
+      .then(async (token) => {
+        if (token) {
+          await registerDeviceToken({ token });
+        }
+      })
+      .catch((notificationError) => {
+        console.error('[OnboardingCompleteNotification]', notificationError);
+      })
+      .finally(() => {
+        setNotificationPending(false);
+        setNotificationModalVisible(false);
+        router.replace(AUTH_ROUTES.home);
+      });
+  };
+
+  const handleNotificationLater = () => {
+    setNotificationModalVisible(false);
   };
 
   return (
@@ -69,6 +118,26 @@ export function OnboardingCompleteScreen() {
           </Button>
         </View>
       </View>
+
+      <AppModal
+        visible={notificationModalVisible}
+        onClose={handleNotificationLater}
+        icon={
+          <NotificationIcon
+            width={AppModalLayout.iconSize}
+            height={AppModalLayout.iconSize}
+            color={NotificationModalColors.icon}
+          />
+        }
+        iconBgColor={NotificationModalColors.iconBg}
+        iconBorderColor={NotificationModalColors.iconBorder}
+        title={NOTIFICATION_MODAL.title(character.name)}
+        description={NOTIFICATION_MODAL.description(character.name)}
+        confirmLabel={NOTIFICATION_MODAL.confirmLabel}
+        onConfirm={handleNotificationConfirm}
+        cancelLabel={NOTIFICATION_MODAL.cancelLabel}
+        onCancel={handleNotificationLater}
+      />
     </View>
   );
 }
