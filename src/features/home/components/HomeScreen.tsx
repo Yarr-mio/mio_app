@@ -6,6 +6,7 @@ import { HomeCardShell } from '@/components/ui/HomeCardShell';
 import { getPartnerByKey } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
 import { HOME_TITLES } from '@/constants/home';
+import { FALLBACK_NICKNAME } from '@/constants/user';
 import { HOME_ROUTES } from '@/constants/routes';
 import {
   HomeActionClasses,
@@ -37,7 +38,7 @@ function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undef
 }
 
 export function HomeScreen() {
-  const nickname = useSelectedNickname() ?? '친구';
+  const nickname = useSelectedNickname() ?? FALLBACK_NICKNAME;
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
 
