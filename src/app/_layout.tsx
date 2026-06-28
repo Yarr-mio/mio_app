@@ -10,6 +10,7 @@ import queryClient from '@/api/queryClient';
 import { NANUM_MYEONGJO_FONTS, NOTO_SANS_KR_FONTS } from '@/constants/fonts';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { RootAppContent } from '@/features/auth/components/RootAppContent';
+import { NotificationDeviceBootstrap } from '@/notifications/NotificationDeviceBootstrap';
 import { useAuthStore } from '@/store/authStore';
 
 ExpoSplashScreen.preventAutoHideAsync();
@@ -36,6 +37,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <NotificationDeviceBootstrap />
       <RootAppContent />
     </QueryClientProvider>
   );
