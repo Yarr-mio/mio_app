@@ -11,6 +11,7 @@ export { default as HomeTrendUpIcon } from './home-trend-up.svg';
 export { default as HomeIcon } from './home.svg';
 export { default as LogoutIcon } from './logout.svg';
 export { default as MessageTextIcon } from './message-text.svg';
+export { default as NotificationIcon } from './notification.svg';
 export { default as DataChatIcon } from './report/data-chat.svg';
 export { default as DataCheckinIcon } from './report/data-checkin.svg';
 export { default as DataCreationTimeIcon } from './report/data-creation-time.svg';
