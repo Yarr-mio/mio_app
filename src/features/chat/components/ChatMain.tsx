@@ -26,21 +26,47 @@ export function ChatMain() {
   // 그 사이에는 TypingIndicator(isAiTyping)만 보여준다
   const visibleMessages = messages.filter((m) => !(m.role === 'ai' && m.content === ''));
 
+  const setPendingEmotionScore = useChatStore((s) => s.setPendingEmotionScore);
+
   const { sendMessage, isStreaming } = useChatSse(sessionId);
   const { mutate: endChatSession } = useEndChatSession();
-  const { mutate: submitEmotionScore } = useSubmitCbtEmotionScore();
+  const { mutate: submitEmotionScore, mutateAsync: submitEmotionScoreAsync } =
+    useSubmitCbtEmotionScore();
+
+  // 감정 점수 패널이 떠 있는 상태로 세션이 끝나면(백그라운드 전환, 종료 버튼) 마지막 슬라이더 값을
+  // 먼저 제출해 데이터 손실을 막는다 — 제출이 실패해도 세션 종료 자체는 막지 않음
+  async function endSessionWithPendingEmotionScore(currentSessionId: string) {
+    if (emotionScoringActive && emotionScoreTargetId) {
+      try {
+        await submitEmotionScoreAsync({
+          reconstructionId: emotionScoreTargetId,
+          score: pendingEmotionScore,
+        });
+      } catch {
+        // 에러 알림/패널 정리는 useSubmitCbtEmotionScore의 onError가 처리
+      }
+    }
+    endChatSession(currentSessionId);
+  }
 
   // 앱이 백그라운드로 전환되면(홈으로 나가기, 강제 종료 직전 단계 등) 대화 화면 이탈로 간주해 세션 종료 —
   // 'inactive'는 제어 센터/알림 등 일시적 전환이라 제외, 완전한 백그라운드 진입만 트리거로 사용
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'background' && sessionId) {
-        endChatSession(sessionId);
+        void endSessionWithPendingEmotionScore(sessionId);
       }
     });
 
     return () => subscription.remove();
-  }, [sessionId, endChatSession]);
+  }, [
+    sessionId,
+    emotionScoringActive,
+    emotionScoreTargetId,
+    pendingEmotionScore,
+    submitEmotionScoreAsync,
+    endChatSession,
+  ]);
 
   function handleConfirmEmotionScore(score: number) {
     if (!emotionScoreTargetId) return;
@@ -53,7 +79,7 @@ export function ChatMain() {
       <ScreenContainer className="flex-1 bg-transparent">
         <ChatHeader
           characterId={characterId}
-          onEnd={() => sessionId && endChatSession(sessionId)}
+          onEnd={() => sessionId && void endSessionWithPendingEmotionScore(sessionId)}
         />
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -77,6 +103,7 @@ export function ChatMain() {
             <EmotionScorePanel
               initialScore={pendingEmotionScore}
               onConfirm={handleConfirmEmotionScore}
+              onScoreChange={setPendingEmotionScore}
             />
           ) : (
             <ChatInputBar onSend={sendMessage} disabled={isStreaming} />
