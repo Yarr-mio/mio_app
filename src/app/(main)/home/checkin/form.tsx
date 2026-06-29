@@ -1,8 +1,8 @@
 import { BackHeader } from '@/components/layout/BackHeader';
 import { Button } from '@/components/ui/Button';
+import { EmotionIntensitySlider } from '@/components/ui/EmotionIntensitySlider';
 import { DiaryInput } from '@/features/checkin/components/DiaryInput';
 import { EmotionSelector } from '@/features/checkin/components/EmotionSelector';
-import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useSubmitCheckin, useUpdateCheckin } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
 import { formatCheckinFullDate, getCurrentTimeOfDay } from '@/utils/date';
@@ -72,7 +72,7 @@ export default function CheckinFormScreen() {
         <View className="gap-2">
           <Text className="text-white font-medium">감정의 강도는 어떤가요?</Text>
           <Text className="text-fg-muted text-sm">슬라이더를 움직여 강도를 조절해 보세요</Text>
-          <IntensitySlider value={conditionScore} onChange={setConditionScore} />
+          <EmotionIntensitySlider value={conditionScore} onChange={setConditionScore} />
         </View>
 
         <View className="gap-2">
