@@ -1,7 +1,5 @@
-import { ChevronRightIcon } from '@/assets/icons';
 import { BackHeader } from '@/components/layout/BackHeader';
 import { EMOTION_META } from '@/constants/emotions';
-import { FgColors } from '@/constants/theme';
 import { DiaryInput } from '@/features/checkin/components/DiaryInput';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useCheckinDetail } from '@/features/checkin/hooks/useCheckin';
@@ -58,17 +56,6 @@ export default function CheckinDetailScreen() {
             <DiaryInput value={record.memo} editable={false} />
           </View>
         ) : null}
-
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-white font-semibold">TO DO 달성</Text>
-            <View className="flex-row items-center gap-0.5">
-              <Text className="text-fg-faint text-sm">자세히</Text>
-              <ChevronRightIcon width={14} height={14} color={FgColors.faint} />
-            </View>
-          </View>
-          <Text className="text-fg-ghost text-sm text-center py-6">오늘의 할 일이 없어요</Text>
-        </View>
 
         {record.ai_response !== null && (
           <View className="bg-surface rounded-2xl p-4 border border-line gap-2">
