@@ -3,18 +3,18 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { EMOTION_META } from '@/constants/emotions';
 import { PrimaryColors } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
 import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
-import { EMOTION_META } from '@/constants/emotions';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import type { SessionSummaryResponse } from '@/types/chat';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
-import type { SessionSummaryResponse } from '@/types/chat';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -182,7 +182,7 @@ export function SessionSummary() {
           )}
 
           {summary.todos.length > 0 && (
-            <SectionCard title="추천 Todo">
+            <SectionCard title="추천 행동">
               <SessionTodoList todos={summary.todos} />
             </SectionCard>
           )}
