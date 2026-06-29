@@ -1,8 +1,8 @@
 import { BackHeader } from '@/components/layout/BackHeader';
 import { HeaderActionButton } from '@/components/layout/HeaderActionButton';
+import { EmotionIntensitySlider } from '@/components/ui/EmotionIntensitySlider';
 import { EMOTION_META } from '@/constants/emotions';
 import { DiaryInput } from '@/features/checkin/components/DiaryInput';
-import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useCheckinDetail } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
 import { formatCheckinShortDate, formatCheckinTime, isToday } from '@/utils/date';
@@ -54,7 +54,7 @@ export default function CheckinDetailScreen() {
           <Image source={meta.image} style={{ width: 96, height: 96 }} contentFit="contain" />
           <Text className="text-white text-2xl font-bold">{meta.label}</Text>
           <View className="w-full">
-            <IntensitySlider value={record.condition_score} disabled />
+            <EmotionIntensitySlider value={record.condition_score} disabled />
           </View>
           <Text className="text-fg-faint text-sm">{formatCheckinTime(record.created_at)}</Text>
         </View>
