@@ -5,17 +5,9 @@ import { EmotionSelector } from '@/features/checkin/components/EmotionSelector';
 import { IntensitySlider } from '@/features/checkin/components/IntensitySlider';
 import { useSubmitCheckin } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
-import type { TimeOfDay } from '@/types/checkin';
-import { formatCheckinFullDate } from '@/utils/date';
+import { formatCheckinFullDate, getCurrentTimeOfDay } from '@/utils/date';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-function getCurrentTimeOfDay(): TimeOfDay {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 18) return 'afternoon';
-  return 'evening';
-}
 
 export default function CheckinFormScreen() {
   const { bottom } = useSafeAreaInsets();
