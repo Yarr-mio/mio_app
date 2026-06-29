@@ -50,14 +50,18 @@ export default function CheckinDetailScreen() {
           <Text className="text-fg-faint text-sm">{formatCheckinTime(record.created_at)}</Text>
         </View>
 
-        {record.memo ? (
-          <View className="gap-3">
-            <Text className="text-white font-semibold">오늘의 메모</Text>
+        <View className="gap-3">
+          <Text className="text-white font-semibold">오늘의 메모</Text>
+          {record.memo ? (
             <DiaryInput value={record.memo} editable={false} />
-          </View>
-        ) : null}
+          ) : (
+            <View className="bg-surface rounded-2xl p-4 border border-line min-h-[55px] justify-center">
+              <Text className="text-fg-muted text-sm">등록한 메모가 없어요</Text>
+            </View>
+          )}
+        </View>
 
-        {record.ai_response !== null && (
+        {record.ai_response?.trim() && (
           <View className="bg-surface rounded-2xl p-4 border border-line gap-2">
             <Text className="text-fg-dim text-sm font-medium">AI 응답</Text>
             <Text className="text-white text-sm leading-relaxed">{record.ai_response}</Text>
