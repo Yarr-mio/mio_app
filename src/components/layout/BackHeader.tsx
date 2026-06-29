@@ -42,11 +42,7 @@ export function BackHeader({ title, rightAction }: BackHeaderProps) {
           </ThemedText>
         </View>
 
-        {rightAction && (
-          <View className={cn(HeaderClasses.backButton, 'z-10 items-center justify-center')}>
-            {rightAction}
-          </View>
-        )}
+        {rightAction && <View className="z-10 items-center justify-center">{rightAction}</View>}
       </View>
     </View>
   );

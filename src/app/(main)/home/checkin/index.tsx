@@ -2,6 +2,7 @@ import { BackHeader } from '@/components/layout/BackHeader';
 import { Button } from '@/components/ui/Button';
 import { CheckinHistoryCard } from '@/features/checkin/components/CheckinHistoryCard';
 import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
+import { useCheckinStore } from '@/features/checkin/store/checkinStore';
 import type { CheckinRecord } from '@/types/checkin';
 import { getCurrentTimeOfDay } from '@/utils/date';
 import { router } from 'expo-router';
@@ -39,7 +40,13 @@ export default function CheckinListScreen() {
                 <Text className="text-fg-muted text-sm mb-5 text-center">
                   매일 체크인하면 나의 감정 패턴을{'\n'}더 잘 이해할 수 있어요
                 </Text>
-                <Button size="md" onPress={() => router.push('/(main)/home/checkin/form')}>
+                <Button
+                  size="md"
+                  onPress={() => {
+                    useCheckinStore.getState().reset();
+                    router.push('/(main)/home/checkin/form');
+                  }}
+                >
                   지금 체크인하기
                 </Button>
               </View>

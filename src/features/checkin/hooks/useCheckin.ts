@@ -111,6 +111,7 @@ export function useUpdateCheckin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.today() });
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.all() });
+      useCheckinStore.getState().reset();
       router.back();
     },
     onError: (error) => {
