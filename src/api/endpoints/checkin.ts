@@ -80,6 +80,7 @@ export async function updateCheckin(
     emotion_type: body.emotion_type ?? 'calm',
     memo: body.memo,
     condition_score: body.condition_score ?? 3,
+    ai_response: null,
     updated_at: new Date().toISOString(),
   };
 }
