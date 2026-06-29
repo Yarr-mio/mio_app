@@ -109,6 +109,7 @@ export function useEndChatSession() {
       // 30분 무응답 자동 종료 등으로 서버가 이미 세션을 끝낸 뒤 사용자가 수동 종료를 시도한 경우 —
       // 성공과 동일하게 처리해 동일한 요약 화면 이동 로직을 타게 한다
       if (status === HTTP_STATUS.GONE || status === HTTP_STATUS.NOT_FOUND) {
+        console.log('[CHAT] session already ended by server:', { status });
         handleSessionEnded();
         return;
       }

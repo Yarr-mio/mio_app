@@ -198,6 +198,7 @@ export function useChatSse(sessionId: string | null) {
       // 30분 무응답 자동 종료 등으로 서버가 클라이언트도 모르게 세션을 먼저 끝낸 경우 — 클라이언트
       // 세션도 종료 처리하고, activeSession 캐시를 무효화한 뒤 곧장 요약 화면으로 이동시켜
       // chat/index.tsx가 빈 화면에 멈춰버리는 막다른 길(sessionPhase==='ended'만 보고 전환을 가정)을 막는다
+      console.log('[CHAT] session auto-ended by server (410):', { sessionId: currentSessionId });
       useChatStore.getState().endSession();
       queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
       Alert.alert('대화가 이미 종료됐어요', '대화 요약을 확인해 주세요.');

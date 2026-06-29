@@ -27,6 +27,7 @@ export async function endSession(sessionId: string): Promise<EndSessionResponse>
   const { data } = await apiClient.post<ApiResponse<EndSessionResponse>>(
     `/v1/sessions/${sessionId}/end`
   );
+  console.log('[CHAT] end session response:', JSON.stringify(data.data));
   return data.data;
 }
 
@@ -34,6 +35,7 @@ export async function fetchSessionSummary(sessionId: string): Promise<SessionSum
   const { data } = await apiClient.get<ApiResponse<SessionSummaryResponse>>(
     `/v1/sessions/${sessionId}/summary`
   );
+  console.log('[CHAT] session summary response:', JSON.stringify(data.data));
   return data.data;
 }
 
