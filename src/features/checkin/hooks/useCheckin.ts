@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { Alert } from 'react-native';
 import {
   fetchCheckinDetail,
   fetchCheckinList,
@@ -14,8 +15,14 @@ import {
   updateCheckin,
 } from '@/api/endpoints/checkin';
 import { queryKeys } from '@/api/queryKeys';
+import { HTTP_STATUS } from '@/constants/config';
+import { AUTH_ROUTES } from '@/constants/routes';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
+import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type { CheckinRecord, SubmitCheckinBody, UpdateCheckinBody } from '@/types/checkin';
+
+const CHECKIN_SUBMIT_ERROR_MESSAGE = '체크인 등록에 실패했어요. 다시 시도해 주세요.';
+const CHECKIN_UPDATE_ERROR_MESSAGE = '체크인 수정에 실패했어요. 다시 시도해 주세요.';
 
 export function useCheckinToday() {
   return useQuery({
@@ -69,6 +76,29 @@ export function useSubmitCheckin() {
       useCheckinStore.getState().reset();
       router.back();
     },
+    onError: (error) => {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.CONFLICT && errorCode === 'ALREADY_CHECKED_IN') {
+        Alert.alert('이미 체크인했어요', '같은 시간대에는 한 번만 체크인할 수 있어요.');
+        router.back();
+        return;
+      }
+
+      if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'ONBOARDING_REQUIRED') {
+        Alert.alert('온보딩이 필요해요', '체크인을 시작하기 전에 온보딩을 완료해 주세요.');
+        router.replace(AUTH_ROUTES.onboardingStep1);
+        return;
+      }
+
+      if (status === HTTP_STATUS.TOO_MANY_REQUESTS) {
+        Alert.alert('잠시 후 다시 시도해 주세요', '체크인 요청이 너무 많아요.');
+        return;
+      }
+
+      Alert.alert(CHECKIN_SUBMIT_ERROR_MESSAGE);
+    },
   });
 }
 
@@ -82,6 +112,23 @@ export function useUpdateCheckin() {
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.today() });
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.all() });
       router.back();
+    },
+    onError: (error) => {
+      const status = readApiHttpStatus(error);
+      const errorCode = readApiErrorCode(error);
+
+      if (status === HTTP_STATUS.UNPROCESSABLE_ENTITY && errorCode === 'BUSINESS_RULE_VIOLATION') {
+        Alert.alert('수정할 수 없어요', '당일 작성한 기록만 수정할 수 있어요.');
+        return;
+      }
+
+      if (status === HTTP_STATUS.FORBIDDEN || status === HTTP_STATUS.NOT_FOUND) {
+        Alert.alert('기록을 찾을 수 없어요', '수정할 수 없는 체크인이에요.');
+        router.back();
+        return;
+      }
+
+      Alert.alert(CHECKIN_UPDATE_ERROR_MESSAGE);
     },
   });
 }
