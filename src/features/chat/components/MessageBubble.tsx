@@ -5,7 +5,7 @@ import type { OnboardingCharacterId } from '@/constants/characters';
 import { PrimaryColors } from '@/constants/theme';
 import type { ChatMessage } from '@/types/chat';
 import { formatCheckinTime } from '@/utils/date';
-import { Linking, Pressable, View } from 'react-native';
+import { Alert, Linking, Pressable, View } from 'react-native';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -77,6 +77,26 @@ function SocraticBubble({ message, characterId, characterName }: MessageBubblePr
   );
 }
 
+async function handleCallResource(number: string) {
+  const url = `tel:${number}`;
+  try {
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert(
+        '전화 연결 실패',
+        `이 기기에서는 전화를 걸 수 없어요. ${number}로 직접 연락해 주세요.`
+      );
+      return;
+    }
+    await Linking.openURL(url);
+  } catch {
+    Alert.alert(
+      '전화 연결 실패',
+      `이 기기에서는 전화를 걸 수 없어요. ${number}로 직접 연락해 주세요.`
+    );
+  }
+}
+
 function CrisisBubble({
   message,
   characterId,
@@ -103,7 +123,7 @@ function CrisisBubble({
                   </ThemedText>
                 </View>
                 <Pressable
-                  onPress={() => Linking.openURL(`tel:${resource.number}`)}
+                  onPress={() => handleCallResource(resource.number)}
                   className="bg-primary rounded-xl px-4 py-2"
                 >
                   <ThemedText type="smallBold" className="text-fg font-medium">
