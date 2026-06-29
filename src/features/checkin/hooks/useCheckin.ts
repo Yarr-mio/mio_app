@@ -24,11 +24,10 @@ export function useCheckinToday() {
   });
 }
 
-export function useInfiniteCheckinList(from?: string, to?: string) {
+export function useInfiniteCheckinList() {
   return useInfiniteQuery({
-    queryKey: queryKeys.checkin.list(from, to),
-    queryFn: ({ pageParam }) =>
-      fetchCheckinList({ cursor: pageParam as string | undefined, from, to }),
+    queryKey: queryKeys.checkin.list(),
+    queryFn: ({ pageParam }) => fetchCheckinList({ cursor: pageParam as string | undefined }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
   });
