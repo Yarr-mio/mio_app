@@ -113,11 +113,11 @@ export function formatInsufficientDataSubtitle(
 }
 
 export const DISTORTION_TYPE_LABELS: Record<DistortionType, string> = {
-  overgeneralization: '일반화',
+  overgeneralization: '과일반화',
   catastrophizing: '파국화',
-  mind_reading: '마음 읽기',
-  all_or_nothing: '흑백 사고',
-  self_blame: '자기 비난',
+  mind_reading: '독심술',
+  all_or_nothing: '이분법적 사고',
+  self_blame: '개인화',
   emotional_reasoning: '감정적 추론',
 };
 

@@ -1,18 +1,22 @@
-import { ThemedText } from '@/components/themed/ThemedText';
+import { Label } from '@/components/ui/Label';
+import { DISTORTION_TYPE_LABELS } from '@/constants/report';
+import type { DistortionType } from '@/types/report';
+import { View } from 'react-native';
 
 interface BiasTypesDisplayProps {
-  biasTypesDetected: string[] | null;
+  biasTypesDetected: DistortionType[] | null;
 }
 
-// 칩(chip) 리스트 등 별도 디자인이 정해지기 전까지는 콤마로 이어 표시한다.
 export function BiasTypesDisplay({ biasTypesDetected }: BiasTypesDisplayProps) {
   if (!biasTypesDetected || biasTypesDetected.length === 0) {
     return null;
   }
 
   return (
-    <ThemedText type="default" className="text-fg-sub">
-      {biasTypesDetected.join(', ')}
-    </ThemedText>
+    <View className="flex-row flex-wrap gap-2">
+      {biasTypesDetected.map((type) => (
+        <Label key={type} label={DISTORTION_TYPE_LABELS[type]} />
+      ))}
+    </View>
   );
 }

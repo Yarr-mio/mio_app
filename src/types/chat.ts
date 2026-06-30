@@ -1,5 +1,6 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
 import type { EmotionType } from '@/types/checkin';
+import type { DistortionType } from '@/types/report';
 
 export type ChatMessageRole = 'user' | 'ai';
 export type ChatMessageType = 'normal' | 'socratic' | 'crisis';
@@ -105,6 +106,11 @@ export interface SessionTodoItem {
   estimated_minutes: number;
 }
 
+export interface SessionKeyThought {
+  content: string;
+  distortion_type: DistortionType | null;
+}
+
 export interface SessionSummaryResponse {
   session_id: string;
   summary_status: SummaryStatus;
@@ -114,14 +120,13 @@ export interface SessionSummaryResponse {
   summary: string | null;
   avg_emotion_score: number | null;
   // 인지왜곡 유형 — 실측 결과 문자열 배열로 옴(감지된 게 없으면 [])
-  bias_types_detected: string[] | null;
+  bias_types_detected: DistortionType[] | null;
   cbt_intervened: boolean | null;
   // pending이거나 ExtractorLLM이 유효한 코드를 못 뽑은 경우 null (둘 다 정상)
   dominant_emotion: EmotionType | null;
   // pending에도 항상 [] — null은 절대 안 옴
   todos: SessionTodoItem[];
-  // 실측 응답에서 확인된 필드 — pending 상태에서의 null 가능성 미확인, 현재 UI 미사용
-  key_thoughts: string[] | null;
+  key_thoughts: SessionKeyThought[] | null;
   socratic_count: number | null;
 }
 

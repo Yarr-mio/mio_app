@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { EMOTION_META } from '@/constants/emotions';
 import { PrimaryColors } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
+import { KeyThoughtsList } from '@/features/chat/components/KeyThoughtsList';
 import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
@@ -117,7 +118,10 @@ export function SessionSummary() {
         )
       : null;
 
-  const hasCognitionCard = summary.bias_types_detected !== null || summary.cbt_intervened !== null;
+  const hasCognitionCard =
+    (summary.bias_types_detected !== null && summary.bias_types_detected.length > 0) ||
+    summary.cbt_intervened === false ||
+    (summary.key_thoughts !== null && summary.key_thoughts.length > 0);
 
   return (
     <View className="flex-1 bg-midnight">
@@ -168,15 +172,14 @@ export function SessionSummary() {
 
           {hasCognitionCard && (
             <SectionCard title="인지·CBT">
-              <View className="gap-2">
+              <View className="gap-3">
                 <BiasTypesDisplay biasTypesDetected={summary.bias_types_detected} />
-                {summary.cbt_intervened !== null && (
+                {summary.cbt_intervened === false && (
                   <ThemedText type="small" className="text-fg-sub">
-                    {summary.cbt_intervened
-                      ? 'CBT 기법을 활용한 개입이 있었어요'
-                      : '이번 대화에서는 CBT 개입이 없었어요'}
+                    이번 대화에서는 CBT 개입이 없었어요
                   </ThemedText>
                 )}
+                <KeyThoughtsList keyThoughts={summary.key_thoughts} />
               </View>
             </SectionCard>
           )}
