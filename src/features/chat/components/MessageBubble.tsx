@@ -1,16 +1,21 @@
+import { useEffect } from 'react';
+import { Alert, Linking, Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { QuestionCircleIcon } from '@/assets/icons';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { ThemedText } from '@/components/themed/ThemedText';
 import type { OnboardingCharacterId } from '@/constants/characters';
+import { CHAT_CHUNK_FADE_DURATION_MS } from '@/constants/config';
 import { PrimaryColors } from '@/constants/theme';
+import { useStreamingChunks } from '@/features/chat/hooks/useStreamingChunks';
 import type { ChatMessage } from '@/types/chat';
 import { formatCheckinTime } from '@/utils/date';
-import { Alert, Linking, Pressable, View } from 'react-native';
 
 interface MessageBubbleProps {
   message: ChatMessage;
   characterId: OnboardingCharacterId;
   characterName: string;
+  isStreaming: boolean;
 }
 
 function Timestamp({ timestamp, align = 'left' }: { timestamp: string; align?: 'left' | 'right' }) {
@@ -24,14 +29,34 @@ function Timestamp({ timestamp, align = 'left' }: { timestamp: string; align?: '
   );
 }
 
-function AiBubble({ message, characterId }: Pick<MessageBubbleProps, 'message' | 'characterId'>) {
+function FadeInChunkText({ text }: { text: string }) {
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: CHAT_CHUNK_FADE_DURATION_MS });
+  }, [opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return <Animated.Text style={animatedStyle}>{text}</Animated.Text>;
+}
+
+function AiBubble({
+  message,
+  characterId,
+  isStreaming,
+}: Pick<MessageBubbleProps, 'message' | 'characterId' | 'isStreaming'>) {
+  const chunks = useStreamingChunks(message.content, isStreaming);
+
   return (
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
         <View className="border border-primary/20 bg-primary/10 rounded-2xl rounded-tl-sm px-4 py-3">
           <ThemedText type="default" className="text-fg font-normal">
-            {message.content}
+            {chunks.map((chunk) => (
+              <FadeInChunkText key={chunk.key} text={chunk.text} />
+            ))}
           </ThemedText>
         </View>
         <Timestamp timestamp={message.timestamp} align="left" />
@@ -55,7 +80,11 @@ function UserBubble({ message }: Pick<MessageBubbleProps, 'message'>) {
   );
 }
 
-function SocraticBubble({ message, characterId, characterName }: MessageBubbleProps) {
+function SocraticBubble({
+  message,
+  characterId,
+  characterName,
+}: Pick<MessageBubbleProps, 'message' | 'characterId' | 'characterName'>) {
   return (
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />
@@ -140,7 +169,12 @@ function CrisisBubble({
   );
 }
 
-export function MessageBubble({ message, characterId, characterName }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  characterId,
+  characterName,
+  isStreaming,
+}: MessageBubbleProps) {
   if (message.role === 'user') {
     return <UserBubble message={message} />;
   }
@@ -152,5 +186,5 @@ export function MessageBubble({ message, characterId, characterName }: MessageBu
   if (message.type === 'crisis') {
     return <CrisisBubble message={message} characterId={characterId} />;
   }
-  return <AiBubble message={message} characterId={characterId} />;
+  return <AiBubble message={message} characterId={characterId} isStreaming={isStreaming} />;
 }

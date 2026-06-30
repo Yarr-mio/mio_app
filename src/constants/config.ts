@@ -67,6 +67,8 @@ export const SESSION_SUMMARY_CACHE_GC_TIME_MS = 1000 * 60 * 60 * 24;
  * 서버 SseEmitter 타임아웃이 60초라 그보다 약간 길게 잡아, 연결이 완전히 멈춰버리는 극단적 케이스에서만 클라이언트가 직접 중단시킨다.
  */
 export const SSE_STREAM_SAFETY_TIMEOUT_MS = 65000;
+/** AI 응답 청크가 화면에 나타날 때 적용하는 fade-in 애니메이션 시간(ms) */
+export const CHAT_CHUNK_FADE_DURATION_MS = 180;
 /** Axios 요청 타임아웃(ms) */
 export const API_TIMEOUT_MS = 10_000;
 

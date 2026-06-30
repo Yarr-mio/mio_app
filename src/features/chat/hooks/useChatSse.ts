@@ -249,6 +249,10 @@ export function useChatSse(sessionId: string | null) {
               receivedDone = true;
               break;
           }
+          // 한 번의 read()에 SSE 블록이 몰려서 오면 매 블록마다 동기적으로 store.set()이 일어나
+          // React가 한 틱 안에서 50회 넘는 중첩 렌더를 처리하다 "Maximum update depth exceeded"로
+          // 죽을 수 있다 — 블록 처리마다 매크로태스크로 양보해 React가 커밋을 끝낼 시간을 준다
+          await new Promise((resolve) => setTimeout(resolve, 0));
         }
 
         separatorIndex = buffer.indexOf('\n\n');
@@ -298,11 +302,13 @@ export function useChatSse(sessionId: string | null) {
         resetStreamingState();
         Alert.alert('전송 실패', '응답을 받는 데 문제가 생겼어요. 다시 시도해 주세요.');
       }
-    } catch {
+    } catch (error) {
       if (controller.signal.aborted && !timedOut) {
         // 화면 이탈/언마운트로 인한 의도된 취소 — 쌓인 부분 응답은 그대로 두고 에러 표시 없음
         return;
       }
+      // catch가 에러를 삼켜 실제 원인(네트워크 실패/타임아웃/핸들러 예외)을 구분할 수 없었던 문제 — 원인 파악을 위해 로그를 남긴다
+      console.error('[ChatSSE] performSendMessage failed:', { timedOut, error });
       resetStreamingState();
       Alert.alert(
         '전송 실패',
