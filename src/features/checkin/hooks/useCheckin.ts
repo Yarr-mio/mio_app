@@ -36,7 +36,8 @@ export function useInfiniteCheckinList() {
     queryKey: queryKeys.checkin.list(),
     queryFn: ({ pageParam }) => fetchCheckinList({ cursor: pageParam as string | undefined }),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.has_more ? (lastPage.next_cursor ?? undefined) : undefined,
   });
 }
 
