@@ -1,5 +1,6 @@
 import { BackHeader } from '@/components/layout/BackHeader';
 import { Button } from '@/components/ui/Button';
+import { TIME_OF_DAY_META } from '@/constants/checkin';
 import { CheckinHistoryCard } from '@/features/checkin/components/CheckinHistoryCard';
 import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
@@ -33,7 +34,7 @@ export default function CheckinListScreen() {
           <>
             {canCheckInNow && (
               <View className="bg-surface-md rounded-2xl p-6 mb-4 items-center">
-                <Text className="text-4xl mb-3">🌙</Text>
+                <Text className="text-4xl mb-3">{TIME_OF_DAY_META[currentTimeOfDay].emoji}</Text>
                 <Text className="text-white text-base font-semibold mb-2 text-center">
                   오늘의 감정을 기록해요
                 </Text>
