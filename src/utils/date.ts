@@ -165,9 +165,9 @@ export function formatCheckinTime(isoString: string): string {
   return format(kst(isoString), 'a h:mm', { locale: ko });
 }
 
-/** 현재 시각이 속한 체크인 시간대(아침/오후/저녁) */
+/** 현재 시각(KST 기준)이 속한 체크인 시간대(아침/오후/저녁) */
 export function getCurrentTimeOfDay(): TimeOfDay {
-  const hour = new Date().getHours();
+  const hour = toKstDate().getHours();
   if (hour >= 5 && hour < 12) return 'morning';
   if (hour >= 12 && hour < 18) return 'afternoon';
   return 'evening';
