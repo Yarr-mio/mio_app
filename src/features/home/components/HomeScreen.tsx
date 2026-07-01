@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { HomeCardShell } from '@/components/ui/HomeCardShell';
 import { getPartnerByKey } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
-import { HOME_TITLES } from '@/constants/home';
+import { HOME_SPEECH_BUBBLE_MESSAGES, HOME_TITLES } from '@/constants/home';
 import { HOME_ROUTES } from '@/constants/routes';
 import {
   HomeActionClasses,
@@ -14,6 +14,7 @@ import {
   HomeSpeechBubbleClasses,
   HomeTextClasses,
 } from '@/constants/theme';
+import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeMock } from '@/features/home/hooks/useHomeMock';
@@ -22,8 +23,10 @@ import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelected
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
 import { formatCheckinTime } from '@/utils/date';
+import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
 function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
@@ -37,7 +40,7 @@ function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undef
 }
 
 export function HomeScreen() {
-  const nickname = useSelectedNickname() ?? '친구';
+  const nickname = useSelectedNickname() ?? FALLBACK_NICKNAME;
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
 
@@ -48,6 +51,14 @@ export function HomeScreen() {
   const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
   const { hasActions, actions, toggleAction } = useHomeMock();
+
+  const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
+    pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
+  );
+
+  useFocusEffect(() => {
+    setSpeechBubbleMessage(pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES));
+  });
 
   return (
     <View className="flex-1 bg-midnight">
@@ -76,8 +87,11 @@ export function HomeScreen() {
           <View className="mt-6 flex-row items-start gap-3">
             <View className="flex-1">
               <View className={HomeSpeechBubbleClasses.shell}>
-                <ThemedText type="small" className="text-fg-default">
-                  {'요즘 조금 힘들어 보여요.\n오늘 하루, 천천히 이야기해 볼까요? 🌿'}
+                <ThemedText
+                  type="small"
+                  className={cn('text-fg-default', HomeSpeechBubbleClasses.messageText)}
+                >
+                  {speechBubbleMessage}
                 </ThemedText>
               </View>
             </View>
