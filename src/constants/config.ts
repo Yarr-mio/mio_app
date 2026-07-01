@@ -35,7 +35,10 @@ export const KAKAO_NATIVE_APP_KEY =
 export const HTTP_STATUS = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
+  NOT_FOUND: 404,
   CONFLICT: 409,
+  UNPROCESSABLE_ENTITY: 422,
+  TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
@@ -50,6 +53,9 @@ export const SPLASH_DURATION_MS = 2500;
 
 /** Axios 요청 타임아웃(ms) */
 export const API_TIMEOUT_MS = 10_000;
+
+/** 체크인 목록 페이지당 개수 (백엔드 CheckinService.PAGE_SIZE와 동일하게 유지) */
+export const CHECKIN_LIST_PAGE_SIZE = 20;
 
 /** iOS bundle identifier 폴백 (expoConfig 미설정 환경용) */
 export const IOS_BUNDLE_IDENTIFIER_FALLBACK = 'com.mio.yarr.dev';
