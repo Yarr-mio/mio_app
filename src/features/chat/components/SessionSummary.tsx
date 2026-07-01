@@ -1,13 +1,20 @@
+import { queryKeys } from '@/api/queryKeys';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { EMOTION_META } from '@/constants/emotions';
 import { PrimaryColors } from '@/constants/theme';
-import { useSaveChatSession } from '@/features/chat/hooks/useChat';
+import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
+import { KeyThoughtsList } from '@/features/chat/components/KeyThoughtsList';
+import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
+import { useSessionSummary } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { Image } from 'expo-image';
+import type { SessionSummaryResponse } from '@/types/chat';
+import { useIsFocused } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -22,12 +29,62 @@ function SectionCard({ title, children }: { title: string; children: React.React
 }
 
 export function SessionSummary() {
-  const summary = useChatStore((s) => s.summary);
-  const sessionId = useChatStore((s) => s.sessionId);
-  const { mutate: saveSession, isPending } = useSaveChatSession();
+  // 라우트 파라미터(05번 작업의 재진입 리다이렉트)가 있으면 우선 사용, 없으면 방금 종료한 세션
+  const { sessionId: routeSessionId } = useLocalSearchParams<{ sessionId?: string }>();
+  const storeSessionId = useChatStore((s) => s.sessionId);
+  const previousSessionId = useChatStore((s) => s.previousSessionId);
+  const sessionId = routeSessionId ?? storeSessionId;
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
-  if (!summary) {
-    // TODO: Memory 도메인 폴링 전략 미결 — summary_status 'pending' 처리 필요
+  const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
+  // 직전 세션은 화면에 그리는 대상이 아니라 감정 변화율 계산용 숫자만 필요하다. useSessionSummary로 다시
+  // 부르면 GET .../summary의 부수효과로 그 세션을 "열람" 처리해버리므로, 이미 캐시된 값만 읽고
+  // 없으면(예: 두 세션 사이 앱 재시작) 비교 없이 넘어간다
+  const queryClient = useQueryClient();
+  const previousSummary = previousSessionId
+    ? queryClient.getQueryData<SessionSummaryResponse>(queryKeys.chat.session(previousSessionId))
+    : undefined;
+
+  // iOS 스와이프 백 차단 — `_layout.tsx`의 정적 옵션만으로는 적용이 누락되는 경우가 있어 동적으로도 보강
+  // (onboarding/Step1EmotionScreen.tsx와 동일 패턴)
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: false });
+  }, [navigation]);
+
+  // Android 하드웨어 백 / router.back() 같은 프로그램적 뒤로가기(POP/GO_BACK)만 차단한다. usePreventRemove는
+  // 액션 타입을 가리지 않고 모두 막아서 SessionEnd의 dismissAll()(POP_TO_TOP)까지 무효화시켰다
+  // (chat-trouble-shoot/09) — beforeRemove를 직접 구독해 액션 타입으로 구분한다. sessionId가 없을 때는
+  // (자가복구 redirect가 동작해야 하므로) 리스너 자체를 비활성화 — 기존 !!sessionId 게이트와 동등하게 유지
+  useEffect(() => {
+    if (!sessionId) return;
+    return navigation.addListener('beforeRemove', (e) => {
+      if (e.data.action.type === 'POP' || e.data.action.type === 'GO_BACK') {
+        e.preventDefault();
+      }
+    });
+  }, [navigation, sessionId]);
+
+  // sessionId 없이 마운트되는 경로가 있다면(chat-trouble-shoot/07 참고, 정확한 트리거 미확정) 검은
+  // 화면으로 멈춰있지 않도록 index로 돌려보내 기존 활성 세션 판별 로직이 다시 처리하게 한다.
+  // isFocused 가드 필수 — 이 화면이 블러된 채 스택에 남아있는 동안 reset()으로 sessionId가 사라지면
+  // (chat-trouble-shoot/08 원인 D) 보고 있지도 않은 화면에서 추가 내비게이션이 발생해 다른 화면(홈 등)을
+  // 덮어써버림
+  useEffect(() => {
+    if (!sessionId && isFocused) {
+      router.replace('/(main)/chat');
+    }
+  }, [sessionId, isFocused]);
+
+  if (!sessionId) {
+    return (
+      <View className="flex-1 bg-midnight">
+        <ChatBackground />
+      </View>
+    );
+  }
+
+  if (isLoading || !summary || summary.summary_status === 'pending') {
     return (
       <View className="flex-1 bg-midnight items-center justify-center">
         <ChatBackground />
@@ -39,7 +96,32 @@ export function SessionSummary() {
     );
   }
 
-  const emotionMeta = EMOTION_META[summary.primaryEmotion.emotionType];
+  if (summary.summary_status === 'failed') {
+    return (
+      <View className="flex-1 bg-midnight items-center justify-center px-8 gap-4">
+        <ChatBackground />
+        <ThemedText type="default" className="text-fg-muted text-center">
+          대화 요약을 만드는 데 문제가 생겼어요.{'\n'}다시 시도해 주세요.
+        </ThemedText>
+        <Button variant="ghost" size="md" onPress={() => refetch()}>
+          다시 시도
+        </Button>
+      </View>
+    );
+  }
+
+  const previousEmotionScore = previousSummary?.avg_emotion_score;
+  const percentChange =
+    summary.avg_emotion_score !== null && previousEmotionScore != null && previousEmotionScore !== 0
+      ? Math.round(
+          ((summary.avg_emotion_score - previousEmotionScore) / previousEmotionScore) * 100
+        )
+      : null;
+
+  const hasCognitionCard =
+    (summary.bias_types_detected !== null && summary.bias_types_detected.length > 0) ||
+    summary.cbt_intervened === false ||
+    (summary.key_thoughts !== null && summary.key_thoughts.length > 0);
 
   return (
     <View className="flex-1 bg-midnight">
@@ -53,61 +135,62 @@ export function SessionSummary() {
             오늘 대화 요약
           </ThemedText>
 
-          <SectionCard title="주요 감정">
-            <View className="flex-row items-center gap-3">
-              <Image
-                source={emotionMeta.image}
-                style={{ width: 48, height: 48 }}
-                contentFit="contain"
-              />
-              <View className="gap-1">
-                <ThemedText type="defaultBold" className="text-fg">
-                  {emotionMeta.label}
-                </ThemedText>
-                <ThemedText type="small" className="text-chat-subtext">
-                  {`강도 ${summary.primaryEmotion.intensity}/10`}
-                </ThemedText>
+          {(summary.avg_emotion_score !== null || summary.dominant_emotion !== null) && (
+            <SectionCard title="주요 감정">
+              <View className="gap-2">
+                {summary.dominant_emotion !== null && (
+                  <ThemedText type="smallBold" className="text-fg-sub">
+                    {EMOTION_META[summary.dominant_emotion].label}
+                  </ThemedText>
+                )}
+                {summary.avg_emotion_score !== null && (
+                  <View className="flex-row items-end gap-2">
+                    <ThemedText type="title" className="text-primary">
+                      {summary.avg_emotion_score}
+                    </ThemedText>
+                    <ThemedText type="small" className="text-chat-subtext mb-1">
+                      / 100
+                    </ThemedText>
+                    {percentChange !== null && (
+                      <ThemedText type="small" className="text-chat-subtext mb-1 ml-auto">
+                        {percentChange > 0 ? `+${percentChange}%` : `${percentChange}%`}
+                      </ThemedText>
+                    )}
+                  </View>
+                )}
               </View>
-            </View>
-          </SectionCard>
+            </SectionCard>
+          )}
 
-          <SectionCard title="핵심 내용">
-            <View className="gap-2">
-              {summary.keyPoints.map((point, i) => (
-                <ThemedText key={i} type="default" className="text-fg-sub">
-                  • {point}
-                </ThemedText>
-              ))}
-            </View>
-          </SectionCard>
+          {summary.summary && (
+            <SectionCard title="대화 요약">
+              <ThemedText type="default" className="text-fg-sub">
+                {summary.summary}
+              </ThemedText>
+            </SectionCard>
+          )}
 
-          <SectionCard title="새로운 생각">
-            <View className="gap-2">
-              {summary.newThoughts.map((thought, i) => (
-                <ThemedText key={i} type="default" className="text-fg-sub">
-                  • {thought}
-                </ThemedText>
-              ))}
-            </View>
-          </SectionCard>
+          {hasCognitionCard && (
+            <SectionCard title="인지·CBT">
+              <View className="gap-3">
+                <BiasTypesDisplay biasTypesDetected={summary.bias_types_detected} />
+                {summary.cbt_intervened === false && (
+                  <ThemedText type="small" className="text-fg-sub">
+                    이번 대화에서는 CBT 개입이 없었어요
+                  </ThemedText>
+                )}
+                <KeyThoughtsList keyThoughts={summary.key_thoughts} />
+              </View>
+            </SectionCard>
+          )}
 
-          <SectionCard title="오늘의 작은 행동">
-            <View className="flex-row flex-wrap gap-2">
-              {summary.recommendedActions.map((action) => (
-                <Chip key={action} label={action} />
-              ))}
-            </View>
-          </SectionCard>
+          {summary.todos.length > 0 && (
+            <SectionCard title="추천 행동">
+              <SessionTodoList todos={summary.todos} />
+            </SectionCard>
+          )}
 
-          <Button
-            variant="primary"
-            size="lg"
-            loading={isPending}
-            onPress={() => {
-              if (!sessionId || isPending) return;
-              saveSession(sessionId);
-            }}
-          >
+          <Button variant="primary" size="lg" onPress={() => router.push('/(main)/chat/end')}>
             기록 저장하기
           </Button>
         </ScrollView>

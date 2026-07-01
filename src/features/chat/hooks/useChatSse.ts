@@ -1,13 +1,41 @@
+import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import type { SseCrisisData, SseDeltaData, SseDoneData, SseSessionMetaData } from '@/types/chat';
+import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS } from '@/constants/config';
+import { useAuthStore } from '@/store/authStore';
+import type {
+  SseCrisisData,
+  SseDeltaData,
+  SseDeltaReplaceData,
+  SseDoneData,
+  SseSessionMetaData,
+} from '@/types/chat';
+import { useQueryClient } from '@tanstack/react-query';
+import * as Crypto from 'expo-crypto';
+import { router } from 'expo-router';
+// 글로벌 fetch는 RN에서 response.body.getReader() 스트리밍을 지원하지 않음 — expo/fetch는 WinterCG 호환 구현으로 스트리밍 지원
+import { fetch } from 'expo/fetch';
 import { useEffect, useRef, useState } from 'react';
+import { Alert } from 'react-native';
 
 // TODO: SSE 재연결 전략 미구현 (네트워크 끊김 대응 필요)
 
-function parseSSELine(line: string): { event: string; data: unknown } | null {
-  if (!line.startsWith('data:')) return null;
+// event:/data: 두 줄로 이뤄진 SSE 이벤트 블록(빈 줄로 구분된) 하나를 파싱
+function parseSSELine(block: string): { event: string; data: unknown } | null {
+  let event: string | null = null;
+  let dataLine: string | null = null;
+
+  for (const line of block.split('\n')) {
+    if (line.startsWith('event:')) {
+      event = line.slice('event:'.length).trim();
+    } else if (line.startsWith('data:')) {
+      dataLine = line.slice('data:'.length).trim();
+    }
+  }
+
+  if (!event || dataLine === null) return null;
+
   try {
-    return JSON.parse(line.slice(5).trim());
+    return { event, data: JSON.parse(dataLine) };
   } catch {
     return null;
   }
@@ -15,30 +43,28 @@ function parseSSELine(line: string): { event: string; data: unknown } | null {
 
 export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
-  // 실제 SSE 연동 시 진행 중인 fetch 요청을 취소할 AbortController 보관용 (현재는 mock이라 미할당)
+  // 화면 이탈/언마운트 시 진행 중인 스트림을 취소하기 위해 보관
   const abortRef = useRef<AbortController | null>(null);
-  // 소크라테스 질문에 대한 텍스트 답변 전송 직후 → 감정 강도 슬라이드 노출 → 슬라이드 확인 시점에 응답 전송
-  const awaitingSocraticScoreRef = useRef(false);
-  const mockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const queryClient = useQueryClient();
 
-  // 언마운트/세션 전환 시 mock 타이머가 남아 새 세션의 store에 응답을 흘려보내는 것을 방지
+  // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
   useEffect(() => {
     return () => {
-      if (mockTimeoutRef.current) clearTimeout(mockTimeoutRef.current);
-      if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
-      // 언마운트 시점의 최신 컨트롤러를 취소해야 하므로 ref를 그대로 읽는다 (값 복사 시 abort 무력화됨)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       abortRef.current?.abort();
     };
   }, []);
+
+  function resetStreamingState() {
+    const store = useChatStore.getState();
+    store.setAiTyping(false);
+    useChatStore.setState({ streamingMessageId: null });
+    setIsStreaming(false);
+  }
 
   function sendMessage(content: string) {
     if (!sessionId || isStreaming) return;
 
     const store = useChatStore.getState();
-    const lastMessage = store.messages[store.messages.length - 1];
-    const isSocraticReply = lastMessage?.role === 'ai' && lastMessage.type === 'socratic';
 
     store.addMessage({
       id: `user-${Date.now()}`,
@@ -48,125 +74,253 @@ export function useChatSse(sessionId: string | null) {
       timestamp: new Date().toISOString(),
     });
 
-    if (isSocraticReply) {
-      awaitingSocraticScoreRef.current = true;
-      store.activateEmotionScoring(50);
-      return;
-    }
-
     store.setAiTyping(true);
     setIsStreaming(true);
-
-    // TODO: 서버 연동 전 mock 응답 사용
-    runMock();
+    void performSendMessage(sessionId, content);
   }
 
-  function confirmEmotionScore(score: number) {
-    const store = useChatStore.getState();
-    store.deactivateEmotionScoring();
-
-    if (awaitingSocraticScoreRef.current) {
-      awaitingSocraticScoreRef.current = false;
-      // TODO: 점수 제출 엔드포인트 미명세 — 백엔드 확인 필요. 현재는 텍스트 답변 + 감정 점수를 함께 제출했다고 가정하고
-      // 소크라테스식 답변에 어울리는 mock 응답을 트리거 (일반 답변용 mockText와 분리)
-      void score;
-      store.setAiTyping(true);
-      setIsStreaming(true);
-      runMock(
-        '그렇게 느끼고 계셨군요. 그 감정을 알아차린 것만으로도 의미 있는 한 걸음이에요. 잠시 그 마음에 함께 머물러볼까요?'
-      );
-    }
-  }
-
-  // TODO: 서버 연동 시 아래 mock을 실제 SSE fetch로 교체
-  // 실제 구현 참고:
-  //   const controller = new AbortController();
-  //   abortRef.current = controller;
-  //   const res = await fetch(`/v1/sessions/${sessionId}/messages`, {
-  //     method: 'POST',
-  //     headers: { Accept: 'text/event-stream', 'Idempotency-Key': crypto.randomUUID() },
-  //     body: JSON.stringify({ content }),
-  //     signal: controller.signal,
-  //   });
-  //   const reader = res.body?.getReader();
-  //   ... ReadableStream 청크 파싱 후 아래 핸들러 호출
-
+  // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
+  // outboundMsgId 대신 placeholder id로 빈 AI 메시지를 추적하고, 최초 delta 수신 시 확정한다
   function handleSessionMeta(data: SseSessionMetaData) {
-    const aiMsgId = data.message_id;
+    const placeholderId = `pending-ai-${data.message_id}`;
     const store = useChatStore.getState();
     store.addMessage({
-      id: aiMsgId,
+      id: placeholderId,
       role: 'ai',
       type: 'normal',
       content: '',
       timestamp: data.received_at,
     });
-    // 빈 AI 메시지가 추가되는 순간 TypingIndicator 숨김 — delta가 이어받음
-    store.setAiTyping(false);
-    useChatStore.setState({ streamingMessageId: aiMsgId });
+    // placeholder는 여기서 추가되지만, 콘텐츠가 빈 동안은 ChatMain에서 렌더링 제외됨 —
+    // 실제 콘텐츠가 도착할 때(handleDelta/handleDeltaReplace/handleCrisis)까지 TypingIndicator를 유지한다
+    useChatStore.setState({ streamingMessageId: placeholderId });
   }
 
   function handleDelta(data: SseDeltaData) {
-    useChatStore.getState().appendDelta(data.msg_id, data.chunk);
+    const store = useChatStore.getState();
+    store.confirmStreamingMessageId(data.msg_id);
+    store.appendDelta(data.msg_id, data.chunk);
+    store.setAiTyping(false);
   }
 
-  // TODO: 백엔드 명세가 확실해지면 연동
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // append가 아니라 통째로 교체 — 지금까지 쌓인 delta.chunk를 버리고 safe_response로 다시 그림
+  function handleDeltaReplace(data: SseDeltaReplaceData) {
+    const store = useChatStore.getState();
+    store.confirmStreamingMessageId(data.msg_id);
+    store.replaceMessageContent(data.msg_id, data.safe_response);
+    store.setAiTyping(false);
+  }
+
   function handleCrisis(data: SseCrisisData) {
-    useChatStore.getState().addMessage({
+    // severity 1은 resources가 null (핫라인 없는 진정 유도 문구만)
+    const store = useChatStore.getState();
+    store.setAiTyping(false);
+    const pendingId = store.streamingMessageId;
+    const pendingMessage = pendingId
+      ? store.messages.find((msg) => msg.id === pendingId)
+      : undefined;
+
+    // delta 없이 곧장 crisis로 끝나는 경로(입력단계 즉시 위기 감지, BUFFER 출력단계 위기 전환)에서는
+    // session_meta가 만든 빈 placeholder가 안 채워진 채 남아 위기 말풍선과 중복 표시되므로, 새 메시지를
+    // 추가하는 대신 그 placeholder를 위기 말풍선으로 전환한다
+    if (pendingId && pendingMessage && pendingMessage.content === '') {
+      store.replaceMessageAsCrisis(pendingId, data.fixed_response, data.resources?.hotlines);
+      return;
+    }
+
+    store.addMessage({
       id: `crisis-${Date.now()}`,
       role: 'ai',
       type: 'crisis',
       content: data.fixed_response,
       timestamp: new Date().toISOString(),
-      crisisResources: data.resources.hotlines,
+      crisisResources: data.resources?.hotlines,
+    });
+  }
+
+  function handleCrisisFallback() {
+    useChatStore.getState().addMessage({
+      id: `crisis-fallback-${Date.now()}`,
+      role: 'ai',
+      type: 'crisis',
+      content: '지금 많이 힘든 마음이 느껴져요. 잠시 숨을 고르며 그 감정에 함께 머물러볼까요?',
+      timestamp: new Date().toISOString(),
     });
   }
 
   function handleDone(data: SseDoneData) {
-    const store = useChatStore.getState();
-    store.setAiTyping(false);
-    useChatStore.setState({ streamingMessageId: null });
-    setIsStreaming(false);
+    resetStreamingState();
 
-    if (data.emotion_score !== null) {
-      store.activateEmotionScoring(data.emotion_score);
+    if (data.is_socratic) {
+      useChatStore.getState().setMessageType(data.msg_id, 'socratic');
     }
-    if (data.finished_reason === 'crisis_flow') {
-      store.endSession();
+
+    // 소크라테스 CBT 개입이 실제로 끝난 턴에서만 슬라이더를 띄운다 — emotion_score_target_id가 없으면
+    // requires_emotion_score 값과 무관하게 띄우지 않음(reconstruction row 생성 실패 케이스 방어)
+    if (
+      data.finished_reason === 'stop' &&
+      data.cbt_intervention_state === 'completed' &&
+      data.requires_emotion_score &&
+      data.emotion_score_target_id !== null
+    ) {
+      useChatStore
+        .getState()
+        .activateEmotionScoring(data.emotion_score ?? 50, data.emotion_score_target_id);
     }
+    if (data.is_crisis_flagged && data.finished_reason === 'replaced_by_guard') {
+      handleCrisisFallback();
+    }
+    // crisis_flow를 받아도 서버는 세션을 종료하지 않음 — 세션은 active로 유지하고 대화를 계속할 수 있어야 함
   }
 
-  function runMock(
-    mockText: string = '말씀 잘 들었어요. 그 상황에서 어떤 감정이 가장 크게 느껴졌나요?'
-  ) {
-    const metaId = `ai-${Date.now()}`;
+  // 동기 검증 실패(SSE_SPEC.md §2-1) — 스트림이 열리기 전에 JSON ErrorResponse로 즉시 응답됨
+  function handleSyncValidationError(status: number, currentSessionId: string) {
+    if (status === 429) {
+      Alert.alert(
+        '잠시만 기다려 주세요',
+        '메시지를 너무 빠르게 보내고 있어요. 잠시 후 다시 시도해 주세요.'
+      );
+      return;
+    }
+    if (status === 409) {
+      Alert.alert('전송 실패', '같은 메시지가 이미 처리 중이에요. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+    if (status === 404) {
+      Alert.alert('대화를 찾을 수 없어요', '세션이 존재하지 않아요.');
+      return;
+    }
+    if (status === 403) {
+      Alert.alert('접근할 수 없어요', '이 대화에 접근할 권한이 없어요.');
+      return;
+    }
+    if (status === 410) {
+      // 30분 무응답 자동 종료 등으로 서버가 클라이언트도 모르게 세션을 먼저 끝낸 경우 — 클라이언트
+      // 세션도 종료 처리하고, activeSession 캐시를 무효화한 뒤 곧장 요약 화면으로 이동시켜
+      // chat/index.tsx가 빈 화면에 멈춰버리는 막다른 길(sessionPhase==='ended'만 보고 전환을 가정)을 막는다
+      useChatStore.getState().endSession();
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
+      Alert.alert('대화가 이미 종료됐어요', '대화 요약을 확인해 주세요.');
+      router.push({ pathname: '/(main)/chat/summary', params: { sessionId: currentSessionId } });
+      return;
+    }
+    if (status === 400) {
+      Alert.alert('전송 실패', '메시지 내용을 확인해 주세요.');
+      return;
+    }
+    Alert.alert('전송 실패', '잠시 후 다시 시도해 주세요.');
+  }
 
-    mockTimeoutRef.current = setTimeout(() => {
-      handleSessionMeta({ message_id: metaId, received_at: new Date().toISOString() });
+  // event:/data: 블록(빈 줄로 구분)을 모아 파싱하고 핸들러로 디스패치. done 이벤트 수신 여부를 반환
+  async function consumeStream(reader: ReadableStreamDefaultReader<Uint8Array>): Promise<boolean> {
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let receivedDone = false;
 
-      let i = 0;
-      mockIntervalRef.current = setInterval(() => {
-        if (i < mockText.length) {
-          handleDelta({ msg_id: metaId, chunk: mockText[i] });
-          i++;
-        } else {
-          if (mockIntervalRef.current) clearInterval(mockIntervalRef.current);
-          mockIntervalRef.current = null;
-          handleDone({
-            msg_id: metaId,
-            emotion_score: null,
-            is_crisis_flagged: false,
-            finished_reason: 'stop',
-          });
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+
+      let separatorIndex = buffer.indexOf('\n\n');
+      while (separatorIndex !== -1) {
+        const block = buffer.slice(0, separatorIndex);
+        buffer = buffer.slice(separatorIndex + 2);
+
+        const parsed = parseSSELine(block);
+        if (parsed) {
+          switch (parsed.event) {
+            case 'session_meta':
+              // 이벤트별 데이터 모양은 event 이름으로 서버가 보장 — 런타임 검증은 하지 않음
+              handleSessionMeta(parsed.data as SseSessionMetaData);
+              break;
+            case 'delta':
+              handleDelta(parsed.data as SseDeltaData);
+              break;
+            case 'delta.replace':
+              handleDeltaReplace(parsed.data as SseDeltaReplaceData);
+              break;
+            case 'crisis':
+              handleCrisis(parsed.data as SseCrisisData);
+              break;
+            case 'done':
+              handleDone(parsed.data as SseDoneData);
+              receivedDone = true;
+              break;
+          }
+          // 한 번의 read()에 SSE 블록이 몰려서 오면 매 블록마다 동기적으로 store.set()이 일어나
+          // React가 한 틱 안에서 50회 넘는 중첩 렌더를 처리하다 "Maximum update depth exceeded"로
+          // 죽을 수 있다 — 블록 처리마다 매크로태스크로 양보해 React가 커밋을 끝낼 시간을 준다
+          await new Promise((resolve) => setTimeout(resolve, 0));
         }
-      }, 40);
-    }, 600);
+
+        separatorIndex = buffer.indexOf('\n\n');
+      }
+    }
+
+    return receivedDone;
   }
 
-  // 사용되지 않지만 eslint warning 방지 및 향후 실제 연동 시 활용
-  void parseSSELine;
-  void abortRef;
+  async function performSendMessage(currentSessionId: string, content: string) {
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let timedOut = false;
+    const safetyTimeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, SSE_STREAM_SAFETY_TIMEOUT_MS);
 
-  return { sendMessage, confirmEmotionScore, isStreaming };
+    try {
+      const accessToken = useAuthStore.getState().accessToken;
+      const res = await fetch(`${API_BASE_URL}/v1/sessions/${currentSessionId}/messages`, {
+        method: 'POST',
+        headers: {
+          Accept: 'text/event-stream',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+          'Idempotency-Key': Crypto.randomUUID(),
+        },
+        body: JSON.stringify({ content }),
+        signal: controller.signal,
+      });
+
+      const contentType = res.headers.get('content-type') ?? '';
+      if (contentType.includes('application/json')) {
+        resetStreamingState();
+        handleSyncValidationError(res.status, currentSessionId);
+        return;
+      }
+
+      if (!res.body) {
+        throw new Error('SSE 응답 스트림이 비어 있음');
+      }
+
+      const receivedDone = await consumeStream(res.body.getReader());
+      if (!receivedDone) {
+        // done 없이 스트림이 끝남 — 60초 타임아웃 또는 연결 끊김으로 간주 (SSE_SPEC.md §2-3, §2-4)
+        resetStreamingState();
+        Alert.alert('전송 실패', '응답을 받는 데 문제가 생겼어요. 다시 시도해 주세요.');
+      }
+    } catch (error) {
+      if (controller.signal.aborted && !timedOut) {
+        // 화면 이탈/언마운트로 인한 의도된 취소 — 쌓인 부분 응답은 그대로 두고 에러 표시 없음
+        return;
+      }
+      // catch가 에러를 삼켜 실제 원인(네트워크 실패/타임아웃/핸들러 예외)을 구분할 수 없었던 문제 — 원인 파악을 위해 로그를 남긴다
+      console.error('[ChatSSE] performSendMessage failed:', { timedOut, error });
+      resetStreamingState();
+      Alert.alert(
+        '전송 실패',
+        '메시지를 보내는 데 문제가 생겼어요. 네트워크 상태를 확인해 주세요.'
+      );
+    } finally {
+      clearTimeout(safetyTimeout);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
+    }
+  }
+
+  return { sendMessage, isStreaming };
 }
