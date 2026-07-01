@@ -1,6 +1,3 @@
-import { useEffect } from 'react';
-import { Alert, Linking, Pressable, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { QuestionCircleIcon } from '@/assets/icons';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -10,6 +7,9 @@ import { PrimaryColors } from '@/constants/theme';
 import { useStreamingChunks } from '@/features/chat/hooks/useStreamingChunks';
 import type { ChatMessage } from '@/types/chat';
 import { formatCheckinTime } from '@/utils/date';
+import { useEffect } from 'react';
+import { Alert, Linking, Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -52,7 +52,7 @@ function AiBubble({
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
-        <View className="border border-primary/20 bg-primary/10 rounded-2xl rounded-tl-sm px-4 py-3">
+        <View className="border border-primary/20 bg-primary/10 rounded-2xl rounded-tl-md px-4 py-3">
           <ThemedText type="default" className="text-fg font-normal">
             {chunks.map((chunk) => (
               <FadeInChunkText key={chunk.key} text={chunk.text} />
@@ -69,7 +69,7 @@ function UserBubble({ message }: Pick<MessageBubbleProps, 'message'>) {
   return (
     <View className="flex-row-reverse gap-2 pl-12">
       <View className="shrink">
-        <View className="bg-primary rounded-2xl rounded-tr-sm px-4 py-3">
+        <View className="bg-primary rounded-2xl rounded-tr-md px-4 py-3">
           <ThemedText type="default" className="text-fg font-normal">
             {message.content}
           </ThemedText>
@@ -89,7 +89,7 @@ function SocraticBubble({
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink">
-        <View className="border border-primary/30 bg-primary/20 rounded-2xl rounded-tl-sm px-4 py-3">
+        <View className="border border-primary/30 bg-primary/20 rounded-2xl rounded-tl-md px-4 py-3">
           <View className="flex-row items-center gap-1 mb-3">
             <QuestionCircleIcon width={14} height={14} color={PrimaryColors.DEFAULT} />
             <ThemedText type="smallMedium" className="text-primary font-normal">
@@ -134,7 +134,7 @@ function CrisisBubble({
     <View className="flex-row gap-2 pr-12">
       <CharacterAvatar characterId={characterId} size="sm" background />
       <View className="shrink gap-2">
-        <View className="bg-surface-md rounded-2xl rounded-tl-sm px-4 py-3">
+        <View className="bg-surface-md rounded-2xl rounded-tl-md px-4 py-3">
           <ThemedText type="default" className="text-fg font-normal">
             {message.content}
           </ThemedText>
