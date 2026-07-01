@@ -42,7 +42,7 @@ import {
   toKstDate,
 } from '@/utils/date';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 export function GrowthReportScreen() {
@@ -60,11 +60,26 @@ export function GrowthReportScreen() {
       : toKstDate(getMonthRange(monthAnchorDate).start);
   const dateRange =
     period === REPORT_PERIOD.week ? getWeekRange(weekAnchorDate) : getMonthRange(monthAnchorDate);
-  const { report, isPending, isFetching, isPlaceholderData, isError, isPollingTimedOut, refetch } =
-    useReport({
-      period,
-      anchorDate,
-    });
+  const {
+    report,
+    isPending,
+    isFetching,
+    isPlaceholderData,
+    isError,
+    isServerError,
+    isPollingTimedOut,
+    error,
+    refetch,
+  } = useReport({
+    period,
+    anchorDate,
+  });
+
+  useEffect(() => {
+    if (isError && !isServerError && !isPollingTimedOut) {
+      console.error('[GrowthReportScreen]', error);
+    }
+  }, [isError, isServerError, isPollingTimedOut, error]);
 
   const showFetchingOverlay = !isPending && isFetching && isPlaceholderData;
 
@@ -126,8 +141,12 @@ export function GrowthReportScreen() {
       return <ReportPendingState period={period} />;
     }
 
-    if (isError) {
+    if (isServerError || isPollingTimedOut) {
       return <ReportErrorState onRetry={refetch} onViewPrevious={handleViewPrevious} />;
+    }
+
+    if (isError && !report) {
+      return <ReportPendingState period={period} />;
     }
 
     if (!report) {

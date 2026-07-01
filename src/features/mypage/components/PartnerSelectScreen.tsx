@@ -10,11 +10,10 @@ import {
   PressableConfig,
   ScreenSpacing,
 } from '@/constants/theme';
+import { useChangeCharacter } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
-import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -67,17 +66,16 @@ function PartnerOptionCard({ name, tag, intro, image, selected, onPress }: Partn
 }
 
 export function PartnerSelectScreen() {
-  const router = useRouter();
   const { bottom } = useSafeAreaInsets();
   const selectedCharacterId = useSelectedCharacterId();
-  const patchOnboardingCharacterId = useUserStore((state) => state.patchOnboardingCharacterId);
-  const [tempSelected, setTempSelected] = useState<OnboardingCharacterId>(selectedCharacterId);
+  const { mutate: changeCharacter, isPending } = useChangeCharacter();
+  const [tempSelected, setTempSelected] = useState<OnboardingCharacterId | null>(null);
+  const resolvedSelected = tempSelected ?? selectedCharacterId;
 
   const bottomPadding = Math.max(bottom, ScreenSpacing.bottomInsetMin);
 
   const handleApply = () => {
-    patchOnboardingCharacterId(tempSelected);
-    router.back();
+    changeCharacter({ character_id: resolvedSelected });
   };
 
   return (
@@ -96,14 +94,16 @@ export function PartnerSelectScreen() {
             tag={partner.tag}
             intro={partner.intro}
             image={partner.image}
-            selected={tempSelected === partner.key}
+            selected={resolvedSelected === partner.key}
             onPress={() => setTempSelected(partner.key)}
           />
         ))}
       </ScrollView>
       {/* safe area 대응 — 인라인 style 불가피 */}
       <View className="px-6 pt-2" style={{ paddingBottom: bottomPadding }}>
-        <Button onPress={handleApply}>수정하기</Button>
+        <Button disabled={isPending} onPress={handleApply}>
+          수정하기
+        </Button>
       </View>
     </View>
   );

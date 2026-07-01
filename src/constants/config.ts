@@ -39,6 +39,7 @@ export const HTTP_STATUS = {
   NOT_FOUND: 404,
   CONFLICT: 409,
   GONE: 410,
+  UNPROCESSABLE_ENTITY: 422,
   TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
@@ -71,6 +72,9 @@ export const SSE_STREAM_SAFETY_TIMEOUT_MS = 65000;
 export const CHAT_CHUNK_FADE_DURATION_MS = 180;
 /** Axios 요청 타임아웃(ms) */
 export const API_TIMEOUT_MS = 10_000;
+
+/** 체크인 목록 페이지당 개수 (백엔드 CheckinService.PAGE_SIZE와 동일하게 유지) */
+export const CHECKIN_LIST_PAGE_SIZE = 20;
 
 /** iOS bundle identifier 폴백 (expoConfig 미설정 환경용) */
 export const IOS_BUNDLE_IDENTIFIER_FALLBACK = 'com.mio.yarr.dev';

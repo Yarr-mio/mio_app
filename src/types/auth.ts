@@ -115,3 +115,9 @@ export interface AuthLogoutData {
 }
 
 export type AuthLogoutResponse = ApiResponse<AuthLogoutData>;
+
+export interface AuthWithdrawData {
+  success: true;
+}
+
+export type AuthWithdrawResponse = ApiResponse<AuthWithdrawData>;

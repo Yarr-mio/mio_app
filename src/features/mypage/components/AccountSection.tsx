@@ -55,7 +55,7 @@ export function AccountSection() {
   const [activeModal, setActiveModal] = useState<AccountActionId | null>(null);
   const selectedCharacterId = useSelectedCharacterId();
   const partnerName = getPartnerByKey(selectedCharacterId).name;
-  const { handleLogout } = useAccountActions();
+  const { handleLogout, handleWithdraw } = useAccountActions();
 
   const closeModal = () => setActiveModal(null);
 
@@ -108,8 +108,8 @@ export function AccountSection() {
         description={WITHDRAW_MODAL.description(partnerName)}
         confirmLabel={WITHDRAW_MODAL.confirmLabel}
         onConfirm={() => {
-          console.log('회원탈퇴');
           closeModal();
+          handleWithdraw();
         }}
       />
     </>
