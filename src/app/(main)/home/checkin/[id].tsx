@@ -52,7 +52,7 @@ export default function CheckinDetailScreen() {
       <ScrollView contentContainerClassName="px-5 pb-10 gap-6">
         <View className="bg-surface rounded-3xl p-6 items-center border border-line gap-4">
           <Image source={meta.image} style={{ width: 96, height: 96 }} contentFit="contain" />
-          <Text className="text-white text-2xl font-bold">{meta.label}</Text>
+          <Text className="text-fg text-2xl font-bold">{meta.label}</Text>
           <View className="w-full">
             <EmotionIntensitySlider value={record.condition_score} disabled />
           </View>
@@ -60,7 +60,7 @@ export default function CheckinDetailScreen() {
         </View>
 
         <View className="gap-3">
-          <Text className="text-white font-semibold">오늘의 메모</Text>
+          <Text className="text-fg font-semibold">오늘의 메모</Text>
           {record.memo ? (
             <DiaryInput value={record.memo} editable={false} />
           ) : (
@@ -73,7 +73,7 @@ export default function CheckinDetailScreen() {
         {record.ai_response?.trim() && (
           <View className="bg-surface rounded-2xl p-4 border border-line gap-2">
             <Text className="text-fg-dim text-sm font-medium">AI 응답</Text>
-            <Text className="text-white text-sm leading-relaxed">{record.ai_response}</Text>
+            <Text className="text-fg-default text-sm leading-relaxed">{record.ai_response}</Text>
           </View>
         )}
       </ScrollView>

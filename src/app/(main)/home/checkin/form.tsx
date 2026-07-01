@@ -64,19 +64,19 @@ export default function CheckinFormScreen() {
           <Text className="text-fg-dim text-sm mt-1">
             {formatCheckinFullDate(new Date().toISOString())}
           </Text>
-          <Text className="text-white text-xl font-bold">지금 어떤 감정이 느껴지나요?</Text>
+          <Text className="text-fg text-xl font-bold">지금 어떤 감정이 느껴지나요?</Text>
         </View>
 
         <EmotionSelector value={selectedEmotion} onChange={setEmotion} />
 
         <View className="gap-2">
-          <Text className="text-white font-medium">감정의 강도는 어떤가요?</Text>
+          <Text className="text-fg font-medium">감정의 강도는 어떤가요?</Text>
           <Text className="text-fg-muted text-sm">슬라이더를 움직여 강도를 조절해 보세요</Text>
           <EmotionIntensitySlider value={conditionScore} onChange={setConditionScore} />
         </View>
 
         <View className="gap-2">
-          <Text className="text-white font-medium">
+          <Text className="text-fg font-medium">
             한 줄로 지금 기분을 적어볼까요?{' '}
             <Text className="text-fg-faint font-normal">(선택)</Text>
           </Text>

@@ -1,6 +1,7 @@
 import { BackHeader } from '@/components/layout/BackHeader';
 import { Button } from '@/components/ui/Button';
 import { TIME_OF_DAY_META } from '@/constants/checkin';
+import { FgColors } from '@/constants/theme';
 import { CheckinHistoryCard } from '@/features/checkin/components/CheckinHistoryCard';
 import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hooks/useCheckin';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
@@ -33,9 +34,9 @@ export default function CheckinListScreen() {
         ListHeaderComponent={
           <>
             {canCheckInNow && (
-              <View className="bg-surface-md rounded-2xl p-6 mb-4 items-center">
+              <View className="bg-surface border border-line rounded-card p-6 mb-4 items-center">
                 <Text className="text-4xl mb-3">{TIME_OF_DAY_META[currentTimeOfDay].emoji}</Text>
-                <Text className="text-white text-base font-semibold mb-2 text-center">
+                <Text className="text-fg-default text-base font-semibold mb-2 text-center">
                   오늘의 감정을 기록해요
                 </Text>
                 <Text className="text-fg-muted text-sm mb-5 text-center">
@@ -53,9 +54,9 @@ export default function CheckinListScreen() {
               </View>
             )}
             {hasCheckedInCurrentSlot && (
-              <View className="bg-surface-md rounded-2xl p-6 mb-4 items-center">
+              <View className="bg-surface border border-line rounded-card p-6 mb-4 items-center">
                 <Text className="text-4xl mb-3">🙂</Text>
-                <Text className="text-white text-base font-semibold mb-2 text-center">
+                <Text className="text-fg-default text-base font-semibold mb-2 text-center">
                   체크인을 완료했습니다!
                 </Text>
                 <Text className="text-fg-muted text-sm mb-5 text-center">
@@ -71,7 +72,7 @@ export default function CheckinListScreen() {
         }
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator color="white" className="mt-8" />
+            <ActivityIndicator color={FgColors.default} className="mt-8" />
           ) : (
             <Text className="text-fg-ghost text-sm text-center mt-8">
               아직 체크인 기록이 없어요
@@ -98,7 +99,9 @@ export default function CheckinListScreen() {
         }}
         onEndReachedThreshold={0.3}
         ListFooterComponent={
-          isFetchingNextPage ? <ActivityIndicator color="white" className="mt-4" /> : null
+          isFetchingNextPage ? (
+            <ActivityIndicator color={FgColors.default} className="mt-4" />
+          ) : null
         }
       />
     </View>
