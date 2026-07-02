@@ -32,7 +32,7 @@ export function TodoDateNavigator({ label, onPrevious, onNext }: TodoDateNavigat
         />
       </Pressable>
 
-      <ThemedText type="small" className={TodoDateNavigatorClasses.label}>
+      <ThemedText type="smallTitle" className={TodoDateNavigatorClasses.label}>
         {label}
       </ThemedText>
 

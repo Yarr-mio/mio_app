@@ -696,13 +696,14 @@ export const ScoreSliderClasses = {
 
 /** Todo 화면(TodoScreen) — 날짜 네비게이터 */
 export const TodoDateNavigatorLayout = {
-  chevronIconWidth: 8,
-  chevronIconHeight: 11,
+  chevronIconWidth: 11,
+  chevronIconHeight: 15,
 } as const;
 
 export const TodoDateNavigatorClasses = {
-  container: 'flex-row items-center justify-center gap-2',
-  chevronButton: 'h-10 w-10 items-center justify-center',
+  container:
+    'flex-row items-center justify-center self-center gap-3 rounded-card border border-line bg-surface',
+  chevronButton: 'h-12 w-12 items-center justify-center',
   label: 'text-label',
 } as const;
 
@@ -720,12 +721,8 @@ export const TodoActionButtonClasses = {
   base: 'flex-1 items-center justify-center rounded-full border px-2 py-2.5',
   inactive: 'border-line bg-transparent',
   inactiveText: 'text-fg-default',
-  completed: 'border-todo-completed/40 bg-todo-completed/20',
-  completedText: 'text-todo-completed',
-  partial: 'border-todo-partial/40 bg-todo-partial/20',
-  partialText: 'text-todo-partial',
-  failed: 'border-todo-failed/40 bg-todo-failed/20',
-  failedText: 'text-todo-failed',
+  selected: 'border-primary/40 bg-primary/20',
+  selectedText: 'text-primary',
   disabled: 'opacity-40',
 } as const;
 

@@ -113,7 +113,6 @@ export function HomeScreen() {
               title="오늘의 체크인"
               headerActionLabel="기록하기"
               onHeaderActionPress={() => router.push(HOME_ROUTES.checkin)}
-              contentClassName={!hasCheckIn ? 'flex-1' : undefined}
             >
               {hasCheckIn && todayCheckin && todayCheckinMeta ? (
                 <CheckinSummaryRow

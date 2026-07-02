@@ -33,23 +33,14 @@ function isActionDisabled(
   return false;
 }
 
-function getActionClasses(kind: TodoCheckinStatus, isSelected: boolean) {
+function getActionClasses(isSelected: boolean) {
   if (!isSelected) {
     return {
       button: TodoActionButtonClasses.inactive,
       text: TodoActionButtonClasses.inactiveText,
     };
   }
-  if (kind === 'completed') {
-    return {
-      button: TodoActionButtonClasses.completed,
-      text: TodoActionButtonClasses.completedText,
-    };
-  }
-  if (kind === 'partial_completed') {
-    return { button: TodoActionButtonClasses.partial, text: TodoActionButtonClasses.partialText };
-  }
-  return { button: TodoActionButtonClasses.failed, text: TodoActionButtonClasses.failedText };
+  return { button: TodoActionButtonClasses.selected, text: TodoActionButtonClasses.selectedText };
 }
 
 export function TodoStatusActions({ status, isSubmitting, onSelect }: TodoStatusActionsProps) {
@@ -68,7 +59,7 @@ export function TodoStatusActions({ status, isSubmitting, onSelect }: TodoStatus
       {ACTION_KINDS.map((kind) => {
         const isSelected = status === kind;
         const disabled = isActionDisabled(status, kind, isSubmitting);
-        const { button, text } = getActionClasses(kind, isSelected);
+        const { button, text } = getActionClasses(isSelected);
 
         return (
           <Pressable
