@@ -1,5 +1,6 @@
 import { TZDate } from '@date-fns/tz';
 import {
+  addDays,
   addMonths,
   addWeeks,
   endOfMonth,
@@ -64,6 +65,10 @@ export function getMonthRange(anchorDate: Date): ReportDateRange {
     end,
     label: `${formatReportDateWithWeekday(start)} ~ ${formatReportDateWithWeekday(end)}`,
   };
+}
+
+export function shiftDate(anchorDate: Date, delta: number): Date {
+  return addDays(kstDate(anchorDate), delta);
 }
 
 export function shiftWeek(anchorDate: Date, delta: number): Date {
