@@ -114,6 +114,8 @@ export function subscribeNativePushTokenRefresh(
       return;
     }
 
-    void listener(token);
+    Promise.resolve(listener(token)).catch((error) => {
+      console.error('[subscribeNativePushTokenRefresh]', error);
+    });
   });
 }

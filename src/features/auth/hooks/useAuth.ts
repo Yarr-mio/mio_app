@@ -112,16 +112,6 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => postAuthLogout(),
     onSettled: async () => {
-      const token =
-        (await getRememberedPushToken()) ??
-        (await getNativeDevicePushTokenAsync().catch(() => null));
-
-      if (token) {
-        await unregisterDeviceToken(token).catch((error) => {
-          console.error('[useLogout:unregisterNotificationDevice]', error);
-        });
-      }
-
       setAccessToken(null);
       useUserStore.getState().reset();
       try {
@@ -133,6 +123,18 @@ export function useLogout() {
         queryClient.clear();
         onAuthInvalid?.();
       }
+
+      void (async () => {
+        const token =
+          (await getRememberedPushToken()) ??
+          (await getNativeDevicePushTokenAsync().catch(() => null));
+
+        if (token) {
+          await unregisterDeviceToken(token).catch((error) => {
+            console.error('[useLogout:unregisterNotificationDevice]', error);
+          });
+        }
+      })();
     },
     onError: (error) => {
       console.error('[useLogout]', error);

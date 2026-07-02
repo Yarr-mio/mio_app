@@ -44,8 +44,16 @@ export function NotificationDeviceBootstrap() {
     }
 
     const subscription = subscribeNativePushTokenRefresh(async (token) => {
-      await registerDeviceToken(token);
-      syncedTokenRef.current = token;
+      if (syncedTokenRef.current === token) {
+        return;
+      }
+
+      try {
+        await registerDeviceToken(token);
+        syncedTokenRef.current = token;
+      } catch (error) {
+        console.error('[NotificationDeviceBootstrap:refresh]', error);
+      }
     });
 
     return () => {
