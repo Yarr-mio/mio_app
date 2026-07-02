@@ -45,8 +45,10 @@ interface RecommendedActionItemProps {
 function RecommendedActionItem({ text, done }: RecommendedActionItemProps) {
   return (
     <View
+      accessible
       accessibilityRole="checkbox"
       accessibilityState={{ checked: done }}
+      accessibilityLabel={`${text}, ${done ? '완료' : '미완료'}`}
       className="flex-row items-center gap-3"
     >
       <RecommendedActionCheckbox done={done} />
