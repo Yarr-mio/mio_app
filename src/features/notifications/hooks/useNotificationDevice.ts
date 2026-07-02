@@ -5,16 +5,13 @@ import {
   unregisterNotificationDevice,
 } from '@/api/endpoints/notification';
 import { forgetRegisteredPushToken, rememberRegisteredPushToken } from '@/notifications/fcm';
-import type {
-  NotificationDeviceTokenRequest,
-  NotificationDeviceTokenResponse,
-} from '@/types/notification';
+import type { NotificationDeviceTokenResponse } from '@/types/notification';
 
 export function useRegisterNotificationDevice() {
-  return useMutation<NotificationDeviceTokenResponse, Error, NotificationDeviceTokenRequest>({
-    mutationFn: (body) => registerNotificationDevice(body),
-    onSuccess: async (_response, variables) => {
-      await rememberRegisteredPushToken(variables.token);
+  return useMutation<NotificationDeviceTokenResponse, Error, string>({
+    mutationFn: (pushToken) => registerNotificationDevice(pushToken),
+    onSuccess: async (_response, pushToken) => {
+      await rememberRegisteredPushToken(pushToken);
     },
     onError: (error) => {
       console.error('[useRegisterNotificationDevice]', error);
@@ -23,8 +20,8 @@ export function useRegisterNotificationDevice() {
 }
 
 export function useUnregisterNotificationDevice() {
-  return useMutation<NotificationDeviceTokenResponse, Error, NotificationDeviceTokenRequest>({
-    mutationFn: (body) => unregisterNotificationDevice(body.token),
+  return useMutation<NotificationDeviceTokenResponse, Error, string>({
+    mutationFn: (pushToken) => unregisterNotificationDevice(pushToken),
     onSuccess: async () => {
       await forgetRegisteredPushToken();
     },

@@ -53,7 +53,7 @@ export function OnboardingCompleteScreen() {
     void getNativeDevicePushTokenAsync({ requestPermission: true })
       .then(async (token) => {
         if (token) {
-          await registerDeviceToken({ token });
+          await registerDeviceToken(token);
         }
       })
       .catch((notificationError) => {

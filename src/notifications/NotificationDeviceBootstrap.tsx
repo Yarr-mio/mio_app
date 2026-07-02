@@ -26,7 +26,7 @@ export function NotificationDeviceBootstrap() {
           return;
         }
 
-        await registerDeviceToken({ token });
+        await registerDeviceToken(token);
         syncedTokenRef.current = token;
       })
       .catch((error) => {
@@ -44,7 +44,7 @@ export function NotificationDeviceBootstrap() {
     }
 
     const subscription = subscribeNativePushTokenRefresh(async (token) => {
-      await registerDeviceToken({ token });
+      await registerDeviceToken(token);
       syncedTokenRef.current = token;
     });
 

@@ -117,7 +117,7 @@ export function useLogout() {
         (await getNativeDevicePushTokenAsync().catch(() => null));
 
       if (token) {
-        await unregisterDeviceToken({ token }).catch((error) => {
+        await unregisterDeviceToken(token).catch((error) => {
           console.error('[useLogout:unregisterNotificationDevice]', error);
         });
       }
