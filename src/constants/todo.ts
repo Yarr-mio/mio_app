@@ -14,3 +14,5 @@ export const TODO_ACTION_LABEL: Record<TodoCheckinRequest['status'], string> = {
 export const TODO_EXPIRED_LABEL = '만료';
 
 export const TODO_EMPTY_STATE_MESSAGE = '이 날은 등록된 할 일이 없어요';
+
+export const TODO_ERROR_STATE_MESSAGE = '할 일을 불러오지 못했어요. 잠시 후 다시 시도해 주세요';
