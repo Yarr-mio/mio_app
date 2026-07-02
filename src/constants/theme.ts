@@ -376,6 +376,7 @@ export const HomeTextClasses = {
 export const HomeSpeechBubbleClasses = {
   shell:
     'overflow-hidden rounded-tl-[15px] rounded-tr-[15px] rounded-bl-[15px] rounded-br-[3px] border-2 border-speech-bubble-border bg-surface px-5 py-4',
+  messageText: 'text-[12px] leading-[18px]',
 } as const;
 
 export const HomeCardClasses = {

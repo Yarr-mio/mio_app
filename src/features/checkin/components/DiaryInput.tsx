@@ -21,7 +21,7 @@ export function DiaryInput({ value, onChange, maxLength = 60, editable = true }:
         multiline
         numberOfLines={4}
         editable={editable}
-        className="text-white text-sm min-h-[55px]"
+        className="text-fg text-sm min-h-[55px]"
         textAlignVertical="top"
       />
       <Text className="text-fg-faint text-xs text-right mt-2">

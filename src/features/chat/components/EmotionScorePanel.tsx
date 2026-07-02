@@ -8,6 +8,8 @@ import { EmotionIntensitySliderColors, EmotionIntensitySliderLayout } from '@/co
 interface EmotionScorePanelProps {
   initialScore: number;
   onConfirm: (score: number) => void;
+  // 패널이 확인 없이 닫히는 경로(백그라운드 전환, 대화 종료 버튼)에서도 마지막 슬라이더 값을 쓸 수 있도록 실시간 보고
+  onScoreChange?: (score: number) => void;
 }
 
 function ScoreThumb() {
@@ -22,7 +24,11 @@ function ScoreThumb() {
   );
 }
 
-export function EmotionScorePanel({ initialScore, onConfirm }: EmotionScorePanelProps) {
+export function EmotionScorePanel({
+  initialScore,
+  onConfirm,
+  onScoreChange,
+}: EmotionScorePanelProps) {
   const [score, setScore] = useState(initialScore);
   const { trackHeight, thumbRingSize, thumbTouchSize, sliderAreaPaddingY } =
     EmotionIntensitySliderLayout;
@@ -51,7 +57,11 @@ export function EmotionScorePanel({ initialScore, onConfirm }: EmotionScorePanel
           minimumValue={0}
           maximumValue={100}
           step={1}
-          onValueChange={(val) => setScore(Array.isArray(val) ? val[0] : val)}
+          onValueChange={(val) => {
+            const next = Array.isArray(val) ? val[0] : val;
+            setScore(next);
+            onScoreChange?.(next);
+          }}
           minimumTrackTintColor={EmotionIntensitySliderColors.trackActive}
           maximumTrackTintColor={EmotionIntensitySliderColors.trackInactive}
           thumbTintColor="transparent"

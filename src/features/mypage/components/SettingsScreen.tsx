@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import { getPartnerByKey } from '@/constants/characters';
 import { MAIN_ROUTES } from '@/constants/routes';
+import { FALLBACK_NICKNAME } from '@/constants/user';
 import { AccountSection } from '@/features/mypage/components/AccountSection';
 import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
@@ -17,7 +18,6 @@ import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
-const FALLBACK_NICKNAME = '사용자';
 const JOINED_AT_PLACEHOLDER = '확인 중';
 
 export function SettingsScreen() {

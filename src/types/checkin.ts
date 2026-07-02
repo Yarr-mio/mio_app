@@ -19,6 +19,7 @@ export interface CheckinRecord {
   memo?: string;
   ai_response: string | null;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface UpdatedCheckinRecord {
@@ -27,6 +28,7 @@ export interface UpdatedCheckinRecord {
   emotion_type: EmotionType;
   memo?: string;
   condition_score: number;
+  ai_response: string | null;
   updated_at: string;
 }
 
