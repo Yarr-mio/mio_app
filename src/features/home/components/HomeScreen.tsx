@@ -17,12 +17,12 @@ import {
 import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
-import { useHomeMock } from '@/features/home/hooks/useHomeMock';
+import { useTodos } from '@/features/todo/hooks/useTodo';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
 import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
-import { formatCheckinTime } from '@/utils/date';
+import { formatCheckinTime, getDateIso } from '@/utils/date';
 import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
@@ -50,7 +50,8 @@ export function HomeScreen() {
   const hasCheckIn = Boolean(todayCheckin);
   const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
-  const { hasActions, actions, toggleAction } = useHomeMock();
+  const { data: todayTodos } = useTodos(getDateIso(new Date()));
+  const hasActions = Boolean(todayTodos && todayTodos.length > 0);
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
     pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
@@ -138,7 +139,7 @@ export function HomeScreen() {
               headerContainerClassName="mb-5"
             >
               {hasActions ? (
-                <HomeRecommendedActionsList actions={actions} onToggleAction={toggleAction} />
+                <HomeRecommendedActionsList actions={todayTodos ?? []} />
               ) : (
                 <View className={HomeCardClasses.emptyState}>
                   <ThemedText type="small" className="text-label">
