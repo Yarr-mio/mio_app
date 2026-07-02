@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useSignupComplete } from '@/features/auth/hooks/useAuth';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
+import { readApiErrorMessage } from '@/utils/readApiError';
 
 const ONBOARDING_COMPLETE_ERROR_MESSAGE = '가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
 

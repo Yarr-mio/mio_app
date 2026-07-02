@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { ONBOARDING_SKIP_NEXT_ROUTES } from '@/constants/onboarding';
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStepSkipMutation } from '@/features/onboarding/hooks/useOnboarding';
 import type { OnboardingSkippableStep } from '@/types/onboarding';
+import { readApiErrorMessage } from '@/utils/readApiError';
 
 export function useOnboardingStepSkip() {
   const router = useRouter();
