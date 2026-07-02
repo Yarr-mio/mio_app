@@ -8,6 +8,7 @@ import { EMOTION_META } from '@/constants/emotions';
 import { HOME_SPEECH_BUBBLE_MESSAGES, HOME_TITLES } from '@/constants/home';
 import { HOME_ROUTES } from '@/constants/routes';
 import {
+  ButtonColors,
   HomeActionClasses,
   HomeCardClasses,
   HomeLayout,
@@ -27,7 +28,7 @@ import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
   if (checkins.length === 0) {
@@ -50,7 +51,7 @@ export function HomeScreen() {
   const hasCheckIn = Boolean(todayCheckin);
   const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
-  const { data: todayTodos } = useTodos(getDateIso(new Date()));
+  const { data: todayTodos, isPending: isTodayTodosPending } = useTodos(getDateIso(new Date()));
   const hasActions = Boolean(todayTodos && todayTodos.length > 0);
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
@@ -137,7 +138,11 @@ export function HomeScreen() {
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
             >
-              {hasActions ? (
+              {isTodayTodosPending ? (
+                <View className={HomeCardClasses.emptyState}>
+                  <ActivityIndicator color={ButtonColors.spinnerLight} />
+                </View>
+              ) : hasActions ? (
                 <HomeRecommendedActionsList actions={todayTodos ?? []} />
               ) : (
                 <View className={HomeCardClasses.emptyState}>
