@@ -6,7 +6,8 @@ import type { TodoCheckinRequest } from '@/types/todo';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
-const TODO_CHECKIN_ERROR_MESSAGE = '체크인 처리에 실패했어요. 다시 시도해 주세요.';
+const TODO_CHECKIN_ERROR_TITLE = '체크인 실패';
+const TODO_CHECKIN_ERROR_MESSAGE = '처리에 실패했어요. 다시 시도해 주세요.';
 
 export function useTodos(date: string) {
   return useQuery({
@@ -41,7 +42,7 @@ export function useTodoCheckin() {
         return;
       }
 
-      Alert.alert(TODO_CHECKIN_ERROR_MESSAGE);
+      Alert.alert(TODO_CHECKIN_ERROR_TITLE, TODO_CHECKIN_ERROR_MESSAGE);
     },
   });
 }
