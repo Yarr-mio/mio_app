@@ -114,6 +114,11 @@ export function getMonthStartIso(anchorDate: Date): string {
   return format(kstDate(start), 'yyyy-MM-dd');
 }
 
+/** TODO 목록 조회 API date 파라미터용 ISO 날짜(KST 기준) */
+export function getDateIso(date: Date): string {
+  return format(kstDate(date), 'yyyy-MM-dd');
+}
+
 /** 해당 월 기준 주차 계산 (주간 종료일 토요일 기준) */
 export function getWeekOfMonth(anchorDate: Date): number {
   const { end } = getWeekRange(anchorDate);
