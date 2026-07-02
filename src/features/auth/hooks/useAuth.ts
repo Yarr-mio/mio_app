@@ -110,7 +110,22 @@ export function useLogout() {
   const { mutateAsync: unregisterDeviceToken } = useUnregisterNotificationDevice();
 
   return useMutation({
-    mutationFn: () => postAuthLogout(),
+    mutationFn: async () => {
+      // device_id UPSERT 구조상 remembered가 서버에 등록된 최신 토큰과 가장 근접함! native fallback은 remembered 유실 시에만 사용
+      const rememberedPushToken = await getRememberedPushToken();
+      const pushToken =
+        rememberedPushToken ??
+        // remembered 유실 시 native 토큰으로 fallback
+        (await getNativeDevicePushTokenAsync().catch(() => null));
+
+      if (pushToken) {
+        await unregisterDeviceToken(pushToken).catch(() => {
+          // onError에서 로깅됨 — 해제 실패는 로그아웃을 막지 않음
+        });
+      }
+
+      return await postAuthLogout();
+    },
     onSettled: async () => {
       setAccessToken(null);
       useUserStore.getState().reset();
@@ -123,18 +138,6 @@ export function useLogout() {
         queryClient.clear();
         onAuthInvalid?.();
       }
-
-      void (async () => {
-        const token =
-          (await getRememberedPushToken()) ??
-          (await getNativeDevicePushTokenAsync().catch(() => null));
-
-        if (token) {
-          await unregisterDeviceToken(token).catch((error) => {
-            console.error('[useLogout:unregisterNotificationDevice]', error);
-          });
-        }
-      })();
     },
     onError: (error) => {
       console.error('[useLogout]', error);

@@ -57,7 +57,7 @@ export function OnboardingCompleteScreen() {
         }
       })
       .catch((notificationError) => {
-        console.error('[OnboardingCompleteNotification]', notificationError);
+        console.warn('[OnboardingCompleteNotification]', notificationError);
       })
       .finally(() => {
         setNotificationPending(false);

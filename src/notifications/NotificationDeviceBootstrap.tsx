@@ -6,6 +6,12 @@ import {
   subscribeNativePushTokenRefresh,
 } from '@/notifications/fcm';
 import { useAuthStore } from '@/store/authStore';
+import { getOrCreateDeviceId } from '@/utils/deviceId';
+
+async function resolveDeviceIdForRegistration(): Promise<string | null> {
+  const device_id = (await getOrCreateDeviceId()).trim();
+  return device_id.length > 0 ? device_id : null;
+}
 
 export function NotificationDeviceBootstrap() {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -20,18 +26,29 @@ export function NotificationDeviceBootstrap() {
 
     let cancelled = false;
 
-    void getNativeDevicePushTokenAsync()
-      .then(async (token) => {
+    void (async () => {
+      try {
+        const device_id = await resolveDeviceIdForRegistration();
+        if (!device_id || cancelled) {
+          if (__DEV__ && !device_id) {
+            console.warn(
+              '[NotificationDeviceBootstrap] device_id not ready, skipping registration'
+            );
+          }
+          return;
+        }
+
+        const token = await getNativeDevicePushTokenAsync();
         if (!token || cancelled || syncedTokenRef.current === token) {
           return;
         }
 
         await registerDeviceToken(token);
         syncedTokenRef.current = token;
-      })
-      .catch((error) => {
-        console.error('[NotificationDeviceBootstrap]', error);
-      });
+      } catch (error) {
+        console.warn('[NotificationDeviceBootstrap]', error);
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -49,10 +66,20 @@ export function NotificationDeviceBootstrap() {
       }
 
       try {
+        const device_id = await resolveDeviceIdForRegistration();
+        if (!device_id) {
+          if (__DEV__) {
+            console.warn(
+              '[NotificationDeviceBootstrap:refresh] device_id not ready, skipping registration'
+            );
+          }
+          return;
+        }
+
         await registerDeviceToken(token);
         syncedTokenRef.current = token;
       } catch (error) {
-        console.error('[NotificationDeviceBootstrap:refresh]', error);
+        console.warn('[NotificationDeviceBootstrap:refresh]', error);
       }
     });
 

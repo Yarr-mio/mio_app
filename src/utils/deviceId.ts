@@ -12,6 +12,10 @@ const VARIANT_RFC4122_MASK = 0x80;
 
 let pendingDeviceId: Promise<string> | null = null;
 
+function isValidDeviceId(value: string | null | undefined): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 /**
  * deviceId(UUID v4) 생성/영속화 유틸
  */
@@ -37,23 +41,22 @@ async function createUuidV4(): Promise<string> {
 }
 
 export async function getOrCreateDeviceId(): Promise<string> {
-  if (pendingDeviceId) {
-    return pendingDeviceId;
+  if (!pendingDeviceId) {
+    pendingDeviceId = (async () => {
+      try {
+        const existing = await storage.deviceId.get();
+        if (isValidDeviceId(existing)) {
+          return existing.trim();
+        }
+
+        const id = await createUuidV4();
+        await storage.deviceId.set(id);
+        return id;
+      } finally {
+        pendingDeviceId = null;
+      }
+    })();
   }
 
-  pendingDeviceId = (async () => {
-    const existing = await storage.deviceId.get();
-    if (existing) {
-      return existing;
-    }
-    const id = await createUuidV4();
-    await storage.deviceId.set(id);
-    return id;
-  })();
-
-  try {
-    return await pendingDeviceId;
-  } finally {
-    pendingDeviceId = null;
-  }
+  return pendingDeviceId;
 }
