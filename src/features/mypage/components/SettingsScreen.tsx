@@ -16,11 +16,10 @@ import {
 } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import type { NotificationSettingsUpdateParams } from '@/types/user';
+import { formatJoinedAtLabel } from '@/utils/date';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-
-const JOINED_AT_PLACEHOLDER = '확인 중';
 
 export function SettingsScreen() {
   const router = useRouter();
@@ -39,7 +38,9 @@ export function SettingsScreen() {
     ? `${myPageData.preferred_character.name}와 함께`
     : `${partner.name}와 함께`;
 
-  const joinedAtLabel = JOINED_AT_PLACEHOLDER;
+  const joinedAtLabel = myPageData?.joined_at
+    ? formatJoinedAtLabel(myPageData.joined_at)
+    : undefined;
 
   const allNotificationsEnabled =
     notificationSettings?.checkin_enabled === true &&

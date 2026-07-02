@@ -51,6 +51,7 @@ export interface MyProfile {
   stats: MyStats;
   monthly_emotion_distribution: MyEmotionDistribution[];
   signup_step: string;
+  joined_at: string | null;
 }
 
 export interface MyCharacterUpdateResponse {
