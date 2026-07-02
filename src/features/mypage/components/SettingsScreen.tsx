@@ -37,13 +37,20 @@ export function SettingsScreen() {
 
   const joinedAtLabel = JOINED_AT_PLACEHOLDER;
 
-  const pushEnabled = notificationSettings?.push_enabled ?? true;
+  const pushEnabled =
+    notificationSettings?.checkin_enabled === true &&
+    notificationSettings?.character_enabled === true &&
+    notificationSettings?.report_enabled === true;
 
   const handlePushToggle = (value: boolean) => {
     if (isNotificationUpdatePending) {
       return;
     }
-    updateNotificationSettings({ push_enabled: value });
+    updateNotificationSettings({
+      checkin_enabled: value,
+      character_enabled: value,
+      report_enabled: value,
+    });
   };
 
   return (

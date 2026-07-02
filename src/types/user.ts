@@ -91,9 +91,15 @@ export interface ChangeCharacterParams {
 }
 
 export interface NotificationSettings {
-  push_enabled: boolean;
+  checkin_enabled: boolean;
+  checkin_time: string;
+  character_enabled: boolean;
+  report_enabled: boolean;
 }
 
 export interface NotificationSettingsUpdateParams {
-  push_enabled: boolean;
+  checkin_enabled?: boolean;
+  checkin_time?: string;
+  character_enabled?: boolean;
+  report_enabled?: boolean;
 }
