@@ -1,19 +1,31 @@
 import { ThemedText } from '@/components/themed/ThemedText';
 import { BaseCard } from '@/components/ui/BaseCard';
+import { NOTIFICATION_SETTINGS_LABELS } from '@/constants/notifications';
 import { SwitchColors } from '@/constants/theme';
-import { Switch } from 'react-native';
+import { cn } from '@/utils/cn';
+import { Switch, View } from 'react-native';
 
-interface NotificationCardProps {
+interface NotificationToggleRowProps {
+  label: string;
   enabled: boolean;
   disabled?: boolean;
+  textClassName?: string;
+  className?: string;
   onToggle: (value: boolean) => void;
 }
 
-export function NotificationCard({ enabled, disabled = false, onToggle }: NotificationCardProps) {
+function NotificationToggleRow({
+  label,
+  enabled,
+  disabled = false,
+  textClassName = 'text-fg-default',
+  className,
+  onToggle,
+}: NotificationToggleRowProps) {
   return (
-    <BaseCard className="flex-row items-center justify-between px-6 py-6">
-      <ThemedText type="smallTitle" className="text-fg-default">
-        푸시 알림
+    <View className={cn('flex-row items-center justify-between px-6 py-4', className)}>
+      <ThemedText type="smallTitle" className={textClassName}>
+        {label}
       </ThemedText>
       <Switch
         value={enabled}
@@ -23,6 +35,71 @@ export function NotificationCard({ enabled, disabled = false, onToggle }: Notifi
         thumbColor={SwitchColors.thumb}
         ios_backgroundColor={SwitchColors.iosBackgroundColor}
       />
-    </BaseCard>
+    </View>
+  );
+}
+
+interface NotificationCardProps {
+  allEnabled: boolean;
+  checkinEnabled: boolean;
+  characterEnabled: boolean;
+  reportEnabled: boolean;
+  disabled?: boolean;
+  onToggleAll: (value: boolean) => void;
+  onToggleCheckin: (value: boolean) => void;
+  onToggleCharacter: (value: boolean) => void;
+  onToggleReport: (value: boolean) => void;
+}
+
+export function NotificationCard({
+  allEnabled,
+  checkinEnabled,
+  characterEnabled,
+  reportEnabled,
+  disabled = false,
+  onToggleAll,
+  onToggleCheckin,
+  onToggleCharacter,
+  onToggleReport,
+}: NotificationCardProps) {
+  return (
+    <View className="gap-2">
+      <BaseCard>
+        <NotificationToggleRow
+          label={NOTIFICATION_SETTINGS_LABELS.all}
+          enabled={allEnabled}
+          disabled={disabled}
+          className="py-6"
+          onToggle={onToggleAll}
+        />
+      </BaseCard>
+
+      <BaseCard className="overflow-hidden">
+        <NotificationToggleRow
+          label={NOTIFICATION_SETTINGS_LABELS.checkin}
+          enabled={checkinEnabled}
+          disabled={disabled}
+          textClassName="text-fg-sub"
+          className="py-4"
+          onToggle={onToggleCheckin}
+        />
+        <NotificationToggleRow
+          label={NOTIFICATION_SETTINGS_LABELS.character}
+          enabled={characterEnabled}
+          disabled={disabled}
+          textClassName="text-fg-sub"
+          className="border-t border-line py-4"
+          onToggle={onToggleCharacter}
+        />
+        <NotificationToggleRow
+          label={NOTIFICATION_SETTINGS_LABELS.report}
+          enabled={reportEnabled}
+          disabled={disabled}
+          textClassName="text-fg-sub"
+          className="border-t border-line py-4"
+          onToggle={onToggleReport}
+        />
+      </BaseCard>
+    </View>
   );
 }

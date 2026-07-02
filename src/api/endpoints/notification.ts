@@ -41,15 +41,6 @@ async function buildNotificationDeviceRegisterBody(
     app_version,
   };
 
-  if (__DEV__) {
-    console.log('[registerNotificationDevice] request body:', {
-      device_id: body.device_id,
-      push_token: `${body.push_token.slice(0, 8)}...`,
-      platform: body.platform,
-      app_version: body.app_version,
-    });
-  }
-
   return body;
 }
 
@@ -89,10 +80,6 @@ export async function unregisterNotificationDevice(
 export async function updateNotificationSettings(
   params: NotificationSettingsUpdateParams
 ): Promise<NotificationSettings> {
-  if (__DEV__) {
-    console.log('[updateNotificationSettings] request body:', params);
-  }
-
   const { data } = await apiClient.patch<ApiResponse<NotificationSettings>>(
     '/v1/notifications/settings',
     params

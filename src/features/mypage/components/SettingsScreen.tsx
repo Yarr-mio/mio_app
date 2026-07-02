@@ -15,7 +15,9 @@ import {
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import type { NotificationSettingsUpdateParams } from '@/types/user';
 import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
 const JOINED_AT_PLACEHOLDER = '확인 중';
@@ -26,6 +28,8 @@ export function SettingsScreen() {
   const { data: notificationSettings } = useNotificationSettings();
   const { mutate: updateNotificationSettings, isPending: isNotificationUpdatePending } =
     useUpdateNotificationSettings();
+  const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
+  const isNotificationUpdateInFlightRef = useRef(false);
 
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
@@ -37,20 +41,55 @@ export function SettingsScreen() {
 
   const joinedAtLabel = JOINED_AT_PLACEHOLDER;
 
-  const pushEnabled =
+  const allNotificationsEnabled =
     notificationSettings?.checkin_enabled === true &&
     notificationSettings?.character_enabled === true &&
     notificationSettings?.report_enabled === true;
 
-  const handlePushToggle = (value: boolean) => {
-    if (isNotificationUpdatePending) {
+  const checkinEnabled = notificationSettings?.checkin_enabled === true;
+  const characterEnabled = notificationSettings?.character_enabled === true;
+  const reportEnabled = notificationSettings?.report_enabled === true;
+
+  const isNotificationToggleDisabled = isNotificationUpdatePending || isNotificationUpdateLocked;
+
+  const handleNotificationUpdate = (params: NotificationSettingsUpdateParams) => {
+    if (
+      isNotificationUpdatePending ||
+      isNotificationUpdateLocked ||
+      isNotificationUpdateInFlightRef.current
+    ) {
       return;
     }
-    updateNotificationSettings({
+
+    isNotificationUpdateInFlightRef.current = true;
+    setIsNotificationUpdateLocked(true);
+
+    updateNotificationSettings(params, {
+      onSettled: () => {
+        isNotificationUpdateInFlightRef.current = false;
+        setIsNotificationUpdateLocked(false);
+      },
+    });
+  };
+
+  const handleAllNotificationsToggle = (value: boolean) => {
+    handleNotificationUpdate({
       checkin_enabled: value,
       character_enabled: value,
       report_enabled: value,
     });
+  };
+
+  const handleCheckinToggle = (value: boolean) => {
+    handleNotificationUpdate({ checkin_enabled: value });
+  };
+
+  const handleCharacterToggle = (value: boolean) => {
+    handleNotificationUpdate({ character_enabled: value });
+  };
+
+  const handleReportToggle = (value: boolean) => {
+    handleNotificationUpdate({ report_enabled: value });
   };
 
   return (
@@ -91,9 +130,15 @@ export function SettingsScreen() {
               알림
             </ThemedText>
             <NotificationCard
-              enabled={pushEnabled}
-              disabled={isNotificationUpdatePending}
-              onToggle={handlePushToggle}
+              allEnabled={allNotificationsEnabled}
+              checkinEnabled={checkinEnabled}
+              characterEnabled={characterEnabled}
+              reportEnabled={reportEnabled}
+              disabled={isNotificationToggleDisabled}
+              onToggleAll={handleAllNotificationsToggle}
+              onToggleCheckin={handleCheckinToggle}
+              onToggleCharacter={handleCharacterToggle}
+              onToggleReport={handleReportToggle}
             />
           </View>
 
