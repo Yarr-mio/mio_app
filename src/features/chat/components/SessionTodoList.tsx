@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed/ThemedText';
+import { formatTodoCategoryLabel } from '@/constants/todo';
 import type { SessionTodoItem } from '@/types/chat';
 import { View } from 'react-native';
 
@@ -16,7 +17,8 @@ export function SessionTodoList({ todos }: SessionTodoListProps) {
             {todo.action_text}
           </ThemedText>
           <ThemedText type="small" className="text-chat-subtext">
-            {todo.category} · 난이도 {todo.difficulty}/5 · {todo.estimated_minutes}분
+            {formatTodoCategoryLabel(todo.category)} · 난이도 {todo.difficulty}/5 ·{' '}
+            {todo.estimated_minutes}분
           </ThemedText>
         </View>
       ))}
