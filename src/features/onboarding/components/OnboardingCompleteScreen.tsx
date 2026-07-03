@@ -5,11 +5,12 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { AppModal } from '@/components/ui/AppModal';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
-import { NotificationModalColors, NOTIFICATION_MODAL } from '@/constants/notifications';
+import { NOTIFICATION_MODAL, NotificationModalColors } from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
 import { useRegisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
 import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
+import { useOnboardingNotificationLater } from '@/features/onboarding/hooks/useOnboardingNotificationLater';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { getNativeDevicePushTokenAsync } from '@/notifications/fcm';
 import { Image } from 'expo-image';
@@ -27,6 +28,7 @@ export function OnboardingCompleteScreen() {
   const [signupCompleted, setSignupCompleted] = useState(false);
   const [notificationPending, setNotificationPending] = useState(false);
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
+  const { mutateAsync: declineNotificationSettings } = useOnboardingNotificationLater();
   const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit({
     onSuccess: () => {
       setSignupCompleted(true);
@@ -67,7 +69,18 @@ export function OnboardingCompleteScreen() {
   };
 
   const handleNotificationLater = () => {
+    if (notificationPending) {
+      return;
+    }
+
     setNotificationModalVisible(false);
+    void declineNotificationSettings()
+      .catch(() => {
+        // onError에서 로깅됨 — 설정 저장 실패해도 홈으로 이동
+      })
+      .finally(() => {
+        router.replace(AUTH_ROUTES.home);
+      });
   };
 
   return (

@@ -20,6 +20,12 @@ export const NOTIFICATION_MODAL = {
   cancelLabel: '나중에 할게',
 } as const;
 
+export const NOTIFICATION_SETTINGS_ALL_DISABLED = {
+  checkin_enabled: false,
+  character_enabled: false,
+  report_enabled: false,
+} as const;
+
 export const NOTIFICATION_SETTINGS_LABELS = {
   all: '푸시 알림 전체 동의',
   checkin: '체크인 알림',
