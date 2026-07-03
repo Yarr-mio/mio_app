@@ -560,6 +560,7 @@ export const ReportTextClasses = {
   characterStoryTitle: 'text-character-story-title',
   characterStoryDate: 'text-label',
   characterStoryReadMore: 'text-weekday',
+  coachingDirection: 'font-semibold text-character-story-title',
 } as const;
 
 export const ReportInsufficientDataLayout = {
