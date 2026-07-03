@@ -52,6 +52,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     [
+      'expo-notifications',
+      {
+        defaultChannel: 'default',
+      },
+    ],
+    [
       'expo-font',
       {
         fonts: [

@@ -9,7 +9,7 @@ import { Pressable, View } from 'react-native';
 interface UserProfileCardProps {
   nickname: string;
   characterLabel: string;
-  joinedAtLabel: string;
+  joinedAtLabel?: string;
   onEditPress: () => void;
 }
 
@@ -31,9 +31,11 @@ export function UserProfileCard({
         </ThemedText>
         <View className="flex-row gap-2 items-center">
           <Label label={characterLabel} />
-          <ThemedText type="smallMedium" className="text-badge">
-            {joinedAtLabel}
-          </ThemedText>
+          {joinedAtLabel ? (
+            <ThemedText type="smallMedium" className="text-badge">
+              {joinedAtLabel}
+            </ThemedText>
+          ) : null}
         </View>
       </View>
 

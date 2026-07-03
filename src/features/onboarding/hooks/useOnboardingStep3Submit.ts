@@ -5,10 +5,10 @@ import { ONBOARDING_QUESTION_IDS, type OnboardingStyleType } from '@/constants/o
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStep3 } from '@/features/onboarding/hooks/useOnboarding';
 import { cacheOnboardingCharacterRecommendations } from '@/features/onboarding/utils/cacheOnboardingCharacterRecommendations';
 import { useUserStore } from '@/store/userStore';
+import { readApiErrorMessage } from '@/utils/readApiError';
 
 export function useOnboardingStep3Submit() {
   const router = useRouter();

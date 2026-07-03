@@ -32,6 +32,7 @@ interface CharacterStoryCardProps {
   anchorDate: Date;
   characterId: OnboardingCharacterId;
   storyText: string;
+  coachingDirection?: string | null;
 }
 
 export function CharacterStoryCard({
@@ -39,6 +40,7 @@ export function CharacterStoryCard({
   anchorDate,
   characterId,
   storyText,
+  coachingDirection,
 }: CharacterStoryCardProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -60,11 +62,27 @@ export function CharacterStoryCard({
     setExpanded(false);
   };
 
+  const renderInlineCoachingDirection = (hasLeadingText: boolean) => {
+    if (!coachingDirection) {
+      return null;
+    }
+
+    return (
+      <>
+        {hasLeadingText ? ' ' : null}
+        <ThemedText type="smallBold" className={ReportTextClasses.coachingDirection}>
+          {coachingDirection}
+        </ThemedText>
+      </>
+    );
+  };
+
   const renderStoryBody = () => {
     if (expanded) {
       return (
         <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
           {storyText}
+          {renderInlineCoachingDirection(storyText.length > 0)}
         </ThemedText>
       );
     }
@@ -83,6 +101,7 @@ export function CharacterStoryCard({
           >
             {CHARACTER_STORY_READ_MORE_INLINE_LABEL}
           </ThemedText>
+          {renderInlineCoachingDirection(true)}
         </ThemedText>
       );
     }
@@ -90,6 +109,7 @@ export function CharacterStoryCard({
     return (
       <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
         {storyText}
+        {renderInlineCoachingDirection(storyText.length > 0)}
       </ThemedText>
     );
   };

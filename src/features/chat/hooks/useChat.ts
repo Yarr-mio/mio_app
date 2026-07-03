@@ -17,7 +17,7 @@ import {
   SESSION_SUMMARY_POLL_INTERVAL_MS,
 } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
+import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import type { ActiveSessionResponse } from '@/types/chat';
 
 export function useActiveSession() {

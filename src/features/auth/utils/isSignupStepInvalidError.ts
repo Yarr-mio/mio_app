@@ -1,5 +1,5 @@
 import { HTTP_STATUS } from '@/constants/config';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
+import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 
 export function isSignupStepInvalidError(error: unknown): boolean {
   const status = readApiHttpStatus(error);

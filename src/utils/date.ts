@@ -1,3 +1,4 @@
+import type { TimeOfDay } from '@/types/checkin';
 import { TZDate } from '@date-fns/tz';
 import {
   addDays,
@@ -10,7 +11,6 @@ import {
   startOfWeek,
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import type { TimeOfDay } from '@/types/checkin';
 
 const TZ = 'Asia/Seoul';
 
@@ -173,6 +173,11 @@ export function formatCheckinShortDate(isoString: string): string {
 
 export function formatCheckinTime(isoString: string): string {
   return format(kst(isoString), 'a h:mm', { locale: ko });
+}
+
+/** 사용자 가입일 */
+export function formatJoinedAtLabel(isoString: string): string {
+  return `${format(kst(isoString), 'yyyy.MM.dd')} 가입`;
 }
 
 /** 현재 시각(KST 기준)이 속한 체크인 시간대(아침/오후/저녁). 0시부터 곧바로 오전으로 판단(서버 "오늘" 판정과 동일 기준) */

@@ -2,6 +2,7 @@ import { getAuthSignupStatus } from '@/api/endpoints/auth';
 import { ONBOARDING_CURRENT_STEPS, ONBOARDING_SKIP_NEXT_ROUTES } from '@/constants/onboarding';
 import { AUTH_ROUTES, type AuthRoute } from '@/constants/routes';
 import { routeForSignupStep } from '@/features/auth/utils/routeForSignupStep';
+import { useAuthStore } from '@/store/authStore';
 import type { SignupStep } from '@/types/auth';
 import type { OnboardingProgressStep } from '@/types/onboarding';
 
@@ -75,9 +76,29 @@ function routeForSignupStatus(
   return routeForSignupStep(signupStep);
 }
 
+// 스플래시 복원 전용 signup status 조회 재시도 상한
+// 일시적 네트워크 오류만 흡수하고, 무한 재시도나 과도한 대기는 피하기 위해 1회로 제한
+const SIGNUP_STATUS_SPLASH_MAX_ATTEMPTS = 2;
+
+// fail-closed 완화 후 accessToken은 있는데 signupStep만 null인 경우 AppState foreground 재조회가 필요할 수 있음 (이번 범위 밖)
+async function getAuthSignupStatusWithSplashRetry() {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= SIGNUP_STATUS_SPLASH_MAX_ATTEMPTS; attempt++) {
+    try {
+      return await getAuthSignupStatus();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 export async function resolveRouteFromSignupStatus(): Promise<AuthRoute> {
-  const status = await getAuthSignupStatus();
+  const status = await getAuthSignupStatusWithSplashRetry();
   const { signup_step: signupStep, onboarding_step: onboardingStep } = status.data;
+  useAuthStore.getState().setSignupStep(signupStep);
   const normalizedOnboardingStep = normalizeOnboardingProgressStep(onboardingStep);
   const route = routeForSignupStatus(signupStep, normalizedOnboardingStep);
   logSignupStatusNavigation(signupStep, route, normalizedOnboardingStep);

@@ -1,13 +1,4 @@
 import {
-  InfiniteData,
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { Alert } from 'react-native';
-import {
   fetchCheckinDetail,
   fetchCheckinList,
   fetchCheckinToday,
@@ -18,8 +9,17 @@ import { queryKeys } from '@/api/queryKeys';
 import { HTTP_STATUS } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type { CheckinRecord, SubmitCheckinBody, UpdateCheckinBody } from '@/types/checkin';
+import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { router } from 'expo-router';
+import { Alert } from 'react-native';
 
 const CHECKIN_SUBMIT_ERROR_MESSAGE = '체크인 등록에 실패했어요. 다시 시도해 주세요.';
 const CHECKIN_UPDATE_ERROR_MESSAGE = '체크인 수정에 실패했어요. 다시 시도해 주세요.';
