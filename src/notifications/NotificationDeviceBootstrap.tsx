@@ -6,6 +6,7 @@ import {
   subscribeNativePushTokenRefresh,
 } from '@/notifications/fcm';
 import { useAuthStore } from '@/store/authStore';
+import type { NotificationDeviceTokenResponse } from '@/types/notification';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
 
 async function resolveDeviceIdForRegistration(): Promise<string | null> {
@@ -13,14 +14,66 @@ async function resolveDeviceIdForRegistration(): Promise<string | null> {
   return device_id.length > 0 ? device_id : null;
 }
 
+interface RegisterPushTokenOnceParams {
+  token: string;
+  logContext: '' | ':refresh';
+  registerDeviceToken: (pushToken: string) => Promise<NotificationDeviceTokenResponse>;
+  syncedTokenRef: { current: string | null };
+  inFlightTokenRef: { current: string | null };
+}
+
+async function registerPushTokenOnce({
+  token,
+  logContext,
+  registerDeviceToken,
+  syncedTokenRef,
+  inFlightTokenRef,
+}: RegisterPushTokenOnceParams): Promise<void> {
+  if (syncedTokenRef.current === token || inFlightTokenRef.current === token) {
+    return;
+  }
+
+  const previousSyncedToken = syncedTokenRef.current;
+  // 초기 등록과 refresh listener가 동시에 같은 token으로 진입하는 것을 막기 위해 API 호출 전에 먼저 반영
+  syncedTokenRef.current = token;
+  inFlightTokenRef.current = token;
+
+  try {
+    const device_id = await resolveDeviceIdForRegistration();
+    if (!device_id) {
+      syncedTokenRef.current = previousSyncedToken;
+      if (__DEV__) {
+        console.warn(
+          `[NotificationDeviceBootstrap${logContext}] device_id not ready, skipping registration`
+        );
+      }
+      return;
+    }
+
+    await registerDeviceToken(token);
+  } catch (error) {
+    syncedTokenRef.current = previousSyncedToken;
+    console.warn(`[NotificationDeviceBootstrap${logContext}]`, error);
+  } finally {
+    if (inFlightTokenRef.current === token) {
+      inFlightTokenRef.current = null;
+    }
+  }
+}
+
 export function NotificationDeviceBootstrap() {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const signupStep = useAuthStore((state) => state.signupStep);
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
   const syncedTokenRef = useRef<string | null>(null);
+  const inFlightTokenRef = useRef<string | null>(null);
+  // 가입 완료(COMPLETED) 전에는 서버 디바이스 등록을 시도하지 않음
+  const shouldRegisterDevice = accessToken !== null && signupStep === 'COMPLETED';
 
   useEffect(() => {
-    if (!accessToken) {
+    if (!shouldRegisterDevice) {
       syncedTokenRef.current = null;
+      inFlightTokenRef.current = null;
       return;
     }
 
@@ -28,65 +81,49 @@ export function NotificationDeviceBootstrap() {
 
     void (async () => {
       try {
-        const device_id = await resolveDeviceIdForRegistration();
-        if (!device_id || cancelled) {
-          if (__DEV__ && !device_id) {
-            console.warn(
-              '[NotificationDeviceBootstrap] device_id not ready, skipping registration'
-            );
-          }
-          return;
-        }
-
         const token = await getNativeDevicePushTokenAsync();
-        if (!token || cancelled || syncedTokenRef.current === token) {
+        if (!token || cancelled) {
           return;
         }
 
-        await registerDeviceToken(token);
-        syncedTokenRef.current = token;
+        await registerPushTokenOnce({
+          token,
+          logContext: '',
+          registerDeviceToken,
+          syncedTokenRef,
+          inFlightTokenRef,
+        });
       } catch (error) {
-        console.warn('[NotificationDeviceBootstrap]', error);
+        if (!cancelled) {
+          console.warn('[NotificationDeviceBootstrap]', error);
+        }
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [accessToken, registerDeviceToken]);
+  }, [shouldRegisterDevice, registerDeviceToken]);
 
   useEffect(() => {
-    if (!accessToken) {
+    if (!shouldRegisterDevice) {
       return undefined;
     }
 
     const subscription = subscribeNativePushTokenRefresh(async (token) => {
-      if (syncedTokenRef.current === token) {
-        return;
-      }
-
-      try {
-        const device_id = await resolveDeviceIdForRegistration();
-        if (!device_id) {
-          if (__DEV__) {
-            console.warn(
-              '[NotificationDeviceBootstrap:refresh] device_id not ready, skipping registration'
-            );
-          }
-          return;
-        }
-
-        await registerDeviceToken(token);
-        syncedTokenRef.current = token;
-      } catch (error) {
-        console.warn('[NotificationDeviceBootstrap:refresh]', error);
-      }
+      await registerPushTokenOnce({
+        token,
+        logContext: ':refresh',
+        registerDeviceToken,
+        syncedTokenRef,
+        inFlightTokenRef,
+      });
     });
 
     return () => {
       subscription.remove();
     };
-  }, [accessToken, registerDeviceToken]);
+  }, [shouldRegisterDevice, registerDeviceToken]);
 
   return null;
 }
