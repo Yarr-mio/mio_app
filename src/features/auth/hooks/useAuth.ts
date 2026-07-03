@@ -40,6 +40,7 @@ interface SocialLoginInput {
 // 카카오/애플 로그인
 export function useSocialLogin() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
 
   return useMutation<AuthLoginResponse, Error, SocialLoginInput>({
     mutationFn: (input) => postAuthLogin(input),
@@ -49,6 +50,7 @@ export function useSocialLogin() {
       queryClient.clear();
 
       await storage.refreshToken.set(res.data.refresh_token);
+      setSignupStep(res.data.signup_step);
       setAccessToken(res.data.access_token);
 
       if (!res.data.is_new_user && res.data.signup_step === 'COMPLETED' && res.data.user) {
@@ -64,16 +66,24 @@ export function useSocialLogin() {
 
 // 이용약관 동의
 export function useSignupConsent() {
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
+
   return useMutation<AuthSignupConsentResponse, Error, AuthSignupConsentRequest>({
     mutationFn: (body) => postAuthSignupConsent(body),
+    onSuccess: (res) => {
+      setSignupStep(res.data.signup_step);
+    },
   });
 }
 
 // 프로필 설정 화면
 export function useSignupProfile() {
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
+
   return useMutation<AuthSignupProfileResponse, Error, AuthSignupProfileRequest>({
     mutationFn: (body) => postAuthSignupProfile(body),
     onSuccess: (res) => {
+      setSignupStep(res.data.signup_step);
       useUserStore.getState().patchOnboardingNickname(res.data.nickname);
     },
   });
@@ -88,16 +98,24 @@ export function useNicknameDuplicateCheck() {
 
 // 가입 이탈 후 재진입 시 signup_step 조회
 export function useSignupStatus() {
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
+
   return useMutation<AuthSignupStatusResponse, Error, void>({
     mutationFn: () => getAuthSignupStatus(),
+    onSuccess: (res) => {
+      setSignupStep(res.data.signup_step);
+    },
   });
 }
 
 // 회원가입 최종 완료
 export function useSignupComplete() {
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
+
   return useMutation<AuthSignupCompleteResponse, Error, void>({
     mutationFn: () => postAuthSignupComplete(),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      setSignupStep(res.data.signup_step);
       commitAuthProfileFromStoredSelection();
     },
   });
@@ -106,6 +124,7 @@ export function useSignupComplete() {
 // 로그아웃
 export function useLogout() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
   const onAuthInvalid = useAuthStore((s) => s.onAuthInvalid);
   const { mutateAsync: unregisterDeviceToken } = useUnregisterNotificationDevice();
 
@@ -128,6 +147,7 @@ export function useLogout() {
     },
     onSettled: async () => {
       setAccessToken(null);
+      setSignupStep(null);
       useUserStore.getState().reset();
       try {
         await Promise.allSettled([
@@ -148,12 +168,14 @@ export function useLogout() {
 // 회원 탈퇴
 export function useWithdraw() {
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const setSignupStep = useAuthStore((s) => s.setSignupStep);
   const onAuthInvalid = useAuthStore((s) => s.onAuthInvalid);
 
   return useMutation<AuthWithdrawResponse, Error, void>({
     mutationFn: () => deleteAuthWithdraw(),
     onSuccess: async () => {
       setAccessToken(null);
+      setSignupStep(null);
       useUserStore.getState().reset();
       try {
         await Promise.allSettled([
