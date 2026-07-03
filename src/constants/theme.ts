@@ -211,6 +211,13 @@ export const SettingsLayout = {
   userIconSize: 21,
   chevronWidth: 27,
   chevronHeight: 14,
+  bottomArrowSize: 18,
+} as const;
+
+/** 시간 선택 모달 휠 레이아웃 */
+export const TimePickerLayout = {
+  wheelItemHeight: 44,
+  wheelVisibleCount: 5,
 } as const;
 
 /** 닉네임 수정 화면 레이아웃 */
