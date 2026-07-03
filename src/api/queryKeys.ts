@@ -30,4 +30,8 @@ export const queryKeys = {
     character: () => ['my', 'character'] as const,
     notificationSettings: () => ['my', 'notificationSettings'] as const,
   },
+  todo: {
+    all: () => ['todo'] as const,
+    list: (date: string, status?: string) => ['todo', 'list', date, status] as const,
+  },
 };

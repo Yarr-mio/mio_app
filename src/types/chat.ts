@@ -100,7 +100,7 @@ export interface EndSessionResponse {
 export interface SessionTodoItem {
   todo_id: string;
   action_text: string;
-  // 카테고리(심리_안정/인지_재구성/행동_활성화) 포맷 미확정 — raw 문자열 그대로 표시
+  // 카테고리(심리_안정/인지_재구성/행동_활성화) 포맷 미확정 — 렌더링 시 formatTodoCategoryLabel로 `_`만 공백 치환
   category: string;
   difficulty: number;
   estimated_minutes: number;

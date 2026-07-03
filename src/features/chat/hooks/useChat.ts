@@ -95,6 +95,8 @@ export function useEndChatSession() {
     // 마운트될 때 이미 끝난 세션을 다시 활성 세션으로 착각해 startSession()을 재호출할 수 있다
     // (chat-trouble-shoot/08 원인 E)
     queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
+    // 세션 종료 후 서버가 비동기로 Todo를 생성하므로, 홈/Todo 화면이 최신 목록을 다시 받아오도록 무효화한다
+    queryClient.invalidateQueries({ queryKey: queryKeys.todo.all() });
     // SessionEnd의 dismissAll()이 스택 루트(index)로 돌아간다는 전제를 깨지 않기 위해 push 유지 —
     // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당
     router.push('/(main)/chat/summary');
