@@ -9,4 +9,6 @@ export interface NotificationDeviceRegisterRequest {
 
 export interface NotificationDeviceTokenResponse {
   success: boolean;
+  device_id: string;
+  platform: DevicePlatform;
 }

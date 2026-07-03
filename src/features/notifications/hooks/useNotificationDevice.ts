@@ -56,7 +56,16 @@ export function useUnregisterNotificationDevice() {
           console.warn(
             '[useUnregisterNotificationDevice] push token already unregistered (NOT_FOUND)'
           );
-          return { success: true };
+          const platform = getDevicePlatform();
+          if (!platform) {
+            throw error;
+          }
+
+          return {
+            success: true,
+            device_id: (await getOrCreateDeviceId()).trim(),
+            platform,
+          };
         }
 
         throw error;

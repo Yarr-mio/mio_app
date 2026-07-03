@@ -91,16 +91,22 @@ export interface ChangeCharacterParams {
   character_id: string;
 }
 
+export interface CheckinTime {
+  morning: string;
+  afternoon: string;
+  evening: string;
+}
+
 export interface NotificationSettings {
   checkin_enabled: boolean;
-  checkin_time: string;
+  checkin_time: CheckinTime;
   character_enabled: boolean;
   report_enabled: boolean;
 }
 
 export interface NotificationSettingsUpdateParams {
   checkin_enabled?: boolean;
-  checkin_time?: string;
+  checkin_time?: Partial<CheckinTime>;
   character_enabled?: boolean;
   report_enabled?: boolean;
 }
