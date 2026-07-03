@@ -31,6 +31,8 @@ function triggerTimePickerSelectionHaptic(): void {
 function TimeWheelColumn({ values, selectedValue, isActive, onValueChange }: TimeWheelColumnProps) {
   const scrollRef = useRef<ScrollView>(null);
   const lastHapticIndexRef = useRef<number | null>(null);
+  // onScrollEndDrag는 onMomentumScrollBegin보다 먼저 호출되어 관성 종료 전 값이 확정될 수 있음
+  const isMomentumInProgressRef = useRef(false);
 
   useEffect(() => {
     if (!isActive) {
@@ -76,9 +78,26 @@ function TimeWheelColumn({ values, selectedValue, isActive, onValueChange }: Tim
         className="flex-1"
         style={{ height: WHEEL_HEIGHT }}
         contentContainerStyle={{ paddingVertical: WHEEL_PADDING_HEIGHT }}
+        onScrollBeginDrag={() => {
+          isMomentumInProgressRef.current = false;
+        }}
         onScroll={(event) => handleScrollOffset(event.nativeEvent.contentOffset.y, false)}
-        onScrollEndDrag={(event) => handleScrollOffset(event.nativeEvent.contentOffset.y, true)}
-        onMomentumScrollEnd={(event) => handleScrollOffset(event.nativeEvent.contentOffset.y, true)}
+        onScrollEndDrag={(event) => {
+          const offsetY = event.nativeEvent.contentOffset.y;
+          // onMomentumScrollBegin이 같은 틱에 이어서 호출될 수 있어 관성 시작 여부 확인 후 확정
+          setTimeout(() => {
+            if (!isMomentumInProgressRef.current) {
+              handleScrollOffset(offsetY, true);
+            }
+          }, 0);
+        }}
+        onMomentumScrollBegin={() => {
+          isMomentumInProgressRef.current = true;
+        }}
+        onMomentumScrollEnd={(event) => {
+          isMomentumInProgressRef.current = false;
+          handleScrollOffset(event.nativeEvent.contentOffset.y, true);
+        }}
       >
         {values.map((value) => (
           <View
