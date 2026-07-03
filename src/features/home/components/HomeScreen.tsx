@@ -51,7 +51,11 @@ export function HomeScreen() {
   const hasCheckIn = Boolean(todayCheckin);
   const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
-  const { data: todayTodos, isPending: isTodayTodosPending } = useTodos(getDateIso(new Date()));
+  const {
+    data: todayTodos,
+    isPending: isTodayTodosPending,
+    refetch: refetchTodayTodos,
+  } = useTodos(getDateIso(new Date()));
   const hasActions = Boolean(todayTodos && todayTodos.length > 0);
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
@@ -60,6 +64,7 @@ export function HomeScreen() {
 
   useFocusEffect(() => {
     setSpeechBubbleMessage(pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES));
+    refetchTodayTodos();
   });
 
   return (

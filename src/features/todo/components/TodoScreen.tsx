@@ -10,12 +10,19 @@ import { TodoDateNavigator } from '@/features/todo/components/TodoDateNavigator'
 import { TodoItemCard } from '@/features/todo/components/TodoItemCard';
 import { useTodos } from '@/features/todo/hooks/useTodo';
 import { formatCheckinFullDate, getDateIso, shiftDate } from '@/utils/date';
-import { useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 export function TodoScreen() {
   const [date, setDate] = useState(() => new Date());
-  const { data: todos, isPending, isError } = useTodos(getDateIso(date));
+  const { data: todos, isPending, isError, refetch } = useTodos(getDateIso(date));
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   return (
     <View className="flex-1 bg-midnight">
