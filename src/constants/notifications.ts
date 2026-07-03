@@ -33,6 +33,19 @@ export const NOTIFICATION_SETTINGS_LABELS = {
   report: '리포트 알림',
 } as const;
 
+export const CHECKIN_TIME_SLOTS = ['morning', 'afternoon', 'evening'] as const;
+
+export const CHECKIN_REMINDER_LABELS = {
+  morning: '아침 리마인드',
+  afternoon: '점심 리마인드',
+  evening: '저녁 리마인드',
+} as const;
+
+export const TimePickerLabels = {
+  confirm: '확인',
+  cancel: '취소',
+} as const;
+
 export const NotificationModalColors = {
   icon: '#7060E0',
   iconBg: '#7060E01A',

@@ -15,7 +15,7 @@ import {
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
-import type { NotificationSettingsUpdateParams } from '@/types/user';
+import type { CheckinTime, NotificationSettingsUpdateParams } from '@/types/user';
 import { formatJoinedAtLabel } from '@/utils/date';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -81,6 +81,12 @@ export function SettingsScreen() {
     });
   };
 
+  const checkinTime = notificationSettings?.checkin_time;
+
+  const handleCheckinTimeChange = (slot: keyof CheckinTime, time: string) => {
+    handleNotificationUpdate({ checkin_time: { [slot]: time } });
+  };
+
   const handleCheckinToggle = (value: boolean) => {
     handleNotificationUpdate({ checkin_enabled: value });
   };
@@ -133,11 +139,13 @@ export function SettingsScreen() {
             <NotificationCard
               allEnabled={allNotificationsEnabled}
               checkinEnabled={checkinEnabled}
+              checkinTime={checkinTime}
               characterEnabled={characterEnabled}
               reportEnabled={reportEnabled}
               disabled={isNotificationToggleDisabled}
               onToggleAll={handleAllNotificationsToggle}
               onToggleCheckin={handleCheckinToggle}
+              onCheckinTimeChange={handleCheckinTimeChange}
               onToggleCharacter={handleCharacterToggle}
               onToggleReport={handleReportToggle}
             />
