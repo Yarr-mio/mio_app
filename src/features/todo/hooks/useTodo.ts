@@ -1,8 +1,8 @@
 import { checkinTodo, fetchTodos } from '@/api/endpoints/todo';
 import { queryKeys } from '@/api/queryKeys';
 import { HTTP_STATUS } from '@/constants/config';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type { TodoCheckinRequest } from '@/types/todo';
+import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
