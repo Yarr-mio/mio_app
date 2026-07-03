@@ -24,7 +24,8 @@ import { ScrollView, View } from 'react-native';
 export function SettingsScreen() {
   const router = useRouter();
   const { data: myPageData } = useMyPage();
-  const { data: notificationSettings } = useNotificationSettings();
+  const { data: notificationSettings, isPending: isNotificationSettingsPending } =
+    useNotificationSettings();
   const { mutate: updateNotificationSettings, isPending: isNotificationUpdatePending } =
     useUpdateNotificationSettings();
   const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
@@ -51,7 +52,11 @@ export function SettingsScreen() {
   const characterEnabled = notificationSettings?.character_enabled === true;
   const reportEnabled = notificationSettings?.report_enabled === true;
 
-  const isNotificationToggleDisabled = isNotificationUpdatePending || isNotificationUpdateLocked;
+  const isNotificationToggleDisabled =
+    isNotificationUpdatePending ||
+    isNotificationUpdateLocked ||
+    isNotificationSettingsPending ||
+    !notificationSettings;
 
   const handleNotificationUpdate = (params: NotificationSettingsUpdateParams) => {
     if (
