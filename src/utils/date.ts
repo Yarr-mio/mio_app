@@ -1,6 +1,7 @@
 import type { TimeOfDay } from '@/types/checkin';
 import { TZDate } from '@date-fns/tz';
 import {
+  addDays,
   addMonths,
   addWeeks,
   endOfMonth,
@@ -66,6 +67,10 @@ export function getMonthRange(anchorDate: Date): ReportDateRange {
   };
 }
 
+export function shiftDate(anchorDate: Date, delta: number): Date {
+  return addDays(kstDate(anchorDate), delta);
+}
+
 export function shiftWeek(anchorDate: Date, delta: number): Date {
   return addWeeks(kstDate(anchorDate), delta);
 }
@@ -112,6 +117,11 @@ export function getWeekStartIso(anchorDate: Date): string {
 export function getMonthStartIso(anchorDate: Date): string {
   const { start } = getMonthRange(anchorDate);
   return format(kstDate(start), 'yyyy-MM-dd');
+}
+
+/** TODO 목록 조회 API date 파라미터용 ISO 날짜(KST 기준) */
+export function getDateIso(date: Date): string {
+  return format(kstDate(date), 'yyyy-MM-dd');
 }
 
 /** 해당 월 기준 주차 계산 (주간 종료일 토요일 기준) */

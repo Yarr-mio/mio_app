@@ -1,29 +1,28 @@
 import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { FgColors, HomeActionClasses, HomeLayout } from '@/constants/theme';
-import type { HomeRecommendedAction } from '@/features/home/hooks/useHomeMock';
+import type { TodoResponse } from '@/types/todo';
 import { cn } from '@/utils/cn';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 interface HomeRecommendedActionsListProps {
-  actions: HomeRecommendedAction[];
-  onToggleAction: (id: string) => void;
+  actions: TodoResponse[];
 }
 
 interface RecommendedActionCheckboxProps {
-  completed: boolean;
+  done: boolean;
 }
 
-function RecommendedActionCheckbox({ completed }: RecommendedActionCheckboxProps) {
+function RecommendedActionCheckbox({ done }: RecommendedActionCheckboxProps) {
   return (
     <View
       className={cn(
         HomeActionClasses.recommendedCheckbox,
         'items-center justify-center rounded-full',
-        completed ? 'bg-accent' : 'border border-fg-default/30 bg-transparent'
+        done ? 'bg-accent' : 'border border-fg-default/30 bg-transparent'
       )}
     >
-      {completed ? (
+      {done ? (
         <CheckboxCheckIcon
           width={HomeLayout.checkboxCheckWidth}
           height={HomeLayout.checkboxCheckHeight}
@@ -34,43 +33,43 @@ function RecommendedActionCheckbox({ completed }: RecommendedActionCheckboxProps
   );
 }
 
-interface RecommendedActionItemProps {
-  text: string;
-  completed: boolean;
-  onToggle: () => void;
+function isTodoDone(status: TodoResponse['status']): boolean {
+  return status === 'completed' || status === 'partial_completed';
 }
 
-function RecommendedActionItem({ text, completed, onToggle }: RecommendedActionItemProps) {
+interface RecommendedActionItemProps {
+  text: string;
+  done: boolean;
+}
+
+function RecommendedActionItem({ text, done }: RecommendedActionItemProps) {
   return (
-    <Pressable
-      onPress={onToggle}
+    <View
+      accessible
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: completed }}
+      accessibilityState={{ checked: done }}
+      accessibilityLabel={`${text}, ${done ? '완료' : '미완료'}`}
       className="flex-row items-center gap-3"
     >
-      <RecommendedActionCheckbox completed={completed} />
+      <RecommendedActionCheckbox done={done} />
       <ThemedText
         type="small"
-        className={cn('flex-1', completed ? 'text-label line-through' : 'text-fg-default')}
+        className={cn('flex-1', done ? 'text-label line-through' : 'text-fg-default')}
       >
         {text}
       </ThemedText>
-    </Pressable>
+    </View>
   );
 }
 
-export function HomeRecommendedActionsList({
-  actions,
-  onToggleAction,
-}: HomeRecommendedActionsListProps) {
+export function HomeRecommendedActionsList({ actions }: HomeRecommendedActionsListProps) {
   return (
     <View className="gap-4">
       {actions.map((action) => (
         <RecommendedActionItem
-          key={action.id}
-          text={action.text}
-          completed={action.completed}
-          onToggle={() => onToggleAction(action.id)}
+          key={action.todo_id}
+          text={action.action_text}
+          done={isTodoDone(action.status)}
         />
       ))}
     </View>

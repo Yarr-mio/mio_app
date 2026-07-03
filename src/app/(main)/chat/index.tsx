@@ -11,7 +11,9 @@ import { storage } from '@/utils/storage';
 export default function ChatScreen() {
   const { data: activeSession, isLoading } = useActiveSession();
   const sessionPhase = useChatStore((s) => s.sessionPhase);
+  const sessionId = useChatStore((s) => s.sessionId);
   const startSession = useChatStore((s) => s.startSession);
+  const endSession = useChatStore((s) => s.endSession);
   // 같은 마운트 동안 재진입 리다이렉트를 한 번만 트리거 (refetch로 effect가 다시 돌아도 중복 push 방지)
   const hasRedirectedRef = useRef(false);
 
@@ -19,12 +21,24 @@ export default function ChatScreen() {
     if (!activeSession) return;
 
     if (activeSession.session_id && activeSession.character_id) {
+      // 로컬 스토어가 이미 같은 세션을 active로 들고 있으면 재조회로 인한 스토어 리셋을 막는다 —
+      // startSession()은 콜드 스타트나 세션이 실제로 바뀐 경우에만 호출
+      if (sessionPhase === 'active' && sessionId === activeSession.session_id) {
+        return;
+      }
       startSession(activeSession.session_id, activeSession.character_id);
       return;
     }
 
     const endedSessionId = activeSession.last_ended_session_id;
     const summaryStatus = activeSession.last_summary_status;
+
+    // 서버가 이미 이 세션을 끝냈는데 로컬 스토어는 여전히 active로 남아있는 경우 정리 —
+    // 그래야 요약 확인 후 복귀 시 죽은 세션이 아니라 SessionStart가 보인다
+    if (sessionPhase === 'active' && endedSessionId && sessionId === endedSessionId) {
+      endSession();
+    }
+
     if (
       hasRedirectedRef.current ||
       !endedSessionId ||
@@ -47,7 +61,7 @@ export default function ChatScreen() {
         params: { sessionId: endedSessionId },
       });
     })();
-  }, [activeSession, startSession]);
+  }, [activeSession, sessionPhase, sessionId, startSession, endSession]);
 
   // sessionPhase가 'ended'인 동안은 요약 화면으로 전환 중인 과도기 상태 — 이 화면이 잠깐이라도
   // 보이면(전환 애니메이션, 뒤로 스와이프 등) "대화 시작하기" 화면이 깜빡이지 않도록 빈 배경만 보여준다

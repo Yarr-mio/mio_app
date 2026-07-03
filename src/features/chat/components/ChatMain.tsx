@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { AppState, FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { getOnboardingCharacterById } from '@/constants/characters';
@@ -34,7 +33,7 @@ export function ChatMain() {
   const { mutate: submitEmotionScore, mutateAsync: submitEmotionScoreAsync } =
     useSubmitCbtEmotionScore();
 
-  // 감정 점수 패널이 떠 있는 상태로 세션이 끝나면(백그라운드 전환, 종료 버튼) 마지막 슬라이더 값을
+  // 감정 점수 패널이 떠 있는 상태로 세션이 끝나면(종료 버튼) 마지막 슬라이더 값을
   // 먼저 제출해 데이터 손실을 막는다 — 제출이 실패해도 세션 종료 자체는 막지 않음
   async function endSessionWithPendingEmotionScore(currentSessionId: string) {
     if (emotionScoringActive && emotionScoreTargetId) {
@@ -49,25 +48,6 @@ export function ChatMain() {
     }
     endChatSession(currentSessionId);
   }
-
-  // 앱이 백그라운드로 전환되면(홈으로 나가기, 강제 종료 직전 단계 등) 대화 화면 이탈로 간주해 세션 종료 —
-  // 'inactive'는 제어 센터/알림 등 일시적 전환이라 제외, 완전한 백그라운드 진입만 트리거로 사용
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'background' && sessionId) {
-        void endSessionWithPendingEmotionScore(sessionId);
-      }
-    });
-
-    return () => subscription.remove();
-  }, [
-    sessionId,
-    emotionScoringActive,
-    emotionScoreTargetId,
-    pendingEmotionScore,
-    submitEmotionScoreAsync,
-    endChatSession,
-  ]);
 
   function handleConfirmEmotionScore(score: number) {
     if (!emotionScoreTargetId) return;
