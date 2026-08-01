@@ -1,3 +1,5 @@
+import Constants from 'expo-constants';
+
 /**
  * mock 모드 플래그
  *
@@ -22,11 +24,16 @@ export const API_BASE_URL = resolveApiBaseUrl();
 /** 약관 동의 API 요청 시 사용하는 약관 버전 */
 export const AUTH_CONSENT_VERSION = '1.0';
 
-/** 카카오 네이티브 앱 키 (Kakao SDK 초기화 및 config plugin용) */
-export const KAKAO_NATIVE_APP_KEY =
-  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ??
-  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ??
-  '';
+// APP_VARIANT는 EXPO_PUBLIC_가 아니라 클라이언트에서 process.env로 읽을 수 없음
+// app.config.ts와 같은 APP_VARIANT → bundleId 매핑으로 IS_DEV_VARIANT를 판별
+const IS_DEV_VARIANT =
+  (Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package) ===
+  'com.mio.yarr.dev';
+
+/** 카카오 네이티브 앱 키 (Kakao SDK 초기화). app.config.ts nativeAppKey와 동일 분기 */
+export const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
 
 /**
  * HTTP 상태 코드 상수
