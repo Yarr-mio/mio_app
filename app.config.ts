@@ -10,10 +10,9 @@ if (!APP_VARIANTS.includes(rawAppVariant as AppVariant)) {
 const APP_VARIANT = rawAppVariant as AppVariant;
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
-const KAKAO_NATIVE_APP_KEY =
-  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ??
-  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ??
-  '';
+const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
