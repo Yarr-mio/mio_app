@@ -11,11 +11,12 @@ interface EnsurePushNotificationReadyParams {
   registerDeviceToken: (pushToken: string) => Promise<unknown>;
 }
 
-/**
- * 설정 화면 등에서 알림을 켤 때 OS 권한, FCM 토큰, 서버 디바이스 등록 보장
- * - 이미 권한이 있으면 시스템 권한 얼럿을 다시 띄우지 않음
- * - 이미 같은 토큰이 등록되어 있으면 서버 등록 API를 다시 호출하지 않음
- */
+// 알림 ON 시 권한 확인
+// 미허용 시 요청
+// 토큰 획득 및 디바이스 등록
+// 기존 허용 시 재요청 생략
+// 동일 토큰 재등록 생략
+// 실패 시 결과만 반환
 export async function ensurePushNotificationReady({
   registerDeviceToken,
 }: EnsurePushNotificationReadyParams): Promise<EnsurePushNotificationReadyResult> {

@@ -80,11 +80,9 @@ export function SettingsScreen() {
 
     void (async () => {
       try {
+        // 권한 실패와 무관하게 설정 PATCH 전송
         if (isEnablingNotificationSettings(params)) {
-          const ready = await ensureReady();
-          if (!ready) {
-            return;
-          }
+          await ensureReady();
         }
 
         await updateNotificationSettings(params);

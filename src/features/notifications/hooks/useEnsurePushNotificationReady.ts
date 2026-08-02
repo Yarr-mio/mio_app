@@ -30,23 +30,23 @@ function showTokenUnavailableAlert(): void {
   );
 }
 
+// 알림 ON 시 권한 요청 및 디바이스 등록
+// 실패 시에도 PATCH 허용
+// void 반환
 export function useEnsurePushNotificationReady() {
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
 
-  const ensureReady = async (): Promise<boolean> => {
+  const ensureReady = async (): Promise<void> => {
     const result = await ensurePushNotificationReady({ registerDeviceToken });
 
     if (result === 'permission_denied') {
       showPermissionDeniedAlert();
-      return false;
+      return;
     }
 
     if (result === 'token_unavailable') {
       showTokenUnavailableAlert();
-      return false;
     }
-
-    return true;
   };
 
   return { ensureReady };
