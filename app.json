@@ -12,7 +12,8 @@
       "bundleIdentifier": "com.mio.yarr.dev",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +22,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mio.yarr.dev"
     },
     "web": {
       "output": "static",
@@ -56,6 +58,12 @@
       },
       "router": {}
     },
-    "owner": "mio_yarr"
+    "owner": "mio_yarr",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f2a19c23-76cc-4936-b370-0c160ceb33e9"
+    }
   }
 }

@@ -35,9 +35,7 @@ export function SettingsScreen() {
   const partner = getPartnerByKey(selectedCharacterId);
 
   const nickname = myPageData?.nickname ?? FALLBACK_NICKNAME;
-  const characterLabel = myPageData
-    ? `${myPageData.preferred_character.name}와 함께`
-    : `${partner.name}와 함께`;
+  const characterLabel = `${partner.name}와 함께`;
 
   const joinedAtLabel = myPageData?.joined_at
     ? formatJoinedAtLabel(myPageData.joined_at)
