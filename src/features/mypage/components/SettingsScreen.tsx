@@ -9,6 +9,7 @@ import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
+import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
 import {
   useMyPage,
   useNotificationSettings,
@@ -21,13 +22,22 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
+function isEnablingNotificationSettings(params: NotificationSettingsUpdateParams): boolean {
+  return (
+    params.checkin_enabled === true ||
+    params.character_enabled === true ||
+    params.report_enabled === true
+  );
+}
+
 export function SettingsScreen() {
   const router = useRouter();
   const { data: myPageData } = useMyPage();
   const { data: notificationSettings, isPending: isNotificationSettingsPending } =
     useNotificationSettings();
-  const { mutate: updateNotificationSettings, isPending: isNotificationUpdatePending } =
+  const { mutateAsync: updateNotificationSettings, isPending: isNotificationUpdatePending } =
     useUpdateNotificationSettings();
+  const { ensureReady } = useEnsurePushNotificationReady();
   const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
   const isNotificationUpdateInFlightRef = useRef(false);
 
@@ -68,12 +78,21 @@ export function SettingsScreen() {
     isNotificationUpdateInFlightRef.current = true;
     setIsNotificationUpdateLocked(true);
 
-    updateNotificationSettings(params, {
-      onSettled: () => {
+    void (async () => {
+      try {
+        if (isEnablingNotificationSettings(params)) {
+          const ready = await ensureReady();
+          if (!ready) {
+            return;
+          }
+        }
+
+        await updateNotificationSettings(params);
+      } finally {
         isNotificationUpdateInFlightRef.current = false;
         setIsNotificationUpdateLocked(false);
-      },
-    });
+      }
+    })();
   };
 
   const handleAllNotificationsToggle = (value: boolean) => {
