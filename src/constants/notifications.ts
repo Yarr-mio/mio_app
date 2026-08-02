@@ -46,6 +46,18 @@ export const TimePickerLabels = {
   cancel: '취소',
 } as const;
 
+export const NOTIFICATION_PERMISSION_DENIED_ALERT = {
+  title: '알림을 받을 수 없어요',
+  message: '기기 알림 권한이 꺼져 있어 알림을 받을 수 없습니다. 설정에서 알림을 허용해 주세요.',
+  confirmLabel: '설정으로 이동',
+  cancelLabel: '닫기',
+} as const;
+
+export const NOTIFICATION_TOKEN_UNAVAILABLE_ALERT = {
+  title: '알림을 켤 수 없어요',
+  message: '푸시 알림을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.',
+} as const;
+
 export const NotificationModalColors = {
   icon: '#7060E0',
   iconBg: '#7060E01A',
