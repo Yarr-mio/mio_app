@@ -26,6 +26,12 @@ export const NOTIFICATION_SETTINGS_ALL_DISABLED = {
   report_enabled: false,
 } as const;
 
+export const NOTIFICATION_SETTINGS_ALL_ENABLED = {
+  checkin_enabled: true,
+  character_enabled: true,
+  report_enabled: true,
+} as const;
+
 export const NOTIFICATION_SETTINGS_LABELS = {
   all: '푸시 알림 전체 동의',
   checkin: '체크인 알림',

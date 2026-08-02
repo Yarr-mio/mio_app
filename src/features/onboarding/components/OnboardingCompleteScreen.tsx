@@ -8,11 +8,11 @@ import { getOnboardingCharacterById } from '@/constants/characters';
 import { NOTIFICATION_MODAL, NotificationModalColors } from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
-import { useRegisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
+import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
 import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
+import { useOnboardingNotificationAgree } from '@/features/onboarding/hooks/useOnboardingNotificationAgree';
 import { useOnboardingNotificationLater } from '@/features/onboarding/hooks/useOnboardingNotificationLater';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
-import { getNativeDevicePushTokenAsync } from '@/notifications/fcm';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -27,7 +27,8 @@ export function OnboardingCompleteScreen() {
   const [notificationModalVisible, setNotificationModalVisible] = useState(false);
   const [signupCompleted, setSignupCompleted] = useState(false);
   const [notificationPending, setNotificationPending] = useState(false);
-  const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
+  const { ensureReady } = useEnsurePushNotificationReady();
+  const { mutateAsync: enableNotificationSettings } = useOnboardingNotificationAgree();
   const { mutateAsync: declineNotificationSettings } = useOnboardingNotificationLater();
   const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit({
     onSuccess: () => {
@@ -52,20 +53,20 @@ export function OnboardingCompleteScreen() {
     }
 
     setNotificationPending(true);
-    void getNativeDevicePushTokenAsync({ requestPermission: true })
-      .then(async (token) => {
-        if (token) {
-          await registerDeviceToken(token);
-        }
-      })
-      .catch((notificationError) => {
+    void (async () => {
+      try {
+        // 권한 요청 및 디바이스 등록
+        await ensureReady();
+        // 알림 설정 전체 활성화
+        await enableNotificationSettings();
+      } catch (notificationError) {
         console.warn('[OnboardingCompleteNotification]', notificationError);
-      })
-      .finally(() => {
+      } finally {
         setNotificationPending(false);
         setNotificationModalVisible(false);
         router.replace(AUTH_ROUTES.home);
-      });
+      }
+    })();
   };
 
   const handleNotificationLater = () => {
@@ -76,7 +77,7 @@ export function OnboardingCompleteScreen() {
     setNotificationModalVisible(false);
     void declineNotificationSettings()
       .catch(() => {
-        // onError에서 로깅됨 — 설정 저장 실패해도 홈으로 이동
+        // 설정 저장 실패 시에도 홈 이동
       })
       .finally(() => {
         router.replace(AUTH_ROUTES.home);
