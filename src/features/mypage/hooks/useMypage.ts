@@ -100,11 +100,8 @@ export function useChangeCharacter() {
       });
 
       await Promise.all([
-        queryClient.fetchQuery({ queryKey: queryKeys.my.profile(), queryFn: fetchMyPage }),
-        queryClient.fetchQuery({
-          queryKey: queryKeys.my.character(),
-          queryFn: () => fetchMyCharacter(),
-        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.my.profile() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.my.character() }),
       ]);
       router.back();
     },
