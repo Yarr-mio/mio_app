@@ -8,7 +8,6 @@ import {
   REPORT_STATUS,
   type ReportPeriod,
 } from '@/constants/report';
-import { readApiErrorCode, readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type {
   FetchEmotionTrendParams,
   MonthlyReportData,
@@ -16,6 +15,7 @@ import type {
   WeeklyReportData,
 } from '@/types/report';
 import { getMonthStartIso, getWeekStartIso } from '@/utils/date';
+import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import {
   keepPreviousData,
   useQuery,

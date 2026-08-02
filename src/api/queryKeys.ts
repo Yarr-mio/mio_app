@@ -4,7 +4,7 @@ export const queryKeys = {
   checkin: {
     all: () => ['checkin'] as const,
     today: () => ['checkin', 'today'] as const,
-    list: (from?: string, to?: string) => ['checkin', 'list', { from, to }] as const,
+    list: () => ['checkin', 'list'] as const,
     detail: (id: string) => ['checkin', 'detail', id] as const,
   },
   chat: {
@@ -29,5 +29,9 @@ export const queryKeys = {
     characters: () => ['my', 'characters'] as const,
     character: () => ['my', 'character'] as const,
     notificationSettings: () => ['my', 'notificationSettings'] as const,
+  },
+  todo: {
+    all: () => ['todo'] as const,
+    list: (date: string, status?: string) => ['todo', 'list', date, status] as const,
   },
 };

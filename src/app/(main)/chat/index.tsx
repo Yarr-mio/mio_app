@@ -1,23 +1,71 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
+import { router } from 'expo-router';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { useActiveSession } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { SessionStart } from '@/features/chat/components/SessionStart';
 import { ChatMain } from '@/features/chat/components/ChatMain';
+import { storage } from '@/utils/storage';
 
 export default function ChatScreen() {
   const { data: activeSession, isLoading } = useActiveSession();
   const sessionPhase = useChatStore((s) => s.sessionPhase);
+  const sessionId = useChatStore((s) => s.sessionId);
   const startSession = useChatStore((s) => s.startSession);
+  const endSession = useChatStore((s) => s.endSession);
+  // 같은 마운트 동안 재진입 리다이렉트를 한 번만 트리거 (refetch로 effect가 다시 돌아도 중복 push 방지)
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    if (activeSession) {
-      startSession(activeSession.session_id, activeSession.character_id);
-    }
-  }, [activeSession, startSession]);
+    if (!activeSession) return;
 
-  if (isLoading) {
+    if (activeSession.session_id && activeSession.character_id) {
+      // 로컬 스토어가 이미 같은 세션을 active로 들고 있으면 재조회로 인한 스토어 리셋을 막는다 —
+      // startSession()은 콜드 스타트나 세션이 실제로 바뀐 경우에만 호출
+      if (sessionPhase === 'active' && sessionId === activeSession.session_id) {
+        return;
+      }
+      startSession(activeSession.session_id, activeSession.character_id);
+      return;
+    }
+
+    const endedSessionId = activeSession.last_ended_session_id;
+    const summaryStatus = activeSession.last_summary_status;
+
+    // 서버가 이미 이 세션을 끝냈는데 로컬 스토어는 여전히 active로 남아있는 경우 정리 —
+    // 그래야 요약 확인 후 복귀 시 죽은 세션이 아니라 SessionStart가 보인다
+    if (sessionPhase === 'active' && endedSessionId && sessionId === endedSessionId) {
+      endSession();
+    }
+
+    if (
+      hasRedirectedRef.current ||
+      !endedSessionId ||
+      !summaryStatus ||
+      summaryStatus === 'viewed'
+    ) {
+      return;
+    }
+
+    hasRedirectedRef.current = true;
+    void (async () => {
+      // summary_status가 viewed로 전환되는 시점이 불명확해, 서버 상태와 무관하게 같은 세션으로는
+      // 한 번만 리다이렉트하도록 로컬에 마지막으로 보여준 세션 id를 기록해둔다
+      const lastRedirectedSessionId = await storage.chatRedirectedSessionId.get();
+      if (lastRedirectedSessionId === endedSessionId) return;
+
+      await storage.chatRedirectedSessionId.set(endedSessionId);
+      router.push({
+        pathname: '/(main)/chat/summary',
+        params: { sessionId: endedSessionId },
+      });
+    })();
+  }, [activeSession, sessionPhase, sessionId, startSession, endSession]);
+
+  // sessionPhase가 'ended'인 동안은 요약 화면으로 전환 중인 과도기 상태 — 이 화면이 잠깐이라도
+  // 보이면(전환 애니메이션, 뒤로 스와이프 등) "대화 시작하기" 화면이 깜빡이지 않도록 빈 배경만 보여준다
+  if (isLoading || sessionPhase === 'ended') {
     return (
       <View className="flex-1 bg-midnight">
         <ChatBackground />

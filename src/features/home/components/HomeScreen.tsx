@@ -5,26 +5,30 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { HomeCardShell } from '@/components/ui/HomeCardShell';
 import { getPartnerByKey } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
-import { HOME_TITLES } from '@/constants/home';
+import { HOME_SPEECH_BUBBLE_MESSAGES, HOME_TITLES } from '@/constants/home';
 import { HOME_ROUTES } from '@/constants/routes';
 import {
+  ButtonColors,
   HomeActionClasses,
   HomeCardClasses,
   HomeLayout,
   HomeSpeechBubbleClasses,
   HomeTextClasses,
 } from '@/constants/theme';
+import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
-import { useHomeMock } from '@/features/home/hooks/useHomeMock';
+import { useTodos } from '@/features/todo/hooks/useTodo';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
 import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
-import { formatCheckinTime } from '@/utils/date';
+import { formatCheckinTime, getDateIso } from '@/utils/date';
+import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
   if (checkins.length === 0) {
@@ -37,7 +41,7 @@ function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undef
 }
 
 export function HomeScreen() {
-  const nickname = useSelectedNickname() ?? '친구';
+  const nickname = useSelectedNickname() ?? FALLBACK_NICKNAME;
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
 
@@ -47,7 +51,21 @@ export function HomeScreen() {
   const hasCheckIn = Boolean(todayCheckin);
   const homeTitle = hasCheckIn ? HOME_TITLES.checkedIn : HOME_TITLES.notCheckedIn;
 
-  const { hasActions, actions, toggleAction } = useHomeMock();
+  const {
+    data: todayTodos,
+    isPending: isTodayTodosPending,
+    refetch: refetchTodayTodos,
+  } = useTodos(getDateIso(new Date()));
+  const hasActions = Boolean(todayTodos && todayTodos.length > 0);
+
+  const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
+    pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
+  );
+
+  useFocusEffect(() => {
+    setSpeechBubbleMessage(pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES));
+    refetchTodayTodos();
+  });
 
   return (
     <View className="flex-1 bg-midnight">
@@ -76,8 +94,11 @@ export function HomeScreen() {
           <View className="mt-6 flex-row items-start gap-3">
             <View className="flex-1">
               <View className={HomeSpeechBubbleClasses.shell}>
-                <ThemedText type="small" className="text-fg-default">
-                  {'요즘 조금 힘들어 보여요.\n오늘 하루, 천천히 이야기해 볼까요? 🌿'}
+                <ThemedText
+                  type="small"
+                  className={cn('text-fg-default', HomeSpeechBubbleClasses.messageText)}
+                >
+                  {speechBubbleMessage}
                 </ThemedText>
               </View>
             </View>
@@ -98,7 +119,6 @@ export function HomeScreen() {
               title="오늘의 체크인"
               headerActionLabel="기록하기"
               onHeaderActionPress={() => router.push(HOME_ROUTES.checkin)}
-              contentClassName={!hasCheckIn ? 'flex-1' : undefined}
             >
               {hasCheckIn && todayCheckin && todayCheckinMeta ? (
                 <CheckinSummaryRow
@@ -123,8 +143,12 @@ export function HomeScreen() {
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
             >
-              {hasActions ? (
-                <HomeRecommendedActionsList actions={actions} onToggleAction={toggleAction} />
+              {isTodayTodosPending ? (
+                <View className={HomeCardClasses.emptyState}>
+                  <ActivityIndicator color={ButtonColors.spinnerLight} />
+                </View>
+              ) : hasActions ? (
+                <HomeRecommendedActionsList actions={todayTodos ?? []} />
               ) : (
                 <View className={HomeCardClasses.emptyState}>
                   <ThemedText type="small" className="text-label">

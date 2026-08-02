@@ -1,5 +1,7 @@
+import type { TimeOfDay } from '@/types/checkin';
 import { TZDate } from '@date-fns/tz';
 import {
+  addDays,
   addMonths,
   addWeeks,
   endOfMonth,
@@ -65,6 +67,10 @@ export function getMonthRange(anchorDate: Date): ReportDateRange {
   };
 }
 
+export function shiftDate(anchorDate: Date, delta: number): Date {
+  return addDays(kstDate(anchorDate), delta);
+}
+
 export function shiftWeek(anchorDate: Date, delta: number): Date {
   return addWeeks(kstDate(anchorDate), delta);
 }
@@ -111,6 +117,11 @@ export function getWeekStartIso(anchorDate: Date): string {
 export function getMonthStartIso(anchorDate: Date): string {
   const { start } = getMonthRange(anchorDate);
   return format(kstDate(start), 'yyyy-MM-dd');
+}
+
+/** TODO 목록 조회 API date 파라미터용 ISO 날짜(KST 기준) */
+export function getDateIso(date: Date): string {
+  return format(kstDate(date), 'yyyy-MM-dd');
 }
 
 /** 해당 월 기준 주차 계산 (주간 종료일 토요일 기준) */
@@ -162,4 +173,17 @@ export function formatCheckinShortDate(isoString: string): string {
 
 export function formatCheckinTime(isoString: string): string {
   return format(kst(isoString), 'a h:mm', { locale: ko });
+}
+
+/** 사용자 가입일 */
+export function formatJoinedAtLabel(isoString: string): string {
+  return `${format(kst(isoString), 'yyyy.MM.dd')} 가입`;
+}
+
+/** 현재 시각(KST 기준)이 속한 체크인 시간대(아침/오후/저녁). 0시부터 곧바로 오전으로 판단(서버 "오늘" 판정과 동일 기준) */
+export function getCurrentTimeOfDay(): TimeOfDay {
+  const hour = toKstDate().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
 }

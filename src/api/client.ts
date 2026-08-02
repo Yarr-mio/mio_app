@@ -1,5 +1,4 @@
 import axios, { create, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 import queryClient from '@/api/queryClient';
@@ -7,6 +6,7 @@ import { API_BASE_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
 import type { AuthRefreshResponse } from '@/types/auth';
+import { getAppVersion } from '@/utils/appInfo';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
 import { storage } from '@/utils/storage';
 
@@ -34,21 +34,6 @@ const apiClient = create({
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object';
-}
-
-/**
- * 앱 버전 문자열을 구한다.
- *
- * - Expo Router/Expo 앱에서 버전은 주로 `Constants.expoConfig.version`에 존재.
- * - 일부 환경에서는 `Constants.manifest.version` 형태로 내려오는 경우가 있어 안전하게 폴백한다.
- */
-function getAppVersion(): string {
-  // unavoidable cast: expo-constants 타입이 런타임 필드(Constants.manifest)를 노출하지 않는 환경이 있어 안전한 폴백을 위해 접근
-  const manifest = (Constants as unknown as { manifest?: unknown }).manifest;
-  const maybeManifestVersion =
-    isRecord(manifest) && typeof manifest.version === 'string' ? manifest.version : null;
-
-  return Constants.expoConfig?.version || maybeManifestVersion || '0.0.0';
 }
 
 /**

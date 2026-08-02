@@ -6,6 +6,8 @@ import * as SecureStore from 'expo-secure-store';
 const STORAGE_KEYS = {
   refreshToken: 'auth.refresh_token',
   deviceId: 'device.id',
+  pushToken: 'notification.push_token',
+  chatRedirectedSessionId: 'chat.redirected_session_id',
 } as const;
 
 /**
@@ -44,5 +46,15 @@ export const storage = {
     get: () => getItem(STORAGE_KEYS.deviceId),
     set: (id: string) => setItem(STORAGE_KEYS.deviceId, id),
     delete: () => deleteItem(STORAGE_KEYS.deviceId),
+  },
+  pushToken: {
+    get: () => getItem(STORAGE_KEYS.pushToken),
+    set: (token: string) => setItem(STORAGE_KEYS.pushToken, token),
+    delete: () => deleteItem(STORAGE_KEYS.pushToken),
+  },
+  // last_summary_status가 viewed로 안 바뀌어도 같은 세션으로 재진입 리다이렉트를 반복하지 않기 위한 로컬 가드
+  chatRedirectedSessionId: {
+    get: () => getItem(STORAGE_KEYS.chatRedirectedSessionId),
+    set: (sessionId: string) => setItem(STORAGE_KEYS.chatRedirectedSessionId, sessionId),
   },
 };

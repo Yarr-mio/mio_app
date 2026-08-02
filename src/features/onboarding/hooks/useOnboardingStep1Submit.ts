@@ -5,10 +5,10 @@ import { ONBOARDING_DEFAULT_EMOJI_SCORE, ONBOARDING_QUESTION_IDS } from '@/const
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingStep1 } from '@/features/onboarding/hooks/useOnboarding';
 import { useUserStore } from '@/store/userStore';
 import type { EmotionType } from '@/types/checkin';
+import { readApiErrorMessage } from '@/utils/readApiError';
 
 export function useOnboardingStep1Submit() {
   const router = useRouter();

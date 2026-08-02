@@ -5,9 +5,9 @@ import type { OnboardingCharacterId } from '@/constants/characters';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
-import { readApiErrorMessage } from '@/features/auth/utils/readApiError';
 import { useOnboardingCharacter } from '@/features/onboarding/hooks/useOnboarding';
 import { resolveStoredNickname, useUserStore } from '@/store/userStore';
+import { readApiErrorMessage } from '@/utils/readApiError';
 
 export function useOnboardingStep4Submit() {
   const router = useRouter();

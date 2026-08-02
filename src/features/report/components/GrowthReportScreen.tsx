@@ -2,7 +2,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { getOnboardingCharacterById } from '@/constants/characters';
+import { getOnboardingCharacterById, type OnboardingCharacterId } from '@/constants/characters';
 import {
   formatReportChatButtonLabel,
   REPORT_PERIOD,
@@ -23,7 +23,6 @@ import { AverageEmotionScoreCard } from '@/features/report/components/AverageEmo
 import { CharacterStoryCard } from '@/features/report/components/CharacterStoryCard';
 import { DistortionTop3Section } from '@/features/report/components/DistortionTop3Section';
 import { EmotionConstellation } from '@/features/report/components/EmotionConstellation';
-import { ReportCoachingSection } from '@/features/report/components/ReportCoachingSection';
 import { ReportDateNavigator } from '@/features/report/components/ReportDateNavigator';
 import { ReportErrorState } from '@/features/report/components/ReportErrorState';
 import { ReportInsufficientDataState } from '@/features/report/components/ReportInsufficientDataState';
@@ -44,6 +43,43 @@ import {
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
+
+interface CharacterStorySectionProps {
+  period: ReportPeriod;
+  anchorDate: Date;
+  characterId: OnboardingCharacterId;
+  narrative: string | null;
+  coachingDirection: string | null;
+}
+
+function hasCharacterStoryContent(
+  narrative: string | null | undefined,
+  coachingDirection: string | null | undefined
+): boolean {
+  return Boolean(narrative?.trim() || coachingDirection?.trim());
+}
+
+function CharacterStorySection({
+  period,
+  anchorDate,
+  characterId,
+  narrative,
+  coachingDirection,
+}: CharacterStorySectionProps) {
+  if (!hasCharacterStoryContent(narrative, coachingDirection)) {
+    return null;
+  }
+
+  return (
+    <CharacterStoryCard
+      period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
+      anchorDate={anchorDate}
+      characterId={characterId}
+      storyText={narrative?.trim() ?? ''}
+      coachingDirection={coachingDirection?.trim() ?? null}
+    />
+  );
+}
 
 export function GrowthReportScreen() {
   const [period, setPeriod] = useState<ReportPeriod>(REPORT_PERIOD.week);
@@ -184,17 +220,13 @@ export function GrowthReportScreen() {
           <DistortionTop3Section distortionTop3={report.distortion_top3} />
           <TodoSummaryCard period={period} todoSummary={report.todo_summary} />
         </View>
-        {report.narrative ? (
-          <CharacterStoryCard
-            period={REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD[period]}
-            anchorDate={anchorDate}
-            characterId={characterId}
-            storyText={report.narrative}
-          />
-        ) : null}
-        {report.coaching_direction ? (
-          <ReportCoachingSection coachingDirection={report.coaching_direction} />
-        ) : null}
+        <CharacterStorySection
+          period={period}
+          anchorDate={anchorDate}
+          characterId={characterId}
+          narrative={report.narrative}
+          coachingDirection={report.coaching_direction}
+        />
       </View>
     );
   };

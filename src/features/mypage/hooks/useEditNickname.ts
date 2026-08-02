@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { HTTP_STATUS } from '@/constants/config';
 import { EditNicknameLayout, SignupInfoLayout } from '@/constants/theme';
 import { useNicknameDuplicateCheck } from '@/features/auth/hooks/useAuth';
-import { readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import { useUpdateProfile } from '@/features/mypage/hooks/useMypage';
 import { useSelectedNickname } from '@/hooks/useSelectedCharacterId';
+import { readApiHttpStatus } from '@/utils/readApiError';
 
 const DEBOUNCE_MS = 500;
 const { maxLength } = EditNicknameLayout;

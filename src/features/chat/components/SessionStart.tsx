@@ -5,12 +5,11 @@ import { Button } from '@/components/ui/Button';
 import { CharacterAvatar } from '@/components/character/CharacterAvatar';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useStartChatSession } from '@/features/chat/hooks/useChat';
-import { useChatStore } from '@/features/chat/store/chatStore';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { View } from 'react-native';
 
 export function SessionStart() {
-  // TODO: useCharacter() 훅으로 서버에서 수신 후 대체 (현재 store 기본값 'mio' 사용)
-  const characterId = useChatStore((s) => s.characterId);
+  const characterId = useSelectedCharacterId();
   const character = getOnboardingCharacterById(characterId);
   const { mutate: startSession, isPending } = useStartChatSession();
 

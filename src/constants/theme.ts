@@ -211,6 +211,13 @@ export const SettingsLayout = {
   userIconSize: 21,
   chevronWidth: 27,
   chevronHeight: 14,
+  bottomArrowSize: 18,
+} as const;
+
+/** 시간 선택 모달 휠 레이아웃 */
+export const TimePickerLayout = {
+  wheelItemHeight: 44,
+  wheelVisibleCount: 5,
 } as const;
 
 /** 닉네임 수정 화면 레이아웃 */
@@ -376,6 +383,7 @@ export const HomeTextClasses = {
 export const HomeSpeechBubbleClasses = {
   shell:
     'overflow-hidden rounded-tl-[15px] rounded-tr-[15px] rounded-bl-[15px] rounded-br-[3px] border-2 border-speech-bubble-border bg-surface px-5 py-4',
+  messageText: 'text-[12px] leading-[18px]',
 } as const;
 
 export const HomeCardClasses = {
@@ -552,6 +560,7 @@ export const ReportTextClasses = {
   characterStoryTitle: 'text-character-story-title',
   characterStoryDate: 'text-label',
   characterStoryReadMore: 'text-weekday',
+  coachingDirection: 'font-semibold text-character-story-title',
 } as const;
 
 export const ReportInsufficientDataLayout = {
@@ -691,4 +700,41 @@ export const ScoreSliderClasses = {
   thumbLabel: 'rounded-full border border-label-border bg-label-bg px-3 py-1',
   thumbLabelText: 'text-sm leading-5 font-medium text-label-text',
   tickLabels: 'mt-1 flex-row justify-between',
+} as const;
+
+/** Todo 화면(TodoScreen) — 날짜 네비게이터 */
+export const TodoDateNavigatorLayout = {
+  chevronIconWidth: 11,
+  chevronIconHeight: 15,
+} as const;
+
+export const TodoDateNavigatorClasses = {
+  container:
+    'flex-row items-center justify-center self-center gap-3 rounded-card border border-line bg-surface',
+  chevronButton: 'h-12 w-12 items-center justify-center',
+  label: 'text-label',
+} as const;
+
+/** Todo 화면 — 할 일 카드 */
+export const TodoCardClasses = {
+  container: 'gap-3 rounded-card border border-line bg-surface p-6',
+  title: 'text-fg-default',
+  meta: 'text-label',
+  actionsRow: 'mt-1 flex-row gap-2',
+  list: 'gap-3',
+} as const;
+
+/** Todo 화면 — 상태 액션 버튼(완료/부분 완료/못함) */
+export const TodoActionButtonClasses = {
+  base: 'flex-1 items-center justify-center rounded-full border px-2 py-2.5',
+  inactive: 'border-line bg-transparent',
+  inactiveText: 'text-fg-default',
+  selected: 'border-primary/40 bg-primary/20',
+  selectedText: 'text-primary',
+  disabled: 'opacity-40',
+} as const;
+
+export const TodoExpiredBadgeClasses = {
+  container: 'items-center rounded-full border border-line bg-surface px-4 py-2.5',
+  text: 'text-label',
 } as const;

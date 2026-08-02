@@ -8,8 +8,8 @@ import { useNicknameDuplicateCheck, useSignupProfile } from '@/features/auth/hoo
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
-import { readApiHttpStatus } from '@/features/auth/utils/readApiError';
 import type { UserAgeRange, UserGender } from '@/types/user';
+import { readApiHttpStatus } from '@/utils/readApiError';
 
 const DUPLICATE_CHECK_ERROR_MESSAGE = '닉네임 중복 확인에 실패했습니다. 다시 시도해 주세요.';
 const PROFILE_SUBMIT_ERROR_MESSAGE = '프로필 저장에 실패했습니다. 다시 시도해 주세요.';

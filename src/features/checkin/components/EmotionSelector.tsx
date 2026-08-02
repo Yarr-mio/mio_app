@@ -37,7 +37,7 @@ export function EmotionSelector({ value, onChange }: EmotionSelectorProps) {
             )}
           >
             <Image source={meta.image} style={{ width: 72, height: 72 }} contentFit="contain" />
-            <Text className="text-white text-sm font-medium mt-2">{meta.label}</Text>
+            <Text className="text-fg text-sm font-medium mt-2">{meta.label}</Text>
             <Text className="text-fg-muted text-xs mt-0.5 text-center px-1">{meta.subLabel}</Text>
           </Pressable>
         );

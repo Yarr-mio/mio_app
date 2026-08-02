@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import { getPartnerByKey } from '@/constants/characters';
 import { MAIN_ROUTES } from '@/constants/routes';
+import { FALLBACK_NICKNAME } from '@/constants/user';
 import { AccountSection } from '@/features/mypage/components/AccountSection';
 import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
@@ -14,18 +15,21 @@ import {
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import type { CheckinTime, NotificationSettingsUpdateParams } from '@/types/user';
+import { formatJoinedAtLabel } from '@/utils/date';
 import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-
-const FALLBACK_NICKNAME = '사용자';
-const JOINED_AT_PLACEHOLDER = '확인 중';
 
 export function SettingsScreen() {
   const router = useRouter();
   const { data: myPageData } = useMyPage();
-  const { data: notificationSettings } = useNotificationSettings();
+  const { data: notificationSettings, isPending: isNotificationSettingsPending } =
+    useNotificationSettings();
   const { mutate: updateNotificationSettings, isPending: isNotificationUpdatePending } =
     useUpdateNotificationSettings();
+  const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
+  const isNotificationUpdateInFlightRef = useRef(false);
 
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
@@ -33,15 +37,69 @@ export function SettingsScreen() {
   const nickname = myPageData?.nickname ?? FALLBACK_NICKNAME;
   const characterLabel = `${partner.name}와 함께`;
 
-  const joinedAtLabel = JOINED_AT_PLACEHOLDER;
+  const joinedAtLabel = myPageData?.joined_at
+    ? formatJoinedAtLabel(myPageData.joined_at)
+    : undefined;
 
-  const pushEnabled = notificationSettings?.push_enabled ?? true;
+  const allNotificationsEnabled =
+    notificationSettings?.checkin_enabled === true &&
+    notificationSettings?.character_enabled === true &&
+    notificationSettings?.report_enabled === true;
 
-  const handlePushToggle = (value: boolean) => {
-    if (isNotificationUpdatePending) {
+  const checkinEnabled = notificationSettings?.checkin_enabled === true;
+  const characterEnabled = notificationSettings?.character_enabled === true;
+  const reportEnabled = notificationSettings?.report_enabled === true;
+
+  const isNotificationToggleDisabled =
+    isNotificationUpdatePending ||
+    isNotificationUpdateLocked ||
+    isNotificationSettingsPending ||
+    !notificationSettings;
+
+  const handleNotificationUpdate = (params: NotificationSettingsUpdateParams) => {
+    if (
+      isNotificationUpdatePending ||
+      isNotificationUpdateLocked ||
+      isNotificationUpdateInFlightRef.current
+    ) {
       return;
     }
-    updateNotificationSettings({ push_enabled: value });
+
+    isNotificationUpdateInFlightRef.current = true;
+    setIsNotificationUpdateLocked(true);
+
+    updateNotificationSettings(params, {
+      onSettled: () => {
+        isNotificationUpdateInFlightRef.current = false;
+        setIsNotificationUpdateLocked(false);
+      },
+    });
+  };
+
+  const handleAllNotificationsToggle = (value: boolean) => {
+    handleNotificationUpdate({
+      checkin_enabled: value,
+      character_enabled: value,
+      report_enabled: value,
+    });
+  };
+
+  const checkinTime = notificationSettings?.checkin_time;
+
+  const handleCheckinTimeChange = (slot: keyof CheckinTime, time: string) => {
+    handleNotificationUpdate({ checkin_time: { [slot]: time } });
+  };
+
+  const handleCheckinToggle = (value: boolean) => {
+    handleNotificationUpdate({ checkin_enabled: value });
+  };
+
+  const handleCharacterToggle = (value: boolean) => {
+    handleNotificationUpdate({ character_enabled: value });
+  };
+
+  const handleReportToggle = (value: boolean) => {
+    handleNotificationUpdate({ report_enabled: value });
   };
 
   return (
@@ -82,9 +140,17 @@ export function SettingsScreen() {
               알림
             </ThemedText>
             <NotificationCard
-              enabled={pushEnabled}
-              disabled={isNotificationUpdatePending}
-              onToggle={handlePushToggle}
+              allEnabled={allNotificationsEnabled}
+              checkinEnabled={checkinEnabled}
+              checkinTime={checkinTime}
+              characterEnabled={characterEnabled}
+              reportEnabled={reportEnabled}
+              disabled={isNotificationToggleDisabled}
+              onToggleAll={handleAllNotificationsToggle}
+              onToggleCheckin={handleCheckinToggle}
+              onCheckinTimeChange={handleCheckinTimeChange}
+              onToggleCharacter={handleCharacterToggle}
+              onToggleReport={handleReportToggle}
             />
           </View>
 
