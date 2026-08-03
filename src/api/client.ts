@@ -1,4 +1,4 @@
-import axios, { create, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { create, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 
 import queryClient from '@/api/queryClient';
@@ -25,6 +25,25 @@ declare module 'axios' {
 }
 
 const apiClient = create({
+  baseURL: API_BASE_URL,
+  timeout: API_TIMEOUT_MS,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+/**
+ * 토큰 재발급 전용 클라이언트.
+ *
+ * refresh 요청은 apiClient의 인터셉터를 타면 안 된다.
+ * - request 인터셉터: (만료된) access token이 주입됨
+ * - response 인터셉터: 401 응답이 다시 refresh를 호출하는 재귀가 생김
+ *
+ * 그래서 인터셉터가 없는 별도 인스턴스를 쓰되, URL은 절대 경로 문자열이 아니라
+ * baseURL + 상대 경로로 조합한다. 절대 URL을 넘기면 axios가 URL을 그대로 통과시켜
+ * (buildFullPath의 isAbsoluteURL 분기) API_BASE_URL 끝 슬래시가 '//v1/...'로 남는다.
+ */
+const authClient = create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT_MS,
   headers: {
@@ -149,17 +168,15 @@ async function refreshAccessToken(): Promise<string> {
   }
 
   const deviceId = await getOrCreateDeviceId();
-  const { data } = await axios.post<AuthRefreshResponse>(
-    `${API_BASE_URL}/v1/auth/refresh`,
+  const { data } = await authClient.post<AuthRefreshResponse>(
+    '/v1/auth/refresh',
     { refresh_token: refreshToken },
     {
       headers: {
-        'Content-Type': 'application/json',
         'X-Device-Id': deviceId,
         'X-App-Version': getAppVersion(),
         'X-Platform': Platform.OS,
       },
-      timeout: API_TIMEOUT_MS,
     }
   );
 
