@@ -11,7 +11,10 @@ export const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK === 'true';
 function resolveApiBaseUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
   if (url) {
-    return url;
+    // 끝 슬래시 제거. axios는 baseURL + 상대 경로 조합 시 알아서 정규화하지만,
+    // SSE 전송(useChatSse)은 스트리밍 때문에 axios를 못 쓰고 문자열로 URL을 조합해야 해서
+    // 값에 슬래시가 남아 있으면 '//v1/...'로 요청이 나간다. 값을 읽는 이 지점에서 한 번만 처리한다.
+    return url.replace(/\/+$/, '');
   }
   if (USE_MOCK) {
     return '';
