@@ -11,6 +11,7 @@ import {
 } from '@/constants/theme';
 import { useEmotionConstellationData } from '@/features/report/hooks/useEmotionConstellationData';
 import type { ConstellationChartPoint } from '@/types/report';
+import { toKstDate } from '@/utils/date';
 import { getActiveChartIndex } from '@/utils/report';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -84,11 +85,11 @@ interface EmotionConstellationPreviewProps {
   anchorDate?: Date;
 }
 
-export function EmotionConstellationPreview({
-  anchorDate = new Date(),
-}: EmotionConstellationPreviewProps) {
-  const { points } = useEmotionConstellationData('week', anchorDate);
-  const activeIndex = getActiveChartIndex('week', anchorDate);
+export function EmotionConstellationPreview({ anchorDate }: EmotionConstellationPreviewProps) {
+  // 리포트 화면과 동일 KST 앵커 사용 로컬 Date 기본값 주간 경계 차이 방지
+  const resolvedAnchorDate = toKstDate(anchorDate ?? new Date());
+  const { points } = useEmotionConstellationData('week', resolvedAnchorDate);
+  const activeIndex = getActiveChartIndex('week', resolvedAnchorDate);
 
   return <EmotionConstellationContent period="week" points={points} activeIndex={activeIndex} />;
 }
