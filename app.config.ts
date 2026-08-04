@@ -3,13 +3,30 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 const APP_VARIANTS = ['development', 'preview', 'production'] as const;
 type AppVariant = (typeof APP_VARIANTS)[number];
 
-const rawAppVariant = process.env.APP_VARIANT ?? 'development';
-if (!APP_VARIANTS.includes(rawAppVariant as AppVariant)) {
-  throw new Error(`APP_VARIANT must be one of: ${APP_VARIANTS.join(', ')}`);
+function isAppVariant(value: string | undefined): value is AppVariant {
+  return !!value && APP_VARIANTS.includes(value as AppVariant);
 }
-const APP_VARIANT = rawAppVariant as AppVariant;
+
+// Expo CLI 가 @expo/env 로 .env 로드 기존 process.env 는 덮어쓰지 않음
+// EAS 빌드는 EAS_BUILD_PROFILE 우선 .env.local 의 APP_VARIANT 오염 차단
+function resolveAppVariant(): AppVariant {
+  const isEasBuild = process.env.EAS_BUILD === 'true';
+
+  if (isEasBuild && isAppVariant(process.env.EAS_BUILD_PROFILE)) {
+    return process.env.EAS_BUILD_PROFILE;
+  }
+
+  if (isAppVariant(process.env.APP_VARIANT)) {
+    return process.env.APP_VARIANT;
+  }
+
+  return 'development';
+}
+
+const APP_VARIANT = resolveAppVariant();
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
+// 네이티브 플러그인 키 빌드 시 고정 pnpm start 만으로는 변경 불가
 const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
   ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
   : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
