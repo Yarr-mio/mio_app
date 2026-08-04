@@ -17,6 +17,9 @@ const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
 
+// Android FCM 클라이언트 FCM 토큰 발급용 백엔드 발송은 Firebase Admin SDK
+const GOOGLE_SERVICES_FILE = './google-services.json';
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: APP_NAME,
@@ -36,6 +39,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: BUNDLE_IDENTIFIER,
+    googleServicesFile: GOOGLE_SERVICES_FILE,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -54,6 +58,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         defaultChannel: 'default',
+        // iOS APNs remote-notification background mode 백엔드는 APNs HTTP2 직접 연동
+        enableBackgroundRemoteNotifications: true,
       },
     ],
     [
@@ -76,11 +82,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-splash-screen',
       {
         backgroundColor: '#0D0D1A',
-        image: './assets/images/background/splash_background.png',
-        resizeMode: 'cover',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
         android: {
-          image: './assets/images/background/splash_background.png',
-          resizeMode: 'cover',
+          backgroundColor: '#0D0D1A',
+          image: './assets/images/splash-icon.png',
+          imageWidth: 200,
+          resizeMode: 'contain',
+        },
+        ios: {
+          backgroundColor: '#0D0D1A',
+          image: './assets/images/splash-icon.png',
+          imageWidth: 200,
+          resizeMode: 'contain',
         },
       },
     ],
@@ -98,10 +113,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           [
             '@react-native-kakao/core',
             {
-              // URL Scheme(kakao{NATIVE_APP_KEY}) 등 네이티브 설정용
+              // URL Scheme kakao NATIVE_APP_KEY 등 네이티브 설정용
               nativeAppKey: KAKAO_NATIVE_APP_KEY,
               ios: {
-                // 카카오톡 로그인 후 앱 복귀 URL 처리
+                // 카카오톡 로그인 후 앱 복귀 URL 처리함
                 handleKakaoOpenUrl: true,
               },
             },

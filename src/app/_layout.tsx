@@ -11,12 +11,13 @@ import { NANUM_MYEONGJO_FONTS, NOTO_SANS_KR_FONTS } from '@/constants/fonts';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { RootAppContent } from '@/features/auth/components/RootAppContent';
 import { NotificationDeviceBootstrap } from '@/notifications/NotificationDeviceBootstrap';
+import { NotificationListenersBootstrap } from '@/notifications/NotificationListenersBootstrap';
 import { useAuthStore } from '@/store/authStore';
 
 ExpoSplashScreen.preventAutoHideAsync();
 
-// 앱 전역 안전망 — 어디서든 처리되지 않은 렌더 에러가 나면 검은 화면 대신 expo-router 기본 에러
-// 화면(에러 메시지 + 재시도 버튼)을 보여준다 (chat-trouble-shoot/07 참고)
+// 앱 전역 안전망 미처리 렌더 에러 시 expo-router 기본 에러 화면 노출
+// chat trouble shoot 07 참고
 export { ErrorBoundary } from 'expo-router';
 
 export default function RootLayout() {
@@ -29,18 +30,14 @@ export default function RootLayout() {
     return () => setOnAuthInvalid(null);
   }, [router, setOnAuthInvalid]);
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      ExpoSplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-
+  // 네이티브 스플래시 숨김 SplashScreen 레이아웃 완료 후 처리
   if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
+      <NotificationListenersBootstrap />
       <NotificationDeviceBootstrap />
       <RootAppContent />
     </QueryClientProvider>

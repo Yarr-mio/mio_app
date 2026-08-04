@@ -362,6 +362,15 @@ export const AuthTextClasses = {
   appTitle: 'font-NanumMyeongjoExtraBold text-[45px] tracking-[0.22em] text-ink-night',
 } as const;
 
+/** 스플래시 네이티브 JS 공통 */
+export const SplashColors = {
+  background: '#0D0D1A',
+} as const;
+
+export const SplashLayout = {
+  logoWidth: 200,
+} as const;
+
 /** (HomeScreen.tsx) */
 export const HomeLayout = {
   characterImageSize: 125,
