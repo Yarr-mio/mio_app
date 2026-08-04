@@ -125,6 +125,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-apple-authentication',
+    'expo-secure-store',
+    'expo-web-browser',
     ...(KAKAO_NATIVE_APP_KEY
       ? [
           [
