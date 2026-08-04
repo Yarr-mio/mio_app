@@ -14,34 +14,37 @@ async function resolveDeviceIdForRegistration(): Promise<string | null> {
   return device_id.length > 0 ? device_id : null;
 }
 
-interface RegisterPushTokenOnceParams {
+interface RegisterPushTokenParams {
   token: string;
   logContext: '' | ':refresh';
+  /** 앱 시작 시 매번 POST용 force 플래그 refresh는 동일 토큰 중복 스킵 */
+  force: boolean;
   registerDeviceToken: (pushToken: string) => Promise<NotificationDeviceTokenResponse>;
-  syncedTokenRef: { current: string | null };
+  lastRegisteredTokenRef: { current: string | null };
   inFlightTokenRef: { current: string | null };
 }
 
-async function registerPushTokenOnce({
+async function registerPushToken({
   token,
   logContext,
+  force,
   registerDeviceToken,
-  syncedTokenRef,
+  lastRegisteredTokenRef,
   inFlightTokenRef,
-}: RegisterPushTokenOnceParams): Promise<void> {
-  if (syncedTokenRef.current === token || inFlightTokenRef.current === token) {
+}: RegisterPushTokenParams): Promise<void> {
+  // 초기 등록과 refresh 동시 진입만 차단 force면 동일 토큰도 POST 재호출함
+  if (inFlightTokenRef.current === token) {
+    return;
+  }
+  if (!force && lastRegisteredTokenRef.current === token) {
     return;
   }
 
-  const previousSyncedToken = syncedTokenRef.current;
-  // 초기 등록과 refresh listener가 동시에 같은 token으로 진입하는 것을 막기 위해 API 호출 전에 먼저 반영
-  syncedTokenRef.current = token;
   inFlightTokenRef.current = token;
 
   try {
     const device_id = await resolveDeviceIdForRegistration();
     if (!device_id) {
-      syncedTokenRef.current = previousSyncedToken;
       if (__DEV__) {
         console.warn(
           `[NotificationDeviceBootstrap${logContext}] device_id not ready, skipping registration`
@@ -50,9 +53,10 @@ async function registerPushTokenOnce({
       return;
     }
 
+    // body의 device_id platform app_version은 registerNotificationDevice에서 채움
     await registerDeviceToken(token);
+    lastRegisteredTokenRef.current = token;
   } catch (error) {
-    syncedTokenRef.current = previousSyncedToken;
     console.warn(`[NotificationDeviceBootstrap${logContext}]`, error);
   } finally {
     if (inFlightTokenRef.current === token) {
@@ -65,14 +69,14 @@ export function NotificationDeviceBootstrap() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const signupStep = useAuthStore((state) => state.signupStep);
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
-  const syncedTokenRef = useRef<string | null>(null);
+  const lastRegisteredTokenRef = useRef<string | null>(null);
   const inFlightTokenRef = useRef<string | null>(null);
-  // 가입 완료(COMPLETED) 전에는 서버 디바이스 등록을 시도하지 않음
+  // 가입 완료 COMPLETED 전에는 서버 디바이스 등록 시도 안 함
   const shouldRegisterDevice = accessToken !== null && signupStep === 'COMPLETED';
 
   useEffect(() => {
     if (!shouldRegisterDevice) {
-      syncedTokenRef.current = null;
+      lastRegisteredTokenRef.current = null;
       inFlightTokenRef.current = null;
       return;
     }
@@ -86,11 +90,13 @@ export function NotificationDeviceBootstrap() {
           return;
         }
 
-        await registerPushTokenOnce({
+        // 명세 앱 시작 시마다 POST devices 동일 device_id면 서버 토큰 교체함
+        await registerPushToken({
           token,
           logContext: '',
+          force: true,
           registerDeviceToken,
-          syncedTokenRef,
+          lastRegisteredTokenRef,
           inFlightTokenRef,
         });
       } catch (error) {
@@ -111,11 +117,12 @@ export function NotificationDeviceBootstrap() {
     }
 
     const subscription = subscribeNativePushTokenRefresh(async (token) => {
-      await registerPushTokenOnce({
+      await registerPushToken({
         token,
         logContext: ':refresh',
+        force: false,
         registerDeviceToken,
-        syncedTokenRef,
+        lastRegisteredTokenRef,
         inFlightTokenRef,
       });
     });

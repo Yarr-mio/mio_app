@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "812291396744",
+    "project_id": "yarr-mio",
+    "storage_bucket": "yarr-mio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812291396744:android:d1c26eecdcd013ef173b3d",
+        "android_client_info": {
+          "package_name": "com.mio.yarr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLTGxC1JEf6vBAd2PNZNuFGM_B2Sv0aI8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
