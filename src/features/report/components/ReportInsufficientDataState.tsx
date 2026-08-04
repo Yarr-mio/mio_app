@@ -7,13 +7,13 @@ import {
 } from '@/constants/characters';
 import {
   formatCheckinOccurrence,
-  formatInsufficientDataSubtitle,
   formatRequiredCheckinSuffix,
   REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE,
   REPORT_INSUFFICIENT_GUIDE_ITEMS,
   REPORT_INSUFFICIENT_GUIDE_SUBTITLE,
   REPORT_INSUFFICIENT_TITLE,
   REPORT_REQUIRED_CHECKIN_COUNT,
+  resolveInsufficientDataSubtitle,
   type ReportInsufficientGuideItemId,
   type ReportPeriod,
 } from '@/constants/report';
@@ -83,7 +83,7 @@ export function ReportInsufficientDataState({
 
   const resolvedRequiredCount = requiredCount ?? REPORT_REQUIRED_CHECKIN_COUNT;
   const checkinCardTitle = REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE[period];
-  const subtitle = message?.trim() || formatInsufficientDataSubtitle(period, resolvedRequiredCount);
+  const subtitle = resolveInsufficientDataSubtitle(period, resolvedRequiredCount, message);
 
   const handleCharacterImageError = () => {
     setHasImageError(true);
@@ -108,7 +108,7 @@ export function ReportInsufficientDataState({
         <ThemedText type="defaultBold" className={ReportTextClasses.insufficientTitle}>
           {REPORT_INSUFFICIENT_TITLE}
         </ThemedText>
-        <ThemedText type="default" className={ReportTextClasses.insufficientSubtitle}>
+        <ThemedText type="defaultRegular" className={ReportTextClasses.insufficientSubtitle}>
           {subtitle}
         </ThemedText>
       </View>
