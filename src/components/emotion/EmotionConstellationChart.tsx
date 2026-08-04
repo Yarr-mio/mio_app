@@ -16,7 +16,7 @@ import {
 import type { ConstellationChartPoint } from '@/types/report';
 import { useState } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, G, Polyline, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, G, Line, Rect, Text as SvgText } from 'react-native-svg';
 
 interface EmotionConstellationChartProps {
   points: ConstellationChartPoint[];
@@ -66,7 +66,7 @@ interface ChartPoint {
 }
 
 function hasPointData(avgConditionScore: number | null | undefined): boolean {
-  // 점선/회색 판단은 avg_condition_score null 여부만 사용 (미래 날짜 비교 금지)
+  // 점선 실선 판단은 avg_condition_score null 여부만 사용
   return avgConditionScore != null;
 }
 
@@ -89,6 +89,12 @@ function conditionScoreToNormalized(avgConditionScore: number | null | undefined
 
 function isSolidSegment(fromHasData: boolean, toHasData: boolean): boolean {
   return fromHasData && toHasData;
+}
+
+function getSegmentStrokeDasharray(solid: boolean): string {
+  return solid
+    ? EmotionConstellationLayout.solidStrokeDasharray
+    : EmotionConstellationLayout.emptyStrokeDasharray;
 }
 
 function ChartIntensityLabel({ x, y, svgWidth, avgConditionScore }: ChartIntensityLabelProps) {
@@ -144,7 +150,6 @@ export function EmotionConstellationChart({
     strokeWidth,
     dotRadius,
     activeDotRadius,
-    emptyStrokeDasharray,
   } = EmotionConstellationLayout;
 
   const labelAreaHeight = showIntensityLabels ? intensityLabelAreaHeight : 0;
@@ -200,15 +205,16 @@ export function EmotionConstellationChart({
               const solid = isSolidSegment(fromPoint.hasData, toPoint.hasData);
 
               return (
-                <Polyline
+                <Line
                   key={`segment-${index}`}
-                  points={`${fromPoint.x},${fromPoint.y} ${toPoint.x},${toPoint.y}`}
-                  fill="none"
+                  x1={fromPoint.x}
+                  y1={fromPoint.y}
+                  x2={toPoint.x}
+                  y2={toPoint.y}
                   stroke={solid ? ConstellationChartColors.data : ConstellationChartColors.empty}
                   strokeWidth={strokeWidth}
-                  strokeLinejoin="round"
                   strokeLinecap="round"
-                  strokeDasharray={solid ? undefined : emptyStrokeDasharray}
+                  strokeDasharray={getSegmentStrokeDasharray(solid)}
                 />
               );
             })}
