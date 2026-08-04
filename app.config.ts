@@ -7,12 +7,10 @@ function isAppVariant(value: string | undefined): value is AppVariant {
   return !!value && APP_VARIANTS.includes(value as AppVariant);
 }
 
-// Expo CLI 가 @expo/env 로 .env 로드 기존 process.env 는 덮어쓰지 않음
-// EAS 빌드는 EAS_BUILD_PROFILE 우선 .env.local 의 APP_VARIANT 오염 차단
+// 우선순위 EAS_BUILD_PROFILE 다음 APP_VARIANT 다음 development
+// EAS 클라우드 및 로컬 시뮬레이션 모두 프로필이 있으면 .env.local APP_VARIANT 무시
 function resolveAppVariant(): AppVariant {
-  const isEasBuild = process.env.EAS_BUILD === 'true';
-
-  if (isEasBuild && isAppVariant(process.env.EAS_BUILD_PROFILE)) {
+  if (isAppVariant(process.env.EAS_BUILD_PROFILE)) {
     return process.env.EAS_BUILD_PROFILE;
   }
 
@@ -28,8 +26,16 @@ const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview
 
 // 네이티브 플러그인 키 빌드 시 고정 pnpm start 만으로는 변경 불가
 const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
-  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
-  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
+
+if (!KAKAO_NATIVE_APP_KEY) {
+  throw new Error(
+    IS_DEV_VARIANT
+      ? 'EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV is required for development preview builds'
+      : 'EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY is required for production builds'
+  );
+}
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
@@ -98,21 +104,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
+        // 네이티브 스플래시는 배경색만 JS 커스텀 스플래시로 전환
         backgroundColor: '#0D0D1A',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 200,
-        resizeMode: 'contain',
         android: {
           backgroundColor: '#0D0D1A',
-          image: './assets/images/splash-icon.png',
-          imageWidth: 200,
-          resizeMode: 'contain',
         },
         ios: {
           backgroundColor: '#0D0D1A',
-          image: './assets/images/splash-icon.png',
-          imageWidth: 200,
-          resizeMode: 'contain',
         },
       },
     ],
@@ -127,22 +125,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     'expo-secure-store',
     'expo-web-browser',
-    ...(KAKAO_NATIVE_APP_KEY
-      ? [
-          [
-            '@react-native-kakao/core',
-            {
-              // URL Scheme kakao NATIVE_APP_KEY 등 네이티브 설정용
-              nativeAppKey: KAKAO_NATIVE_APP_KEY,
-              ios: {
-                // 카카오톡 로그인 후 앱 복귀 URL 처리함
-                handleKakaoOpenUrl: true,
-              },
-            },
-          ] as [string, any],
-        ]
-      : []),
+    [
+      '@react-native-kakao/core',
+      {
+        // URL Scheme kakao NATIVE_APP_KEY 등 네이티브 설정용
+        nativeAppKey: KAKAO_NATIVE_APP_KEY,
+        ios: {
+          // 카카오톡 로그인 후 앱 복귀 URL 처리함
+          handleKakaoOpenUrl: true,
+        },
+      },
+    ],
   ],
+  extra: {
+    appVariant: APP_VARIANT,
+  },
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
