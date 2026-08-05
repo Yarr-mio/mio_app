@@ -1,7 +1,27 @@
+import type { NotificationType } from '@/types/notification';
+
 export const NOTIFICATION_ENDPOINTS = {
   devices: '/v1/notifications/devices',
   device: (token: string) => `/v1/notifications/devices/${encodeURIComponent(token)}`,
 } as const;
+
+/** 푸시 payload에서 알림 유형을 읽을 때 우선순위대로 확인하는 키 (발송 측 필드명 미확정) */
+export const NOTIFICATION_TYPE_PAYLOAD_KEYS = [
+  'notification_type',
+  'trigger_code',
+  'type',
+] as const;
+
+/** 알림 유형 허용값 — payload 값이 이 목록 밖이면 유형 미상(null)으로 적재한다 */
+export const NOTIFICATION_TYPES = [
+  'checkin_reminder_morning',
+  'checkin_reminder_afternoon',
+  'checkin_reminder_evening',
+  'todo_incomplete',
+  'negative_emotion_streak',
+  'report_weekly',
+  'crisis_detected',
+] as const satisfies readonly NotificationType[];
 
 export const NOTIFICATION_PERMISSION = {
   androidRuntimePermissionVersion: 33,
