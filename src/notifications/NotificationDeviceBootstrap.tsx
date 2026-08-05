@@ -14,55 +14,71 @@ async function resolveDeviceIdForRegistration(): Promise<string | null> {
   return device_id.length > 0 ? device_id : null;
 }
 
-interface RegisterPushTokenParams {
+interface PendingPushTokenRegistration {
   token: string;
   logContext: '' | ':refresh';
-  /** 앱 시작 시 매번 POST용 force 플래그 refresh는 동일 토큰 중복 스킵 */
+  force: boolean;
+}
+
+interface EnqueueRegisterPushTokenParams {
+  token: string;
+  logContext: '' | ':refresh';
+  /** 앱 시작 시 동일 토큰도 POST 재호출용 */
   force: boolean;
   registerDeviceToken: (pushToken: string) => Promise<NotificationDeviceTokenResponse>;
   lastRegisteredTokenRef: { current: string | null };
-  inFlightTokenRef: { current: string | null };
+  pendingRegistrationRef: { current: PendingPushTokenRegistration | null };
+  registrationChainRef: { current: Promise<void> };
 }
 
-async function registerPushToken({
+function enqueueRegisterPushToken({
   token,
   logContext,
   force,
   registerDeviceToken,
   lastRegisteredTokenRef,
-  inFlightTokenRef,
-}: RegisterPushTokenParams): Promise<void> {
-  // 초기 등록과 refresh 동시 진입만 차단 force면 동일 토큰도 POST 재호출함
-  if (inFlightTokenRef.current === token) {
-    return;
-  }
-  if (!force && lastRegisteredTokenRef.current === token) {
-    return;
-  }
+  pendingRegistrationRef,
+  registrationChainRef,
+}: EnqueueRegisterPushTokenParams): Promise<void> {
+  // 대기열은 최신 토큰만 유지
+  pendingRegistrationRef.current = { token, logContext, force };
 
-  inFlightTokenRef.current = token;
+  const flushPendingRegistrations = async () => {
+    while (pendingRegistrationRef.current) {
+      const pending = pendingRegistrationRef.current;
+      pendingRegistrationRef.current = null;
 
-  try {
-    const device_id = await resolveDeviceIdForRegistration();
-    if (!device_id) {
-      if (__DEV__) {
-        console.warn(
-          `[NotificationDeviceBootstrap${logContext}] device_id not ready, skipping registration`
-        );
+      if (!pending.force && lastRegisteredTokenRef.current === pending.token) {
+        continue;
       }
-      return;
-    }
 
-    // body의 device_id platform app_version은 registerNotificationDevice에서 채움
-    await registerDeviceToken(token);
-    lastRegisteredTokenRef.current = token;
-  } catch (error) {
-    console.warn(`[NotificationDeviceBootstrap${logContext}]`, error);
-  } finally {
-    if (inFlightTokenRef.current === token) {
-      inFlightTokenRef.current = null;
+      try {
+        const device_id = await resolveDeviceIdForRegistration();
+        if (!device_id) {
+          if (__DEV__) {
+            console.warn(
+              `[NotificationDeviceBootstrap${pending.logContext}] device_id not ready, skipping registration`
+            );
+          }
+          continue;
+        }
+
+        // device_id platform app_version은 등록 API에서 채움
+        await registerDeviceToken(pending.token);
+        lastRegisteredTokenRef.current = pending.token;
+      } catch (error) {
+        console.warn(`[NotificationDeviceBootstrap${pending.logContext}]`, error);
+      }
     }
-  }
+  };
+
+  // 등록 요청은 순차 처리하고 최신 토큰만 반영 예정
+  const next = registrationChainRef.current.then(
+    flushPendingRegistrations,
+    flushPendingRegistrations
+  );
+  registrationChainRef.current = next;
+  return next;
 }
 
 export function NotificationDeviceBootstrap() {
@@ -70,14 +86,15 @@ export function NotificationDeviceBootstrap() {
   const signupStep = useAuthStore((state) => state.signupStep);
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
   const lastRegisteredTokenRef = useRef<string | null>(null);
-  const inFlightTokenRef = useRef<string | null>(null);
-  // 가입 완료 COMPLETED 전에는 서버 디바이스 등록 시도 안 함
+  const pendingRegistrationRef = useRef<PendingPushTokenRegistration | null>(null);
+  const registrationChainRef = useRef(Promise.resolve());
+  // 가입 미완료 시 서버 디바이스 등록 스킵
   const shouldRegisterDevice = accessToken !== null && signupStep === 'COMPLETED';
 
   useEffect(() => {
     if (!shouldRegisterDevice) {
       lastRegisteredTokenRef.current = null;
-      inFlightTokenRef.current = null;
+      pendingRegistrationRef.current = null;
       return;
     }
 
@@ -90,14 +107,15 @@ export function NotificationDeviceBootstrap() {
           return;
         }
 
-        // 명세 앱 시작 시마다 POST devices 동일 device_id면 서버 토큰 교체함
-        await registerPushToken({
+        // 앱 시작 시 POST 강제 등록
+        await enqueueRegisterPushToken({
           token,
           logContext: '',
           force: true,
           registerDeviceToken,
           lastRegisteredTokenRef,
-          inFlightTokenRef,
+          pendingRegistrationRef,
+          registrationChainRef,
         });
       } catch (error) {
         if (!cancelled) {
@@ -117,13 +135,14 @@ export function NotificationDeviceBootstrap() {
     }
 
     const subscription = subscribeNativePushTokenRefresh(async (token) => {
-      await registerPushToken({
+      await enqueueRegisterPushToken({
         token,
         logContext: ':refresh',
         force: false,
         registerDeviceToken,
         lastRegisteredTokenRef,
-        inFlightTokenRef,
+        pendingRegistrationRef,
+        registrationChainRef,
       });
     });
 

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { handleNotificationTap } from '@/notifications/handleTap';
 import '@/notifications/setupNotificationHandler';
 
-/** foreground background killed 알림 수신 및 탭 리스너 App 루트에서 1회 마운트함 */
+/** foreground background killed 알림 수신 및 탭 리스너 1회 마운트 */
 export function NotificationListenersBootstrap() {
   const lastHandledResponseIdRef = useRef<string | null>(null);
 
@@ -25,6 +25,8 @@ export function NotificationListenersBootstrap() {
           return;
         }
         lastHandledResponseIdRef.current = responseId;
+        // 처리 완료 응답 초기화
+        Notifications.clearLastNotificationResponse();
         void handleNotificationTap(response);
       }
     );
@@ -39,6 +41,8 @@ export function NotificationListenersBootstrap() {
         return;
       }
       lastHandledResponseIdRef.current = responseId;
+      // 처리 완료 응답 초기화
+      Notifications.clearLastNotificationResponse();
       void handleNotificationTap(response);
     });
 
