@@ -7,6 +7,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { EMPLOYMENT_STATUS_OPTIONS } from '@/constants/signup';
 import {
   EditNicknameLayout,
   InputColors,
@@ -21,7 +22,7 @@ import {
 } from '@/features/auth/components/NicknameDuplicateCheckButton';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import { useSignupInfoSubmit } from '@/features/auth/hooks/useSignupInfoSubmit';
-import type { UserAgeRange, UserGender } from '@/types/user';
+import type { UserAgeRange, UserEmploymentStatus, UserGender } from '@/types/user';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
@@ -36,6 +37,7 @@ const NICKNAME_HINT_DUPLICATE = '중복된 닉네임입니다';
 
 type GenderOption = UserGender | 'none';
 type AgeOption = UserAgeRange;
+type EmploymentOption = UserEmploymentStatus;
 
 const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
   { value: 'female', label: '여성' },
@@ -48,6 +50,10 @@ const AGE_OPTIONS: { value: AgeOption; label: string }[] = [
   { value: '20s', label: '20대' },
   { value: '30s', label: '30대' },
   { value: '40s', label: '40대+' },
+];
+
+const EMPLOYMENT_OPTIONS: { value: EmploymentOption; label: string }[] = [
+  ...EMPLOYMENT_STATUS_OPTIONS,
 ];
 
 interface SelectionChipProps {
@@ -106,6 +112,7 @@ export default function SignUpInfoScreen() {
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [gender, setGender] = useState<GenderOption | null>(null);
   const [age, setAge] = useState<AgeOption | null>(null);
+  const [employmentStatus, setEmploymentStatus] = useState<EmploymentOption | null>(null);
   const [duplicateCheckStatus, setDuplicateCheckStatus] =
     useState<NicknameDuplicateCheckStatus>('idle');
 
@@ -144,6 +151,7 @@ export default function SignUpInfoScreen() {
       nickname: trimmedNickname,
       gender: normalizedGender,
       ageRange: age,
+      employmentStatus,
     });
 
     if (result?.conflict) {
@@ -257,6 +265,22 @@ export default function SignUpInfoScreen() {
                     onPress={() => {
                       clearErrors();
                       setAge((prev) => (prev === option.value ? null : option.value));
+                    }}
+                  />
+                ))}
+              </View>
+            </SelectableField>
+
+            <SelectableField label="직업 (선택)">
+              <View className="flex-row flex-wrap justify-start gap-2">
+                {EMPLOYMENT_OPTIONS.map((option) => (
+                  <SelectionChip
+                    key={option.value}
+                    label={option.label}
+                    selected={employmentStatus === option.value}
+                    onPress={() => {
+                      clearErrors();
+                      setEmploymentStatus((prev) => (prev === option.value ? null : option.value));
                     }}
                   />
                 ))}

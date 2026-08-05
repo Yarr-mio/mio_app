@@ -48,7 +48,7 @@ export default function LoginScreen() {
             </ThemedText>
           ) : null}
           {kakaoLogin.error ? (
-            // ErrorState 컴포넌트 구현 후 교체할 것
+            // ErrorState 교체 예정
             <ThemedText type="small" className="text-center text-danger">
               {kakaoLogin.error}
             </ThemedText>

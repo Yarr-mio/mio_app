@@ -6,7 +6,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { SPLASH_DURATION_MS } from '@/constants/config';
 import { AuthTextClasses, SplashColors } from '@/constants/theme';
 
-// 정적 번들 포함 배경 이미지 prefetch 불필요
+// 정적 번들 배경 이미지 prefetch 불필요
 const SPLASH_BACKGROUND = require('@/assets/images/background/splash_background.png');
 
 interface SplashScreenProps {
@@ -30,7 +30,7 @@ export default function SplashScreen({
     }
 
     hasHiddenNativeRef.current = true;
-    // 레이아웃 및 배경 이미지 준비 후 네이티브 스플래시 숨김
+    // 레이아웃 준비 후 네이티브 스플래시 숨김
     void ExpoSplashScreen.hideAsync();
   }, [isSplashReady]);
 
@@ -62,7 +62,7 @@ export default function SplashScreen({
           setIsImageReady(true);
         }}
         onError={() => {
-          // 로드 실패 시에도 네이티브 스플래시 정체 방지
+          // 로드 실패 시 네이티브 스플래시 정체 방지
           setIsImageReady(true);
         }}
       >
