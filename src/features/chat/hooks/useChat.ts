@@ -64,8 +64,8 @@ export function useStartChatSession() {
       const errorCode = readApiErrorCode(error);
 
       if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'ONBOARDING_REQUIRED') {
-        Alert.alert('온보딩이 필요해요', '먼저 온보딩을 마치면 대화를 시작할 수 있어요.', [
-          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.onboardingStep1) },
+        Alert.alert('온보딩이 필요해요', '먼저 캐릭터 선택을 마치면 대화를 시작할 수 있어요.', [
+          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.onboardingStep4) },
         ]);
         return;
       }
