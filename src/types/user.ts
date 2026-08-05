@@ -3,7 +3,7 @@ import type { OnboardingConcernType, OnboardingStyleType } from '@/constants/onb
 import type { EmploymentStatusValue } from '@/constants/signup';
 import type { EmotionType } from '@/types/checkin';
 
-export type UserGender = 'female' | 'male';
+export type UserGender = 'female' | 'male' | 'other';
 export type UserAgeRange = '10s' | '20s' | '30s' | '40s';
 export type UserEmploymentStatus = EmploymentStatusValue;
 
