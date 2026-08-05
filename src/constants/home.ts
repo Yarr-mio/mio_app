@@ -3,6 +3,9 @@ export const HOME_TITLES = {
   notCheckedIn: '오늘의 마음을 꺼내 봐요',
 } as const;
 
+// 홈 추천 행동 카드 최대 표시 개수 제한함
+export const HOME_RECOMMENDED_TODO_MAX_COUNT = 3;
+
 export const HOME_SPEECH_BUBBLE_MESSAGES = [
   '오늘의 감정 체크인을 시작해볼까요? ✨\n작은 기록이 큰 변화를 만들어요',
   '지금 이 순간의 마음을 기록해요! \n💭 작은 힌트가 되어줄 거예요',

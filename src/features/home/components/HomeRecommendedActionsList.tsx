@@ -1,5 +1,6 @@
 import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { HOME_RECOMMENDED_TODO_MAX_COUNT } from '@/constants/home';
 import { FgColors, HomeActionClasses, HomeLayout } from '@/constants/theme';
 import { resolveStableHomeTodoOrder } from '@/features/home/utils/resolveStableHomeTodoOrder';
 import type { TodoResponse, TodoStatus } from '@/types/todo';
@@ -88,6 +89,8 @@ export function HomeRecommendedActionsList({
     orderIdsRef.current,
     idSetKeyRef.current
   );
+  // 홈 카드 표시용 개수 제한함
+  const visibleActions = orderedActions.slice(0, HOME_RECOMMENDED_TODO_MAX_COUNT);
 
   useEffect(() => {
     orderIdsRef.current = orderIds;
@@ -96,7 +99,7 @@ export function HomeRecommendedActionsList({
 
   return (
     <View className="gap-4">
-      {orderedActions.map((action) => {
+      {visibleActions.map((action) => {
         const done = isTodoDone(action.status);
         const actionable = canCompleteFromHome(action.status);
 
