@@ -14,6 +14,7 @@ import {
 import queryClient from '@/api/queryClient';
 import { syncAuthProfileCharacterFromServer } from '@/features/auth/services/syncAuthProfileCharacter';
 import { useUnregisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
+import { clearReportPollFetchCounts } from '@/features/report/utils/reportPollFetchCountStore';
 import { getNativeDevicePushTokenAsync, getRememberedPushToken } from '@/notifications/fcm';
 import { useAuthStore } from '@/store/authStore';
 import { commitAuthProfileFromStoredSelection, useUserStore } from '@/store/userStore';
@@ -47,6 +48,7 @@ export function useSocialLogin() {
     onSuccess: async (res) => {
       // 이전 계정 잔존 데이터 제거
       useUserStore.getState().reset();
+      clearReportPollFetchCounts();
       queryClient.clear();
 
       await storage.refreshToken.set(res.data.refresh_token);
@@ -155,6 +157,7 @@ export function useLogout() {
           useUserStore.persist.clearStorage(),
         ]);
       } finally {
+        clearReportPollFetchCounts();
         queryClient.clear();
         onAuthInvalid?.();
       }
@@ -183,6 +186,7 @@ export function useWithdraw() {
           useUserStore.persist.clearStorage(),
         ]);
       } finally {
+        clearReportPollFetchCounts();
         queryClient.clear();
         onAuthInvalid?.();
       }
