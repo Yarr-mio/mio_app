@@ -2,17 +2,17 @@ import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { FgColors, HomeActionClasses, HomeLayout } from '@/constants/theme';
 import { resolveStableHomeTodoOrder } from '@/features/home/utils/resolveStableHomeTodoOrder';
-import { useTodoCheckin } from '@/features/todo/hooks/useTodo';
 import type { TodoResponse, TodoStatus } from '@/types/todo';
 import { cn } from '@/utils/cn';
 import { useRef } from 'react';
 import { Pressable, View } from 'react-native';
 
-const HOME_TODO_CHECKIN_STATUS = 'completed' as const;
 const HOME_TODO_ACTIONABLE_STATUS: TodoStatus = 'suggested';
 
 interface HomeRecommendedActionsListProps {
   actions: TodoResponse[];
+  isSubmitting: boolean;
+  onCompleteTodo: (todoId: string) => void;
 }
 
 interface RecommendedActionCheckboxProps {
@@ -75,8 +75,11 @@ function RecommendedActionItem({ text, done, disabled, onPress }: RecommendedAct
   );
 }
 
-export function HomeRecommendedActionsList({ actions }: HomeRecommendedActionsListProps) {
-  const { mutate, isPending } = useTodoCheckin();
+export function HomeRecommendedActionsList({
+  actions,
+  isSubmitting,
+  onCompleteTodo,
+}: HomeRecommendedActionsListProps) {
   const orderIdsRef = useRef<string[]>([]);
   const idSetKeyRef = useRef('');
 
@@ -87,13 +90,6 @@ export function HomeRecommendedActionsList({ actions }: HomeRecommendedActionsLi
   );
   orderIdsRef.current = orderIds;
   idSetKeyRef.current = idSetKey;
-
-  function handleComplete(todoId: string) {
-    mutate({
-      todoId,
-      body: { status: HOME_TODO_CHECKIN_STATUS },
-    });
-  }
 
   return (
     <View className="gap-4">
@@ -106,12 +102,12 @@ export function HomeRecommendedActionsList({ actions }: HomeRecommendedActionsLi
             key={action.todo_id}
             text={action.action_text}
             done={done}
-            disabled={!actionable || isPending}
+            disabled={!actionable || isSubmitting}
             onPress={() => {
-              if (!actionable || isPending) {
+              if (!actionable || isSubmitting) {
                 return;
               }
-              handleComplete(action.todo_id);
+              onCompleteTodo(action.todo_id);
             }}
           />
         );
