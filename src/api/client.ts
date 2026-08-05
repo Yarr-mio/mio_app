@@ -1,14 +1,14 @@
-import { create, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { Platform } from 'react-native';
-
 import queryClient from '@/api/queryClient';
 import { API_BASE_URL, API_TIMEOUT_MS, AUTH_API_ERROR_CODE, HTTP_STATUS } from '@/constants/config';
+import { clearReportPollFetchCounts } from '@/features/report/utils/reportPollFetchCountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
 import type { AuthRefreshResponse } from '@/types/auth';
 import { getAppVersion } from '@/utils/appInfo';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
 import { storage } from '@/utils/storage';
+import { create, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { Platform } from 'react-native';
 
 declare module 'axios' {
   export interface InternalAxiosRequestConfig {
@@ -204,6 +204,7 @@ async function clearLocalAuth(): Promise<void> {
   useAuthStore.getState().setAccessToken(null);
   useUserStore.getState().reset();
   await Promise.allSettled([storage.refreshToken.delete(), useUserStore.persist.clearStorage()]);
+  clearReportPollFetchCounts();
   queryClient.clear();
 }
 
