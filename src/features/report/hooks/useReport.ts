@@ -61,9 +61,12 @@ function updateReportQueryFetchCount(context: QueryFunctionContext): void {
     return;
   }
 
+  // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
   const meta = query.meta as Partial<ReportQueryMeta>;
   query.setOptions({
+    ...query.options,
     meta: {
+      ...meta,
       maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
       fetchCount: (meta.fetchCount ?? 0) + 1,
     },
@@ -79,9 +82,12 @@ function resetReportQueryFetchCount(
     return;
   }
 
+  // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
   const meta = query.meta as Partial<ReportQueryMeta>;
   query.setOptions({
+    ...query.options,
     meta: {
+      ...meta,
       maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
       fetchCount: 0,
     },
