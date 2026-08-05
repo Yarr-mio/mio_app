@@ -4,7 +4,7 @@ import { FgColors, HomeActionClasses, HomeLayout } from '@/constants/theme';
 import { resolveStableHomeTodoOrder } from '@/features/home/utils/resolveStableHomeTodoOrder';
 import type { TodoResponse, TodoStatus } from '@/types/todo';
 import { cn } from '@/utils/cn';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Pressable, View } from 'react-native';
 
 const HOME_TODO_ACTIONABLE_STATUS: TodoStatus = 'suggested';
@@ -88,8 +88,11 @@ export function HomeRecommendedActionsList({
     orderIdsRef.current,
     idSetKeyRef.current
   );
-  orderIdsRef.current = orderIds;
-  idSetKeyRef.current = idSetKey;
+
+  useEffect(() => {
+    orderIdsRef.current = orderIds;
+    idSetKeyRef.current = idSetKey;
+  }, [idSetKey, orderIds]);
 
   return (
     <View className="gap-4">
