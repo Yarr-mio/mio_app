@@ -86,10 +86,21 @@ interface EmotionConstellationPreviewProps {
 }
 
 export function EmotionConstellationPreview({ anchorDate }: EmotionConstellationPreviewProps) {
-  // 리포트 화면과 동일 KST 앵커 사용 로컬 Date 기본값 주간 경계 차이 방지
+  // 리포트와 동일 KST 앵커 주간 경계 차이 방지
   const resolvedAnchorDate = toKstDate(anchorDate ?? new Date());
-  const { points } = useEmotionConstellationData('week', resolvedAnchorDate);
+  const { points, isLoading } = useEmotionConstellationData('week', resolvedAnchorDate, {
+    enabled: true,
+  });
   const activeIndex = getActiveChartIndex('week', resolvedAnchorDate);
+
+  // 로딩 전 null points 점선 선행 마운트 후 실선 미갱신 방지 리포트와 동일 게이트
+  if (isLoading) {
+    return (
+      <View className={ReportPendingStateClasses.container}>
+        <ActivityIndicator color={ButtonColors.spinnerLight} />
+      </View>
+    );
+  }
 
   return <EmotionConstellationContent period="week" points={points} activeIndex={activeIndex} />;
 }

@@ -92,9 +92,15 @@ function isSolidSegment(fromHasData: boolean, toHasData: boolean): boolean {
 }
 
 function getSegmentStrokeDasharray(solid: boolean): string {
+  // 실선은 none 명시 점선에서 실선으로 바뀔 때 네이티브 dash 잔존 방지
   return solid
     ? EmotionConstellationLayout.solidStrokeDasharray
     : EmotionConstellationLayout.emptyStrokeDasharray;
+}
+
+function getSegmentKey(index: number, solid: boolean): string {
+  // solid 전환 시 Line 리마운트 강제 strokeDasharray 미갱신 방지
+  return `segment-${index}-${solid ? 'solid' : 'empty'}`;
 }
 
 function ChartIntensityLabel({ x, y, svgWidth, avgConditionScore }: ChartIntensityLabelProps) {
@@ -206,7 +212,7 @@ export function EmotionConstellationChart({
 
               return (
                 <Line
-                  key={`segment-${index}`}
+                  key={getSegmentKey(index, solid)}
                   x1={fromPoint.x}
                   y1={fromPoint.y}
                   x2={toPoint.x}
