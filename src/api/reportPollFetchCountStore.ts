@@ -21,7 +21,8 @@ export function incrementReportPollFetchCount(queryKey: readonly unknown[]): num
 }
 
 export function resetReportPollFetchCount(queryKey: readonly unknown[]): void {
-  reportPollFetchCounts.set(hashKey(queryKey), 0);
+  // 리셋 시 Map 키 삭제함 get은 없는 키를 0으로 반환함
+  reportPollFetchCounts.delete(hashKey(queryKey));
 }
 
 export function clearReportPollFetchCounts(): void {
