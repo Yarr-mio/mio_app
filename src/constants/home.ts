@@ -6,6 +6,12 @@ export const HOME_TITLES = {
 // 홈 추천 행동 카드 최대 표시 개수 제한함
 export const HOME_RECOMMENDED_TODO_MAX_COUNT = 3;
 
+export const HOME_MIND_EXPLORE_COMING_SOON_MODAL = {
+  title: '아직 준비 중인 기능이에요',
+  description: '더 섬세하게 마음을 들여다볼 수 있도록 준비 중이에요. \n조금만 기다려 주세요.',
+  confirmLabel: '확인',
+} as const;
+
 export const HOME_SPEECH_BUBBLE_MESSAGES = [
   '오늘의 감정 체크인을 시작해볼까요? ✨\n작은 기록이 큰 변화를 만들어요',
   '지금 이 순간의 마음을 기록해요! \n💭 작은 힌트가 되어줄 거예요',
