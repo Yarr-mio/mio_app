@@ -5,9 +5,7 @@ import {
 import type { OnboardingStyleType } from '@/constants/onboarding';
 import type { OnboardingCharacterRecommendation } from '@/types/onboarding';
 
-/**
- * 추천 캐릭터 id 목록. API 응답이 있으면 우선 사용하고, 없으면 preferred_style fallback
- */
+// API 추천 우선 preferred_style fallback
 export function getRecommendedCharacterIds(
   preferredStyle: OnboardingStyleType | null,
   apiRecommendations?: OnboardingCharacterRecommendation[] | null

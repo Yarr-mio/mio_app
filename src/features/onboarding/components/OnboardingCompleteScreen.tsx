@@ -77,7 +77,7 @@ export function OnboardingCompleteScreen() {
     setNotificationModalVisible(false);
     void declineNotificationSettings()
       .catch(() => {
-        // 설정 저장 실패 시에도 홈 이동
+        // 설정 저장 실패 시 홈 이동
       })
       .finally(() => {
         router.replace(AUTH_ROUTES.home);
