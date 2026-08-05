@@ -51,12 +51,14 @@ function TodoLegendItem({ variant, label }: TodoLegendItemProps) {
 }
 
 export function TodoSummaryCard({ period, todoSummary }: TodoSummaryCardProps) {
-  const { completed, skipped, expired, completion_rate, total } = todoSummary;
+  const { completed, partial_completed, skipped, expired, completion_rate, total } = todoSummary;
+  // 범례 못함 항목 집계 skipped 건너뜀 + expired 만료
+  const failedCount = skipped + expired;
 
   const segments = [
     { value: completed, color: ReportTodoDonutColors.completed },
-    { value: skipped, color: ReportTodoDonutColors.partial },
-    { value: expired, color: ReportTodoDonutColors.failed },
+    { value: partial_completed, color: ReportTodoDonutColors.partial },
+    { value: failedCount, color: ReportTodoDonutColors.failed },
   ];
 
   return (
@@ -79,11 +81,11 @@ export function TodoSummaryCard({ period, todoSummary }: TodoSummaryCardProps) {
           />
           <TodoLegendItem
             variant="partial"
-            label={formatTodoLegendItem(REPORT_TODO_LEGEND_LABELS.partial, skipped)}
+            label={formatTodoLegendItem(REPORT_TODO_LEGEND_LABELS.partial, partial_completed)}
           />
           <TodoLegendItem
             variant="failed"
-            label={formatTodoLegendItem(REPORT_TODO_LEGEND_LABELS.failed, expired)}
+            label={formatTodoLegendItem(REPORT_TODO_LEGEND_LABELS.failed, failedCount)}
           />
         </View>
       </View>

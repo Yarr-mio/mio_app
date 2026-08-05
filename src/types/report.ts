@@ -31,6 +31,7 @@ export interface TodoCategoryDistribution {
 export interface TodoSummary {
   total: number;
   completed: number;
+  partial_completed: number;
   skipped: number;
   expired: number;
   completion_rate: number;
