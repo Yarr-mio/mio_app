@@ -1,7 +1,7 @@
 import { checkinTodo, fetchTodos } from '@/api/endpoints/todo';
 import { queryKeys } from '@/api/queryKeys';
 import { HTTP_STATUS } from '@/constants/config';
-import { invalidateTodoRelatedQueries } from '@/features/report/utils/invalidateReportQueries';
+import { invalidateTodoRelatedQueries } from '@/api/invalidateReportQueries';
 import type { TodoCheckinRequest } from '@/types/todo';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

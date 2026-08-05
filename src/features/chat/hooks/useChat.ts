@@ -10,7 +10,7 @@ import { useChatStore } from '@/features/chat/store/chatStore';
 import {
   invalidateReportQueries,
   invalidateTodoRelatedQueries,
-} from '@/features/report/utils/invalidateReportQueries';
+} from '@/api/invalidateReportQueries';
 import {
   HTTP_STATUS,
   SESSION_SUMMARY_CACHE_GC_TIME_MS,

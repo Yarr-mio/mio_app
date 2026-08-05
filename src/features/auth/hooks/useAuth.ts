@@ -14,7 +14,7 @@ import {
 import queryClient from '@/api/queryClient';
 import { syncAuthProfileCharacterFromServer } from '@/features/auth/services/syncAuthProfileCharacter';
 import { useUnregisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
-import { clearReportPollFetchCounts } from '@/features/report/utils/reportPollFetchCountStore';
+import { clearReportPollFetchCounts } from '@/api/reportPollFetchCountStore';
 import { getNativeDevicePushTokenAsync, getRememberedPushToken } from '@/notifications/fcm';
 import { useAuthStore } from '@/store/authStore';
 import { commitAuthProfileFromStoredSelection, useUserStore } from '@/store/userStore';

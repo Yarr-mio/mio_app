@@ -1,5 +1,5 @@
 import { queryKeys } from '@/api/queryKeys';
-import { resetReportPollFetchCount } from '@/features/report/utils/reportPollFetchCountStore';
+import { resetReportPollFetchCount } from '@/api/reportPollFetchCountStore';
 import type { QueryClient } from '@tanstack/react-query';
 
 function resetReportQueryFetchCounts(queryClient: QueryClient): void {
@@ -15,7 +15,6 @@ export async function invalidateReportQueries(queryClient: QueryClient): Promise
 
   await queryClient.invalidateQueries({
     queryKey: queryKeys.report.all(),
-    refetchType: 'all',
   });
 }
 

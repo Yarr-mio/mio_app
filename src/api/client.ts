@@ -1,6 +1,6 @@
 import queryClient from '@/api/queryClient';
 import { API_BASE_URL, API_TIMEOUT_MS, AUTH_API_ERROR_CODE, HTTP_STATUS } from '@/constants/config';
-import { clearReportPollFetchCounts } from '@/features/report/utils/reportPollFetchCountStore';
+import { clearReportPollFetchCounts } from '@/api/reportPollFetchCountStore';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
 import type { AuthRefreshResponse } from '@/types/auth';

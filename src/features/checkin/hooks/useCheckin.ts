@@ -5,11 +5,11 @@ import {
   submitCheckin,
   updateCheckin,
 } from '@/api/endpoints/checkin';
+import { invalidateCheckinRelatedQueries } from '@/api/invalidateReportQueries';
 import { queryKeys } from '@/api/queryKeys';
 import { HTTP_STATUS } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
-import { invalidateCheckinRelatedQueries } from '@/features/report/utils/invalidateReportQueries';
 import type { CheckinRecord, SubmitCheckinBody, UpdateCheckinBody } from '@/types/checkin';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import {
@@ -72,8 +72,8 @@ export function useSubmitCheckin() {
       const idempotencyKey = `${Date.now()}-${Math.random()}`;
       return submitCheckin(body, idempotencyKey);
     },
-    onSuccess: async () => {
-      await invalidateCheckinRelatedQueries(queryClient);
+    onSuccess: () => {
+      void invalidateCheckinRelatedQueries(queryClient);
       useCheckinStore.getState().reset();
       router.back();
     },
@@ -110,8 +110,8 @@ export function useUpdateCheckin() {
   return useMutation({
     mutationFn: ({ checkinId, body }: { checkinId: string; body: UpdateCheckinBody }) =>
       updateCheckin(checkinId, body),
-    onSuccess: async () => {
-      await invalidateCheckinRelatedQueries(queryClient);
+    onSuccess: () => {
+      void invalidateCheckinRelatedQueries(queryClient);
       useCheckinStore.getState().reset();
       router.back();
     },

@@ -1,5 +1,10 @@
 import { fetchEmotionTrend, fetchMonthlyReport, fetchWeeklyReport } from '@/api/endpoints/report';
 import { queryKeys } from '@/api/queryKeys';
+import {
+  getReportPollFetchCount,
+  incrementReportPollFetchCount,
+  resetReportPollFetchCount,
+} from '@/api/reportPollFetchCountStore';
 import { HTTP_STATUS, REPORT_POLL_INTERVAL_MS, REPORT_POLL_MAX_ATTEMPTS } from '@/constants/config';
 import {
   EMOTION_TREND_PERIOD,
@@ -8,11 +13,6 @@ import {
   REPORT_STATUS,
   type ReportPeriod,
 } from '@/constants/report';
-import {
-  getReportPollFetchCount,
-  incrementReportPollFetchCount,
-  resetReportPollFetchCount,
-} from '@/features/report/utils/reportPollFetchCountStore';
 import type {
   FetchEmotionTrendParams,
   MonthlyReportData,
@@ -21,17 +21,8 @@ import type {
 } from '@/types/report';
 import { getMonthStartIso, getWeekStartIso } from '@/utils/date';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
-import {
-  keepPreviousData,
-  useQuery,
-  useQueryClient,
-  type QueryFunctionContext,
-} from '@tanstack/react-query';
+import { keepPreviousData, useQuery, type QueryFunctionContext } from '@tanstack/react-query';
 import { useEffect } from 'react';
-
-interface ReportQueryMeta {
-  maxAttempts: number;
-}
 
 interface ReportPollingData {
   status: ReportStatus;
@@ -40,17 +31,13 @@ interface ReportPollingData {
 interface ReportPollingQuery {
   queryKey: readonly unknown[];
   state: { data: unknown };
-  meta?: Record<string, unknown>;
 }
 
 function getReportPollingInterval(query: ReportPollingQuery): false | number {
   const data = query.state.data as ReportPollingData | undefined;
-  // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
-  const meta = query.meta as Partial<ReportQueryMeta> | undefined;
-  const maxAttempts = meta?.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS;
   const fetchCount = getReportPollFetchCount(query.queryKey);
 
-  if (fetchCount >= maxAttempts && data?.status === REPORT_STATUS.PENDING) {
+  if (fetchCount >= REPORT_POLL_MAX_ATTEMPTS && data?.status === REPORT_STATUS.PENDING) {
     return false;
   }
 
@@ -91,7 +78,6 @@ export function useWeeklyReport(weekStart: string, options?: ReportQueryOptions)
     queryFn: createWeeklyReportQueryFn(weekStart),
     enabled: (options?.enabled ?? true) && weekStart.length > 0,
     placeholderData: keepPreviousData,
-    meta: { maxAttempts: REPORT_POLL_MAX_ATTEMPTS },
     refetchInterval: (query) => getReportPollingInterval(query),
   });
 
@@ -110,7 +96,6 @@ export function useMonthlyReport(monthStart: string, options?: ReportQueryOption
     queryFn: createMonthlyReportQueryFn(monthStart),
     enabled: (options?.enabled ?? true) && monthStart.length > 0,
     placeholderData: keepPreviousData,
-    meta: { maxAttempts: REPORT_POLL_MAX_ATTEMPTS },
     refetchInterval: (query) => getReportPollingInterval(query),
   });
 
