@@ -45,7 +45,7 @@ export function useSocialLogin() {
   return useMutation<AuthLoginResponse, Error, SocialLoginInput>({
     mutationFn: (input) => postAuthLogin(input),
     onSuccess: async (res) => {
-      // 이전 계정 잔존 데이터 제거 (authProfile, onboardingResult, 서버 쿼리 캐시)
+      // 이전 계정 잔존 데이터 제거
       useUserStore.getState().reset();
       queryClient.clear();
 
@@ -96,7 +96,7 @@ export function useNicknameDuplicateCheck() {
   });
 }
 
-// 가입 이탈 후 재진입 시 signup_step 조회
+// 가입 이탈 재진입 시 signup_step 조회
 export function useSignupStatus() {
   const setSignupStep = useAuthStore((s) => s.setSignupStep);
 
@@ -130,16 +130,16 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      // device_id UPSERT 구조상 remembered가 서버에 등록된 최신 토큰과 가장 근접함! native fallback은 remembered 유실 시에만 사용
+      // remembered 푸시 토큰 우선 native fallback
       const rememberedPushToken = await getRememberedPushToken();
       const pushToken =
         rememberedPushToken ??
-        // remembered 유실 시 native 토큰으로 fallback
+        // remembered 유실 시 native 토큰 fallback
         (await getNativeDevicePushTokenAsync().catch(() => null));
 
       if (pushToken) {
         await unregisterDeviceToken(pushToken).catch(() => {
-          // onError에서 로깅됨 — 해제 실패는 로그아웃을 막지 않음
+          // 토큰 해제 실패 시에도 로그아웃 계속
         });
       }
 
