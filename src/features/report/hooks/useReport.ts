@@ -8,6 +8,11 @@ import {
   REPORT_STATUS,
   type ReportPeriod,
 } from '@/constants/report';
+import {
+  getReportPollFetchCount,
+  incrementReportPollFetchCount,
+  resetReportPollFetchCount,
+} from '@/features/report/utils/reportPollFetchCountStore';
 import type {
   FetchEmotionTrendParams,
   MonthlyReportData,
@@ -26,7 +31,6 @@ import { useEffect } from 'react';
 
 interface ReportQueryMeta {
   maxAttempts: number;
-  fetchCount?: number;
 }
 
 interface ReportPollingData {
@@ -34,15 +38,17 @@ interface ReportPollingData {
 }
 
 interface ReportPollingQuery {
+  queryKey: readonly unknown[];
   state: { data: unknown };
   meta?: Record<string, unknown>;
 }
 
 function getReportPollingInterval(query: ReportPollingQuery): false | number {
   const data = query.state.data as ReportPollingData | undefined;
+  // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
   const meta = query.meta as Partial<ReportQueryMeta> | undefined;
   const maxAttempts = meta?.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS;
-  const fetchCount = meta?.fetchCount ?? 0;
+  const fetchCount = getReportPollFetchCount(query.queryKey);
 
   if (fetchCount >= maxAttempts && data?.status === REPORT_STATUS.PENDING) {
     return false;
@@ -56,42 +62,7 @@ function getReportPollingInterval(query: ReportPollingQuery): false | number {
 }
 
 function updateReportQueryFetchCount(context: QueryFunctionContext): void {
-  const query = context.client.getQueryCache().find({ queryKey: context.queryKey });
-  if (!query) {
-    return;
-  }
-
-  // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
-  const meta = query.meta as Partial<ReportQueryMeta>;
-  query.setOptions({
-    ...query.options,
-    meta: {
-      ...meta,
-      maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
-      fetchCount: (meta.fetchCount ?? 0) + 1,
-    },
-  });
-}
-
-function resetReportQueryFetchCount(
-  queryClient: ReturnType<typeof useQueryClient>,
-  queryKey: readonly unknown[]
-): void {
-  const query = queryClient.getQueryCache().find({ queryKey });
-  if (!query) {
-    return;
-  }
-
-  // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
-  const meta = query.meta as Partial<ReportQueryMeta>;
-  query.setOptions({
-    ...query.options,
-    meta: {
-      ...meta,
-      maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
-      fetchCount: 0,
-    },
-  });
+  incrementReportPollFetchCount(context.queryKey);
 }
 
 function createWeeklyReportQueryFn(weekStart: string) {
@@ -213,17 +184,7 @@ interface UseReportResult {
   refetch: () => void;
 }
 
-function getReportFetchCount(
-  queryClient: ReturnType<typeof useQueryClient>,
-  queryKey: readonly unknown[]
-): number {
-  const query = queryClient.getQueryCache().find({ queryKey });
-  const meta = query?.meta as Partial<ReportQueryMeta> | undefined;
-  return meta?.fetchCount ?? 0;
-}
-
 export function useReport({ period, anchorDate }: UseReportOptions): UseReportResult {
-  const queryClient = useQueryClient();
   const weekStart = getWeekStartIso(anchorDate);
   const monthStart = getMonthStartIso(anchorDate);
 
@@ -237,7 +198,7 @@ export function useReport({ period, anchorDate }: UseReportOptions): UseReportRe
       : queryKeys.report.monthly(monthStart);
 
   const report = activeQuery.data;
-  const fetchCount = getReportFetchCount(queryClient, activeQueryKey);
+  const fetchCount = getReportPollFetchCount(activeQueryKey);
   const isPollingTimedOut =
     fetchCount >= REPORT_POLL_MAX_ATTEMPTS && report?.status === REPORT_STATUS.PENDING;
   const isServerError =
@@ -257,7 +218,7 @@ export function useReport({ period, anchorDate }: UseReportOptions): UseReportRe
     isPollingTimedOut,
     error: activeQuery.error,
     refetch: () => {
-      resetReportQueryFetchCount(queryClient, activeQueryKey);
+      resetReportPollFetchCount(activeQueryKey);
       void activeQuery.refetch();
     },
   };
