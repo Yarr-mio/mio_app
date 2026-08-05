@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { track } from '@/analytics/track';
 import {
   getOnboardingStatus,
   postOnboardingCharacter,
@@ -50,6 +51,13 @@ export function useOnboardingStepSkipMutation() {
 export function useOnboardingCharacter() {
   return useMutation<OnboardingCharacterResponse, Error, OnboardingCharacterRequest>({
     mutationFn: (body) => postOnboardingCharacter(body),
+    onSuccess: (res, variables) => {
+      // ⚠️ is_auto_assigned는 응답에 없다(서버가 미선택 시 자동 배정하는데 앱은 그 사실을 모른다).
+      // 로컬 플래그로 대체하면 서버 판정과 갈라지므로 응답 필드가 열릴 때까지 싣지 않는다
+      track('character_selected', {
+        character_id: res.data.preferred_character_id ?? variables.character_id,
+      });
+    },
   });
 }
 
