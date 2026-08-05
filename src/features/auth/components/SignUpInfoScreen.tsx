@@ -35,14 +35,14 @@ const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
 const NICKNAME_HINT_DEFAULT = `닉네임은 ${NICKNAME_MIN_LENGTH}자 이상, 최대 ${NICKNAME_MAX_LENGTH}자까지 가능해요`;
 const NICKNAME_HINT_DUPLICATE = '중복된 닉네임입니다';
 
-type GenderOption = UserGender | 'none';
+type GenderOption = UserGender;
 type AgeOption = UserAgeRange;
 type EmploymentOption = UserEmploymentStatus;
 
 const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
   { value: 'female', label: '여성' },
   { value: 'male', label: '남성' },
-  { value: 'none', label: '선택 안 함' },
+  { value: 'other', label: '선택 안 함' },
 ];
 
 const AGE_OPTIONS: { value: AgeOption; label: string }[] = [
@@ -146,10 +146,9 @@ export default function SignUpInfoScreen() {
       return;
     }
 
-    const normalizedGender = gender === 'none' ? null : gender;
     const result = await submit({
       nickname: trimmedNickname,
-      gender: normalizedGender,
+      gender,
       ageRange: age,
       employmentStatus,
     });

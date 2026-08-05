@@ -11,6 +11,7 @@ const USER_AGE_TO_API: Record<UserAgeRange, AgeRange> = {
 const USER_GENDER_TO_API: Record<UserGender, Gender> = {
   female: 'female',
   male: 'male',
+  other: 'other',
 };
 
 interface SignupProfileFormInput {
