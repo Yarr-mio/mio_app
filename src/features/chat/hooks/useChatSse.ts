@@ -1,6 +1,12 @@
+import { refreshAccessTokenForNonAxios } from '@/api/client';
 import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS } from '@/constants/config';
+import {
+  API_BASE_URL,
+  AUTH_API_ERROR_CODE,
+  HTTP_STATUS,
+  SSE_STREAM_SAFETY_TIMEOUT_MS,
+} from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import type {
   SseCrisisData,
@@ -9,6 +15,7 @@ import type {
   SseDoneData,
   SseSessionMetaData,
 } from '@/types/chat';
+import { readErrorCodeFromBody } from '@/utils/readApiError';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 import { router } from 'expo-router';
@@ -271,36 +278,59 @@ export function useChatSse(sessionId: string | null) {
       controller.abort();
     }, SSE_STREAM_SAFETY_TIMEOUT_MS);
 
+    // 인증 재시도용 동일 Idempotency-Key
+    const idempotencyKey = Crypto.randomUUID();
+    let accessToken = useAuthStore.getState().accessToken;
+    let hasRetriedAuth = false;
+
     try {
-      const accessToken = useAuthStore.getState().accessToken;
-      const res = await fetch(`${API_BASE_URL}/v1/sessions/${currentSessionId}/messages`, {
-        method: 'POST',
-        headers: {
-          Accept: 'text/event-stream',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-          'Idempotency-Key': Crypto.randomUUID(),
-        },
-        body: JSON.stringify({ content }),
-        signal: controller.signal,
-      });
+      while (true) {
+        const res = await fetch(`${API_BASE_URL}/v1/sessions/${currentSessionId}/messages`, {
+          method: 'POST',
+          headers: {
+            Accept: 'text/event-stream',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+            'Idempotency-Key': idempotencyKey,
+          },
+          body: JSON.stringify({ content }),
+          signal: controller.signal,
+        });
 
-      const contentType = res.headers.get('content-type') ?? '';
-      if (contentType.includes('application/json')) {
-        resetStreamingState();
-        handleSyncValidationError(res.status, currentSessionId);
+        const contentType = res.headers.get('content-type') ?? '';
+        if (contentType.includes('application/json')) {
+          // AUTH_TOKEN_EXPIRED 시 refresh 후 전송 1회 재시도
+          if (res.status === HTTP_STATUS.UNAUTHORIZED && !hasRetriedAuth) {
+            let errorBody: unknown = null;
+            try {
+              errorBody = await res.json();
+            } catch {
+              errorBody = null;
+            }
+
+            if (readErrorCodeFromBody(errorBody) === AUTH_API_ERROR_CODE.TOKEN_EXPIRED) {
+              hasRetriedAuth = true;
+              accessToken = await refreshAccessTokenForNonAxios();
+              continue;
+            }
+          }
+
+          resetStreamingState();
+          handleSyncValidationError(res.status, currentSessionId);
+          return;
+        }
+
+        if (!res.body) {
+          throw new Error('SSE 응답 스트림이 비어 있음');
+        }
+
+        const receivedDone = await consumeStream(res.body.getReader());
+        if (!receivedDone) {
+          // done 미수신 시 타임아웃 또는 연결 끊김 처리
+          resetStreamingState();
+          Alert.alert('전송 실패', '응답을 받는 데 문제가 생겼어요. 다시 시도해 주세요.');
+        }
         return;
-      }
-
-      if (!res.body) {
-        throw new Error('SSE 응답 스트림이 비어 있음');
-      }
-
-      const receivedDone = await consumeStream(res.body.getReader());
-      if (!receivedDone) {
-        // done 없이 스트림이 끝남 — 60초 타임아웃 또는 연결 끊김으로 간주 (SSE_SPEC.md §2-3, §2-4)
-        resetStreamingState();
-        Alert.alert('전송 실패', '응답을 받는 데 문제가 생겼어요. 다시 시도해 주세요.');
       }
     } catch (error) {
       if (controller.signal.aborted && !timedOut) {
@@ -310,6 +340,10 @@ export function useChatSse(sessionId: string | null) {
       // catch가 에러를 삼켜 실제 원인(네트워크 실패/타임아웃/핸들러 예외)을 구분할 수 없었던 문제 — 원인 파악을 위해 로그를 남긴다
       console.error('[ChatSSE] performSendMessage failed:', { timedOut, error });
       resetStreamingState();
+      // refresh 실패 시 인증 정리 후 전송 실패 Alert 생략
+      if (!useAuthStore.getState().accessToken) {
+        return;
+      }
       Alert.alert(
         '전송 실패',
         '메시지를 보내는 데 문제가 생겼어요. 네트워크 상태를 확인해 주세요.'
