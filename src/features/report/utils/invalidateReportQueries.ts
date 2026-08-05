@@ -11,9 +11,12 @@ function resetReportQueryFetchCounts(queryClient: QueryClient): void {
   const queries = queryClient.getQueryCache().findAll({ queryKey: queryKeys.report.all() });
 
   for (const query of queries) {
+    // Query.meta 타입이 느슨해 ReportQueryMeta로 좁힘
     const meta = query.meta as Partial<ReportQueryMeta> | undefined;
     query.setOptions({
+      ...query.options,
       meta: {
+        ...meta,
         maxAttempts: meta?.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
         fetchCount: 0,
       },
