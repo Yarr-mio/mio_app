@@ -1,6 +1,7 @@
 import { checkinTodo, fetchTodos } from '@/api/endpoints/todo';
 import { queryKeys } from '@/api/queryKeys';
 import { HTTP_STATUS } from '@/constants/config';
+import { invalidateTodoRelatedQueries } from '@/features/report/utils/invalidateReportQueries';
 import type { TodoCheckinRequest } from '@/types/todo';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -23,21 +24,21 @@ export function useTodoCheckin() {
   return useMutation({
     mutationFn: ({ todoId, body }: { todoId: string; body: TodoCheckinRequest }) =>
       checkinTodo(todoId, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.todo.all() });
+    onSuccess: async () => {
+      await invalidateTodoRelatedQueries(queryClient);
     },
     onError: (error) => {
       const status = readApiHttpStatus(error);
       const errorCode = readApiErrorCode(error);
 
       if (status === HTTP_STATUS.CONFLICT && errorCode === 'TODO_ALREADY_COMPLETED') {
-        queryClient.invalidateQueries({ queryKey: queryKeys.todo.all() });
+        void invalidateTodoRelatedQueries(queryClient);
         Alert.alert('이미 처리됐어요', '이미 완료 처리된 할 일이에요.');
         return;
       }
 
       if (status === HTTP_STATUS.UNPROCESSABLE_ENTITY && errorCode === 'TODO_EXPIRED') {
-        queryClient.invalidateQueries({ queryKey: queryKeys.todo.all() });
+        void invalidateTodoRelatedQueries(queryClient);
         Alert.alert('만료된 할 일이에요', '기한이 지나 더 이상 처리할 수 없어요.');
         return;
       }
