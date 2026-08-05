@@ -282,6 +282,7 @@ export function useChatSse(sessionId: string | null) {
     const idempotencyKey = Crypto.randomUUID();
     let accessToken = useAuthStore.getState().accessToken;
     let hasRetriedAuth = false;
+    let authRefreshFailed = false;
 
     try {
       while (true) {
@@ -310,7 +311,12 @@ export function useChatSse(sessionId: string | null) {
 
             if (readErrorCodeFromBody(errorBody) === AUTH_API_ERROR_CODE.TOKEN_EXPIRED) {
               hasRetriedAuth = true;
-              accessToken = await refreshAccessTokenForNonAxios();
+              try {
+                accessToken = await refreshAccessTokenForNonAxios();
+              } catch (refreshError) {
+                authRefreshFailed = true;
+                throw refreshError;
+              }
               continue;
             }
           }
@@ -341,7 +347,7 @@ export function useChatSse(sessionId: string | null) {
       console.error('[ChatSSE] performSendMessage failed:', { timedOut, error });
       resetStreamingState();
       // refresh 실패 시 인증 정리 후 전송 실패 Alert 생략
-      if (!useAuthStore.getState().accessToken) {
+      if (authRefreshFailed) {
         return;
       }
       Alert.alert(
