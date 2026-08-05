@@ -25,23 +25,28 @@ const APP_VARIANT = resolveAppVariant();
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
 // 네이티브 플러그인 키 빌드 시 고정 pnpm start 만으로는 변경 불가
+// 모듈 로드 시 throw 금지 eas bootstrap config 후 Dashboard 키 주입
 const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
   ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
   : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
-
-if (!KAKAO_NATIVE_APP_KEY) {
-  throw new Error(
-    IS_DEV_VARIANT
-      ? 'EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV is required for development preview builds'
-      : 'EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY is required for production builds'
-  );
-}
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
 
 // Android FCM 클라이언트 FCM 토큰 발급용 백엔드 발송은 Firebase Admin SDK
 const GOOGLE_SERVICES_FILE = './google-services.json';
+
+const kakaoPlugin: [string, { nativeAppKey: string; ios: { handleKakaoOpenUrl: boolean } }] = [
+  '@react-native-kakao/core',
+  {
+    // URL Scheme kakao NATIVE_APP_KEY 등 네이티브 설정용
+    nativeAppKey: KAKAO_NATIVE_APP_KEY,
+    ios: {
+      // 카카오톡 로그인 후 앱 복귀 URL 처리함
+      handleKakaoOpenUrl: true,
+    },
+  },
+];
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -125,19 +130,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     'expo-secure-store',
     'expo-web-browser',
-    [
-      '@react-native-kakao/core',
-      {
-        // URL Scheme kakao NATIVE_APP_KEY 등 네이티브 설정용
-        nativeAppKey: KAKAO_NATIVE_APP_KEY,
-        ios: {
-          // 카카오톡 로그인 후 앱 복귀 URL 처리함
-          handleKakaoOpenUrl: true,
-        },
-      },
-    ],
+    // 키 있을 때만 등록 eas 1차 config 통과 후 Dashboard 키로 2차 등록
+    ...(KAKAO_NATIVE_APP_KEY ? [kakaoPlugin] : []),
   ],
   extra: {
+    ...config.extra,
     appVariant: APP_VARIANT,
   },
   experiments: {
