@@ -11,6 +11,7 @@ import {
 } from '@/constants/theme';
 import { useEmotionConstellationData } from '@/features/report/hooks/useEmotionConstellationData';
 import type { ConstellationChartPoint } from '@/types/report';
+import { toKstDate } from '@/utils/date';
 import { getActiveChartIndex } from '@/utils/report';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -84,11 +85,22 @@ interface EmotionConstellationPreviewProps {
   anchorDate?: Date;
 }
 
-export function EmotionConstellationPreview({
-  anchorDate = new Date(),
-}: EmotionConstellationPreviewProps) {
-  const { points } = useEmotionConstellationData('week', anchorDate);
-  const activeIndex = getActiveChartIndex('week', anchorDate);
+export function EmotionConstellationPreview({ anchorDate }: EmotionConstellationPreviewProps) {
+  // 리포트와 동일 KST 앵커 주간 경계 차이 방지
+  const resolvedAnchorDate = toKstDate(anchorDate ?? new Date());
+  const { points, isLoading } = useEmotionConstellationData('week', resolvedAnchorDate, {
+    enabled: true,
+  });
+  const activeIndex = getActiveChartIndex('week', resolvedAnchorDate);
+
+  // 로딩 전 null points 점선 선행 마운트 후 실선 미갱신 방지 리포트와 동일 게이트
+  if (isLoading) {
+    return (
+      <View className={ReportPendingStateClasses.container}>
+        <ActivityIndicator color={ButtonColors.spinnerLight} />
+      </View>
+    );
+  }
 
   return <EmotionConstellationContent period="week" points={points} activeIndex={activeIndex} />;
 }

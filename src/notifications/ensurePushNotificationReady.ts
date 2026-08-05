@@ -1,7 +1,6 @@
 import {
   getNativeDevicePushTokenAsync,
   getNotificationPermissionGrantedAsync,
-  getRememberedPushToken,
   requestNotificationPermissionAsync,
 } from '@/notifications/fcm';
 
@@ -11,12 +10,8 @@ interface EnsurePushNotificationReadyParams {
   registerDeviceToken: (pushToken: string) => Promise<unknown>;
 }
 
-// 알림 ON 시 권한 확인
-// 미허용 시 요청
-// 토큰 획득 및 디바이스 등록
-// 기존 허용 시 재요청 생략
-// 동일 토큰 재등록 생략
-// 실패 시 결과만 반환
+// 알림 ON 시 권한 확인 후 토큰 획득 및 디바이스 등록
+// 동일 토큰이어도 서버 UPSERT용 등록 API 호출함
 export async function ensurePushNotificationReady({
   registerDeviceToken,
 }: EnsurePushNotificationReadyParams): Promise<EnsurePushNotificationReadyResult> {
@@ -37,11 +32,6 @@ export async function ensurePushNotificationReady({
 
   if (!token) {
     return 'token_unavailable';
-  }
-
-  const rememberedToken = await getRememberedPushToken();
-  if (rememberedToken === token) {
-    return 'ready';
   }
 
   try {

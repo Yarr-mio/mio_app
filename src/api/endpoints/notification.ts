@@ -2,12 +2,23 @@ import apiClient from '@/api/client';
 import { NOTIFICATION_ENDPOINTS } from '@/constants/notifications';
 import type { ApiResponse } from '@/types/common';
 import type {
+  FetchNotificationsParams,
+  MarkNotificationReadResponse,
   NotificationDeviceRegisterRequest,
   NotificationDeviceTokenResponse,
+  NotificationHistoryItem,
 } from '@/types/notification';
 import type { NotificationSettings, NotificationSettingsUpdateParams } from '@/types/user';
 import { getAppVersion, getDevicePlatform } from '@/utils/appInfo';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
+
+interface NotificationHistoryListResponse {
+  data: NotificationHistoryItem[];
+  meta: {
+    next_cursor: string | null;
+    has_more: boolean;
+  };
+}
 
 function isNonEmptyString(value: string): boolean {
   return value.trim().length > 0;
@@ -46,7 +57,7 @@ async function buildNotificationDeviceRegisterBody(
 
 export async function fetchNotificationSettings(): Promise<NotificationSettings> {
   const { data } = await apiClient.get<ApiResponse<NotificationSettings>>(
-    '/v1/notifications/settings'
+    NOTIFICATION_ENDPOINTS.settings
   );
   return data.data;
 }
@@ -81,8 +92,34 @@ export async function updateNotificationSettings(
   params: NotificationSettingsUpdateParams
 ): Promise<NotificationSettings> {
   const { data } = await apiClient.patch<ApiResponse<NotificationSettings>>(
-    '/v1/notifications/settings',
+    NOTIFICATION_ENDPOINTS.settings,
     params
+  );
+  return data.data;
+}
+
+/** GET v1 notifications 알림 이력 조회 인앱 알림함용 */
+export async function fetchNotifications(
+  params: FetchNotificationsParams = {}
+): Promise<NotificationHistoryListResponse> {
+  const { data } = await apiClient.get<NotificationHistoryListResponse>(
+    NOTIFICATION_ENDPOINTS.list,
+    { params }
+  );
+  return data;
+}
+
+/** PATCH v1 notifications id read 알림 열람 처리 */
+export async function markNotificationRead(
+  notificationId: string
+): Promise<MarkNotificationReadResponse> {
+  const normalizedId = notificationId.trim();
+  if (!isNonEmptyString(normalizedId)) {
+    throw new Error('notification_id is required');
+  }
+
+  const { data } = await apiClient.patch<ApiResponse<MarkNotificationReadResponse>>(
+    NOTIFICATION_ENDPOINTS.read(normalizedId)
   );
   return data.data;
 }

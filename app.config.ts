@@ -3,19 +3,50 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 const APP_VARIANTS = ['development', 'preview', 'production'] as const;
 type AppVariant = (typeof APP_VARIANTS)[number];
 
-const rawAppVariant = process.env.APP_VARIANT ?? 'development';
-if (!APP_VARIANTS.includes(rawAppVariant as AppVariant)) {
-  throw new Error(`APP_VARIANT must be one of: ${APP_VARIANTS.join(', ')}`);
+function isAppVariant(value: string | undefined): value is AppVariant {
+  return !!value && APP_VARIANTS.includes(value as AppVariant);
 }
-const APP_VARIANT = rawAppVariant as AppVariant;
+
+// 우선순위 EAS_BUILD_PROFILE 다음 APP_VARIANT 다음 development
+// EAS 클라우드 및 로컬 시뮬레이션 모두 프로필이 있으면 .env.local APP_VARIANT 무시
+function resolveAppVariant(): AppVariant {
+  if (isAppVariant(process.env.EAS_BUILD_PROFILE)) {
+    return process.env.EAS_BUILD_PROFILE;
+  }
+
+  if (isAppVariant(process.env.APP_VARIANT)) {
+    return process.env.APP_VARIANT;
+  }
+
+  return 'development';
+}
+
+const APP_VARIANT = resolveAppVariant();
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
+// 네이티브 플러그인 키 빌드 시 고정 pnpm start 만으로는 변경 불가
+// 모듈 로드 시 throw 금지 eas bootstrap config 후 Dashboard 키 주입
 const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
-  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV ?? '')
-  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? '');
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
+
+// Android FCM 클라이언트 FCM 토큰 발급용 백엔드 발송은 Firebase Admin SDK
+const GOOGLE_SERVICES_FILE = './google-services.json';
+
+const kakaoPlugin: [string, { nativeAppKey: string; ios: { handleKakaoOpenUrl: boolean } }] = [
+  '@react-native-kakao/core',
+  {
+    // URL Scheme kakao NATIVE_APP_KEY 등 네이티브 설정용
+    nativeAppKey: KAKAO_NATIVE_APP_KEY,
+    ios: {
+      // 카카오톡 로그인 후 앱 복귀 URL 처리함
+      handleKakaoOpenUrl: true,
+    },
+  },
+];
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -36,6 +67,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: BUNDLE_IDENTIFIER,
+    googleServicesFile: GOOGLE_SERVICES_FILE,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -54,6 +86,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         defaultChannel: 'default',
+        // iOS APNs remote-notification background mode 백엔드는 APNs HTTP2 직접 연동
+        enableBackgroundRemoteNotifications: true,
       },
     ],
     [
@@ -75,12 +109,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
+        // 네이티브 스플래시는 배경색만 JS 커스텀 스플래시로 전환
         backgroundColor: '#0D0D1A',
-        image: './assets/images/background/splash_background.png',
-        resizeMode: 'cover',
         android: {
-          image: './assets/images/background/splash_background.png',
-          resizeMode: 'cover',
+          backgroundColor: '#0D0D1A',
+        },
+        ios: {
+          backgroundColor: '#0D0D1A',
         },
       },
     ],
@@ -95,22 +130,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     'expo-secure-store',
     'expo-web-browser',
-    ...(KAKAO_NATIVE_APP_KEY
-      ? [
-          [
-            '@react-native-kakao/core',
-            {
-              // URL Scheme(kakao{NATIVE_APP_KEY}) 등 네이티브 설정용
-              nativeAppKey: KAKAO_NATIVE_APP_KEY,
-              ios: {
-                // 카카오톡 로그인 후 앱 복귀 URL 처리
-                handleKakaoOpenUrl: true,
-              },
-            },
-          ] as [string, any],
-        ]
-      : []),
+    // 키 있을 때만 등록 eas 1차 config 통과 후 Dashboard 키로 2차 등록
+    ...(KAKAO_NATIVE_APP_KEY ? [kakaoPlugin] : []),
   ],
+  extra: {
+    ...config.extra,
+    appVariant: APP_VARIANT,
+  },
   experiments: {
     typedRoutes: true,
     reactCompiler: true,

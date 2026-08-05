@@ -1,6 +1,9 @@
 export const NOTIFICATION_ENDPOINTS = {
   devices: '/v1/notifications/devices',
   device: (token: string) => `/v1/notifications/devices/${encodeURIComponent(token)}`,
+  list: '/v1/notifications',
+  read: (notificationId: string) => `/v1/notifications/${encodeURIComponent(notificationId)}/read`,
+  settings: '/v1/notifications/settings',
 } as const;
 
 export const NOTIFICATION_PERMISSION = {

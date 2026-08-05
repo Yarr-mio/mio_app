@@ -74,6 +74,8 @@ export function useSubmitCheckin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.today() });
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.all() });
+      // weekly monthly emotion-trend 포함 queryKeys.report
+      queryClient.invalidateQueries({ queryKey: queryKeys.report.all() });
       useCheckinStore.getState().reset();
       router.back();
     },
@@ -84,6 +86,7 @@ export function useSubmitCheckin() {
       if (status === HTTP_STATUS.CONFLICT && errorCode === 'ALREADY_CHECKED_IN') {
         queryClient.invalidateQueries({ queryKey: queryKeys.checkin.today() });
         queryClient.invalidateQueries({ queryKey: queryKeys.checkin.all() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.report.all() });
         Alert.alert('이미 체크인했어요', '같은 시간대에는 한 번만 체크인할 수 있어요.');
         router.back();
         return;
@@ -114,6 +117,7 @@ export function useUpdateCheckin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.today() });
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.report.all() });
       useCheckinStore.getState().reset();
       router.back();
     },

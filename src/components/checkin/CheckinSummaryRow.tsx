@@ -38,10 +38,10 @@ export function CheckinSummaryRow({
           </ThemedText>
           <Label label={`강도 ${intensity}/5`} />
         </View>
-        <ThemedText type="small" className="text-fg-default" numberOfLines={1}>
+        <ThemedText type="small" className="font-medium text-fg-default" numberOfLines={1}>
           {memoText}
         </ThemedText>
-        <ThemedText type="smallMedium" className="text-fg-muted">
+        <ThemedText type="smallMedium" className="font-medium text-fg-muted">
           {time}
         </ThemedText>
       </View>

@@ -362,6 +362,15 @@ export const AuthTextClasses = {
   appTitle: 'font-NanumMyeongjoExtraBold text-[45px] tracking-[0.22em] text-ink-night',
 } as const;
 
+/** 스플래시 네이티브 JS 공통 */
+export const SplashColors = {
+  background: '#0D0D1A',
+} as const;
+
+export const SplashLayout = {
+  logoWidth: 200,
+} as const;
+
 /** (HomeScreen.tsx) */
 export const HomeLayout = {
   characterImageSize: 125,
@@ -413,6 +422,8 @@ export const EmotionConstellationLayout = {
   intensityLabelFontSize: 12,
   intensityLabelBorderWidth: 1,
   emptyStrokeDasharray: '4 4',
+  // 실선 구간 네이티브 strokeDasharray 잔존 방지
+  solidStrokeDasharray: 'none',
 } as const;
 
 /** SVG stroke/fill — className 미지원 */
@@ -468,7 +479,7 @@ export const ReportCharacterStoryClasses = {
   headerText: 'min-w-0 flex-1 gap-1',
   divider: 'my-3',
   storyBody: 'w-full gap-1',
-  storyText: 'w-full text-fg',
+  storyText: 'w-full font-medium text-fg',
 } as const;
 
 export const ReportSectionClasses = {
@@ -549,7 +560,7 @@ export const ReportTextClasses = {
   scoreValue: 'text-fg-default text-2xl font-semibold',
   scoreDenominator: 'text-score-denominator text-base',
   insufficientTitle: 'text-center text-xl font-semibold text-fg-default',
-  insufficientSubtitle: 'text-center text-base font-medium text-weekday',
+  insufficientSubtitle: 'text-center text-base font-normal text-weekday',
   insufficientCheckinCardTitle: 'text-base text-primary',
   insufficientGuideSubtitle: 'text-center text-base font-medium text-weekday',
   insufficientGuideItemLabel: 'shrink text-center text-xs font-medium text-weekday',

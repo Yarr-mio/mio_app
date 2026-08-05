@@ -27,13 +27,14 @@ export const API_BASE_URL = resolveApiBaseUrl();
 /** 약관 동의 API 요청 시 사용하는 약관 버전 */
 export const AUTH_CONSENT_VERSION = '1.0';
 
-// APP_VARIANT는 EXPO_PUBLIC_가 아니라 클라이언트에서 process.env로 읽을 수 없음
-// app.config.ts와 같은 APP_VARIANT → bundleId 매핑으로 IS_DEV_VARIANT를 판별
+// APP_VARIANT는 EXPO_PUBLIC 이 아니라 런타임 process.env 로 읽히지 않음
+// Metro 가 평가한 expoConfig 의 bundleId 로 dev production 판별
+// 로컬 pnpm start 시 APP_VARIANT 가 production 이면 bundleId 도 production 으로 내려옴
 const IS_DEV_VARIANT =
   (Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package) ===
   'com.mio.yarr.dev';
 
-/** 카카오 네이티브 앱 키 (Kakao SDK 초기화). app.config.ts nativeAppKey와 동일 분기 */
+/** 카카오 네이티브 앱 키 Kakao SDK 초기화용 app.config nativeAppKey 와 동일 분기 */
 export const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
   ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
   : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
