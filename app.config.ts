@@ -54,11 +54,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'mio',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/images/icon.png',
+  // 홈 화면 앱 아이콘 mio_logo 적용함
+  icon: './assets/images/mio_logo.png',
   scheme: 'mioapp',
   userInterfaceStyle: 'automatic',
   ios: {
-    icon: './assets/expo.icon',
+    // iOS 아이콘 정사각 원본 사용함
+    icon: './assets/images/mio_logo.png',
     bundleIdentifier: BUNDLE_IDENTIFIER,
     usesAppleSignIn: true,
     infoPlist: {
@@ -69,10 +71,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: BUNDLE_IDENTIFIER,
     googleServicesFile: GOOGLE_SERVICES_FILE,
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
-      foregroundImage: './assets/images/android-icon-foreground.png',
-      backgroundImage: './assets/images/android-icon-background.png',
-      monochromeImage: './assets/images/android-icon-monochrome.png',
+      // 밤하늘 상단 배경색 적용함
+      backgroundColor: '#000010',
+      foregroundImage: './assets/images/mio_logo.png',
     },
     predictiveBackGestureEnabled: false,
   },
