@@ -16,3 +16,7 @@ export function incrementReportPollFetchCount(queryKey: readonly unknown[]): num
 export function resetReportPollFetchCount(queryKey: readonly unknown[]): void {
   reportPollFetchCounts.set(hashKey(queryKey), 0);
 }
+
+export function clearReportPollFetchCounts(): void {
+  reportPollFetchCounts.clear();
+}
