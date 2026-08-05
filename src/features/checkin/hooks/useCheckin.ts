@@ -1,3 +1,4 @@
+import { track } from '@/analytics/track';
 import {
   fetchCheckinDetail,
   fetchCheckinList,
@@ -71,7 +72,15 @@ export function useSubmitCheckin() {
       const idempotencyKey = `${Date.now()}-${Math.random()}`;
       return submitCheckin(body, idempotencyKey);
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // 메모 원문은 절대 싣지 않는다 — 존재 여부만 파생한다
+      track('checkin_completed', {
+        condition_score: variables.condition_score,
+        has_memo: Boolean(variables.memo?.trim()),
+        emotion_type: variables.emotion_type,
+        time_of_day: variables.time_of_day,
+      });
+
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.today() });
       queryClient.invalidateQueries({ queryKey: queryKeys.checkin.all() });
       useCheckinStore.getState().reset();

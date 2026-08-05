@@ -1,3 +1,4 @@
+import { track } from '@/analytics/track';
 import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { API_BASE_URL, SSE_STREAM_SAFETY_TIMEOUT_MS } from '@/constants/config';
@@ -211,11 +212,14 @@ export function useChatSse(sessionId: string | null) {
     Alert.alert('전송 실패', '잠시 후 다시 시도해 주세요.');
   }
 
-  // event:/data: 블록(빈 줄로 구분)을 모아 파싱하고 핸들러로 디스패치. done 이벤트 수신 여부를 반환
-  async function consumeStream(reader: ReadableStreamDefaultReader<Uint8Array>): Promise<boolean> {
+  // event:/data: 블록(빈 줄로 구분)을 모아 파싱하고 핸들러로 디스패치.
+  // 수신한 done 데이터를 반환한다(못 받고 끝나면 null) — chat_message_sent의 대화 품질 property 원천
+  async function consumeStream(
+    reader: ReadableStreamDefaultReader<Uint8Array>
+  ): Promise<SseDoneData | null> {
     const decoder = new TextDecoder();
     let buffer = '';
-    let receivedDone = false;
+    let receivedDone: SseDoneData | null = null;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -244,10 +248,12 @@ export function useChatSse(sessionId: string | null) {
             case 'crisis':
               handleCrisis(parsed.data as SseCrisisData);
               break;
-            case 'done':
-              handleDone(parsed.data as SseDoneData);
-              receivedDone = true;
+            case 'done': {
+              const doneData = parsed.data as SseDoneData;
+              handleDone(doneData);
+              receivedDone = doneData;
               break;
+            }
           }
           // 한 번의 read()에 SSE 블록이 몰려서 오면 매 블록마다 동기적으로 store.set()이 일어나
           // React가 한 틱 안에서 50회 넘는 중첩 렌더를 처리하다 "Maximum update depth exceeded"로
@@ -263,6 +269,14 @@ export function useChatSse(sessionId: string | null) {
   }
 
   async function performSendMessage(currentSessionId: string, content: string) {
+    // 전송 시점에 캡처한다 — done 계열 4필드는 응답 스트림이 끝날 때 도착하므로, 이 턴의 이벤트는
+    // done 수신 / 스트림 종료 / abort 어디서 끝나든 finally에서 정확히 1건만 발행한다
+    const messageIndex = useChatStore.getState().peekNextSentMessageIndex(currentSessionId);
+    const charCount = content.length;
+    let doneData: SseDoneData | null = null;
+    // 동기 검증 실패는 서버가 메시지를 받지 않은 것이라 발행하지 않는다 — 발행하면 활성화율이 부푼다
+    let shouldTrackSend = true;
+
     const controller = new AbortController();
     abortRef.current = controller;
     let timedOut = false;
@@ -287,6 +301,7 @@ export function useChatSse(sessionId: string | null) {
 
       const contentType = res.headers.get('content-type') ?? '';
       if (contentType.includes('application/json')) {
+        shouldTrackSend = false;
         resetStreamingState();
         handleSyncValidationError(res.status, currentSessionId);
         return;
@@ -296,8 +311,8 @@ export function useChatSse(sessionId: string | null) {
         throw new Error('SSE 응답 스트림이 비어 있음');
       }
 
-      const receivedDone = await consumeStream(res.body.getReader());
-      if (!receivedDone) {
+      doneData = await consumeStream(res.body.getReader());
+      if (!doneData) {
         // done 없이 스트림이 끝남 — 60초 타임아웃 또는 연결 끊김으로 간주 (SSE_SPEC.md §2-3, §2-4)
         resetStreamingState();
         Alert.alert('전송 실패', '응답을 받는 데 문제가 생겼어요. 다시 시도해 주세요.');
@@ -318,6 +333,20 @@ export function useChatSse(sessionId: string | null) {
       clearTimeout(safetyTimeout);
       if (abortRef.current === controller) {
         abortRef.current = null;
+      }
+
+      if (shouldTrackSend) {
+        useChatStore.getState().commitSentMessage();
+        // done을 못 받았으면 대화 품질 4필드는 null로 둔다 — 결손을 0/false로 감추지 않는다
+        track('chat_message_sent', {
+          chat_session_id: currentSessionId,
+          message_index: messageIndex,
+          char_count: charCount,
+          ai_emotion_score: doneData?.emotion_score ?? null,
+          is_socratic: doneData?.is_socratic ?? null,
+          cbt_intervention_state: doneData?.cbt_intervention_state ?? null,
+          is_crisis_flagged: doneData?.is_crisis_flagged ?? null,
+        });
       }
     }
   }

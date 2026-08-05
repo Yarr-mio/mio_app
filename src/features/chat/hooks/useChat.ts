@@ -35,10 +35,24 @@ export function useActiveSession() {
     return () => subscription.remove();
   }, [queryClient]);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: queryKeys.chat.activeSession(),
     queryFn: fetchActiveSession,
   });
+
+  // 앱을 껐다 켜고 활성 세션으로 복귀하면 chatStore.messages가 비어 message_index가 0으로
+  // 되돌아간다. 서버가 아는 메시지 수로 시드해 두면 계측이 이어 붙는다
+  const activeSessionId = query.data?.session_id;
+  const serverMessageCount = query.data?.message_count;
+  useEffect(() => {
+    if (!activeSessionId || typeof serverMessageCount !== 'number') {
+      return;
+    }
+
+    useChatStore.getState().setSentMessageIndexSeed(activeSessionId, serverMessageCount);
+  }, [activeSessionId, serverMessageCount]);
+
+  return query;
 }
 
 export function useStartChatSession() {

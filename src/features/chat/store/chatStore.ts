@@ -17,6 +17,12 @@ interface ChatState {
   pendingEmotionScore: number;
   // 활성화된 슬라이더를 어떤 CBT reconstruction에 제출할지 — done 이벤트의 emotion_score_target_id
   emotionScoreTargetId: string | null;
+  // messages[]는 persist가 없어 앱을 껐다 켜면 비므로, 활성 세션 복귀 시 서버가 알려준 메시지 수로
+  // message_index를 시드한다. 안 하면 재시작 유저의 대화가 영영 index 0으로만 찍혀
+  // "유의미 대화"(index ≥ 1) 판정이 성립하지 않는다
+  sentMessageIndexSeed: { sessionId: string; value: number } | null;
+  // 이번 실행에서 이 세션으로 보낸 사용자 메시지 수
+  sentMessageCount: number;
 }
 
 interface ChatActions {
@@ -40,6 +46,11 @@ interface ChatActions {
   setPendingEmotionScore: (score: number) => void;
   deactivateEmotionScoring: () => void;
   endSession: () => void;
+  setSentMessageIndexSeed: (sessionId: string, value: number) => void;
+  /** 다음에 보낼 메시지의 message_index (아직 확정하지 않는다) */
+  peekNextSentMessageIndex: (sessionId: string) => number;
+  /** 전송이 실제로 이뤄진 턴에서만 호출해 index를 소비한다 */
+  commitSentMessage: () => void;
   reset: () => void;
 }
 
@@ -56,19 +67,25 @@ const initialState: ChatState = {
   emotionScoringActive: false,
   pendingEmotionScore: 50,
   emotionScoreTargetId: null,
+  sentMessageIndexSeed: null,
+  sentMessageCount: 0,
 };
 
-export const useChatStore = create<ChatState & ChatActions>((set) => ({
+export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   ...initialState,
 
   startSession: (sessionId, characterId, previousSessionId = null) =>
-    set({
+    set((state) => ({
       ...initialState,
+      // 같은 세션의 시드는 유지한다 — 활성 세션 재조회로 먼저 들어온 시드를 startSession이 지우면
+      // 재시작 복귀 케이스에서 index가 다시 0부터 매겨진다
+      sentMessageIndexSeed:
+        state.sentMessageIndexSeed?.sessionId === sessionId ? state.sentMessageIndexSeed : null,
       sessionPhase: 'active',
       sessionId,
       characterId,
       previousSessionId,
-    }),
+    })),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
 
@@ -131,6 +148,21 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
     set({ emotionScoringActive: false, streamingMessageId: null, emotionScoreTargetId: null }),
 
   endSession: () => set({ sessionPhase: 'ended', isAiTyping: false }),
+
+  setSentMessageIndexSeed: (sessionId, value) =>
+    set((state) =>
+      state.sentMessageIndexSeed?.sessionId === sessionId
+        ? state
+        : { sentMessageIndexSeed: { sessionId, value } }
+    ),
+
+  peekNextSentMessageIndex: (sessionId) => {
+    const { sentMessageIndexSeed, sentMessageCount } = get();
+    const seed = sentMessageIndexSeed?.sessionId === sessionId ? sentMessageIndexSeed.value : 0;
+    return seed + sentMessageCount;
+  },
+
+  commitSentMessage: () => set((state) => ({ sentMessageCount: state.sentMessageCount + 1 })),
 
   reset: () => set(initialState),
 }));
