@@ -26,12 +26,11 @@ export function useOnboardingStep4Submit() {
 
     try {
       const response = await onboardingCharacter.mutateAsync({ character_id: characterId });
-      // 응답의 preferred_character_id 우선, 없으면 요청한 characterId 사용
+      // 응답 preferred_character_id 우선 사용
       const preferredCharacterId = response.data.preferred_character_id ?? characterId;
       patchOnboardingCharacterId(preferredCharacterId);
 
-      // authProfile.characterId가 useSelectedCharacterId에서 우선순위가 높으므로
-      // 선택한 캐릭터로 함께 갱신해 완료 화면에 정확히 반영되도록
+      // 완료 화면 캐릭터 반영용 authProfile 갱신
       const { authProfile, onboardingResult } = useUserStore.getState();
       const nickname = resolveStoredNickname(authProfile, onboardingResult);
       setAuthProfile({

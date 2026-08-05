@@ -37,8 +37,7 @@ export async function postAuthLogin(
   const body: AuthLoginRequest = { ...input, device_id };
 
   /**
-   * POST /v1/auth/login
-   *
+   * 소셜 로그인 요청
    */
   if (USE_MOCK) {
     setMockSignupStep('SOCIAL_AUTHENTICATED');
@@ -71,7 +70,7 @@ export async function postAuthLogin(
 }
 
 /**
- * 가입 이탈 후 재진입 시 온보딩 상태 조회
+ * 가입 상태 조회
  */
 export async function getAuthSignupStatus(): Promise<AuthSignupStatusResponse> {
   if (USE_MOCK) {
@@ -86,7 +85,7 @@ export async function getAuthSignupStatus(): Promise<AuthSignupStatusResponse> {
 }
 
 /**
- * 회원가입 이용약관 동의
+ * 이용약관 동의
  */
 export async function postAuthSignupConsent(
   body: AuthSignupConsentRequest
@@ -110,7 +109,7 @@ export async function postAuthSignupConsent(
 }
 
 /**
- * 회원가입 프로필 설정
+ * 프로필 설정
  */
 export async function postAuthSignupProfile(
   body: AuthSignupProfileRequest
@@ -138,7 +137,7 @@ export async function postAuthSignupProfile(
 }
 
 /**
- * 회원가입 완료
+ * 회원가입 최종 완료
  */
 export async function postAuthSignupComplete(): Promise<AuthSignupCompleteResponse> {
   if (USE_MOCK) {
@@ -160,7 +159,7 @@ export async function postAuthSignupComplete(): Promise<AuthSignupCompleteRespon
 }
 
 /**
- * 닉네임 중복 체크
+ * 닉네임 중복 확인
  */
 export async function getAuthNicknameDuplicateCheck(
   nickname: string
@@ -186,10 +185,7 @@ export async function getAuthNicknameDuplicateCheck(
 }
 
 /**
- * POST /v1/auth/refresh
- *
- * - refresh_token으로 Access Token만 갱신한다(명세상 refresh_token은 rotation하지 않음)
- * - 이 호출 자체는 401 refresh 로직의 대상이 되면 안 되므로 `_skipAuthRefresh`를 설정한다
+ * Access Token 갱신
  */
 export async function postAuthRefresh(body: AuthRefreshRequest): Promise<AuthRefreshResponse> {
   if (USE_MOCK) {
@@ -207,10 +203,7 @@ export async function postAuthRefresh(body: AuthRefreshRequest): Promise<AuthRef
 }
 
 /**
- * POST /v1/auth/logout
- *
- * - 명세상 body에는 device_id가 필요하므로
- * - 현재 디바이스의 device_id를 내부에서 가져와 항상 포함시키도록!
+ * 로그아웃
  */
 export async function postAuthLogout(
   _body?: Partial<AuthLogoutRequest>
@@ -228,7 +221,7 @@ export async function postAuthLogout(
 }
 
 /**
- * DELETE /v1/auth/withdraw
+ * 회원 탈퇴
  */
 export async function deleteAuthWithdraw(): Promise<AuthWithdrawResponse> {
   if (USE_MOCK) {

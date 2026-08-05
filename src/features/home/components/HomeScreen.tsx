@@ -18,6 +18,7 @@ import {
 import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
+import { useHomeRecommendedTodoCheckin } from '@/features/home/hooks/useHomeRecommendedTodoCheckin';
 import { useTodos } from '@/features/todo/hooks/useTodo';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
 import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
@@ -56,6 +57,7 @@ export function HomeScreen() {
     isPending: isTodayTodosPending,
     refetch: refetchTodayTodos,
   } = useTodos(getDateIso(new Date()));
+  const { completeTodo, isSubmitting: isHomeTodoSubmitting } = useHomeRecommendedTodoCheckin();
   const hasActions = Boolean(todayTodos && todayTodos.length > 0);
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
@@ -148,7 +150,11 @@ export function HomeScreen() {
                   <ActivityIndicator color={ButtonColors.spinnerLight} />
                 </View>
               ) : hasActions ? (
-                <HomeRecommendedActionsList actions={todayTodos ?? []} />
+                <HomeRecommendedActionsList
+                  actions={todayTodos ?? []}
+                  isSubmitting={isHomeTodoSubmitting}
+                  onCompleteTodo={completeTodo}
+                />
               ) : (
                 <View className={HomeCardClasses.emptyState}>
                   <ThemedText type="small" className="text-label">

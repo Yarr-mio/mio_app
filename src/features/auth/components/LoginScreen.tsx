@@ -1,5 +1,6 @@
 import { Platform, Text, View } from 'react-native';
 
+import { ErrorState } from '@/components/feedback/ErrorState';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -42,17 +43,8 @@ export default function LoginScreen() {
             onPress={kakaoLogin.login}
             disabled={isLoginPending}
           />
-          {appleLogin.error ? (
-            <ThemedText type="small" className="text-center text-danger">
-              {appleLogin.error}
-            </ThemedText>
-          ) : null}
-          {kakaoLogin.error ? (
-            // ErrorState 컴포넌트 구현 후 교체할 것
-            <ThemedText type="small" className="text-center text-danger">
-              {kakaoLogin.error}
-            </ThemedText>
-          ) : null}
+          {appleLogin.error ? <ErrorState message={appleLogin.error} /> : null}
+          {kakaoLogin.error ? <ErrorState message={kakaoLogin.error} /> : null}
         </View>
       </ScreenContainer>
       <LoadingOverlay visible={isLoginPending} />

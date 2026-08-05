@@ -5,7 +5,7 @@ import { AppState } from 'react-native';
 import { syncAuthProfileCharacterFromServer } from '@/features/auth/services/syncAuthProfileCharacter';
 import { useAuthStore } from '@/store/authStore';
 
-// 로그인/회원가입/온보딩 화면은 모두 (auth) 그룹에 속함
+// 로그인 회원가입 온보딩 화면은 auth 그룹에 속함
 const AUTH_SEGMENT = '(auth)';
 
 export function useSyncAuthProfileOnForeground() {

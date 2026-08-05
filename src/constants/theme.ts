@@ -238,9 +238,33 @@ export const SignupInfoLayout = {
 /** 회원가입 플로우 StepIndicator */
 export const SignupFlowLayout = {
   totalSteps: 4,
-  termsCurrentStep: 2,
-  infoCurrentStep: 3,
+  termsCurrentStep: 1,
+  infoCurrentStep: 2,
+  characterCurrentStep: 3,
   completeCurrentStep: 4,
+} as const;
+
+/** 캐릭터 선택 플로팅 CTA */
+export const CharacterSelectFloatingCtaLayout = {
+  enterDurationMs: 280,
+  exitDurationMs: 200,
+  listBottomPadding: 24,
+  scrollBottomPaddingWithCta: 120,
+  bottomOffsetExtra: 8,
+  horizontalInset: 32,
+} as const;
+
+/** NativeWind className — CharacterSelectFloatingCtaLayout과 함께 유지 */
+export const CharacterSelectFloatingCtaClasses = {
+  floatingCta: 'absolute gap-2',
+  screenContainer: 'flex-1 px-8',
+  stepIndicatorWrap: 'pt-4 mt-6',
+  titleWrap: 'mt-10',
+  subtitle: 'mt-3 text-subtitle',
+  listWrap: 'mt-8 gap-3',
+  cardRow: 'flex-row items-center gap-3 rounded-card border-2 py-6 pl-2 pr-4',
+  cardTextWrap: 'flex-1 gap-2',
+  seeMoreButton: 'flex-row items-center justify-center gap-1 py-4',
 } as const;
 
 /** 약관 동의 화면 레이아웃 */

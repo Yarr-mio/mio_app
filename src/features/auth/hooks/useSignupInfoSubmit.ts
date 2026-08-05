@@ -8,7 +8,7 @@ import { useNicknameDuplicateCheck, useSignupProfile } from '@/features/auth/hoo
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
 import { mapSignupProfileInput } from '@/features/auth/utils/mapSignupProfileInput';
-import type { UserAgeRange, UserGender } from '@/types/user';
+import type { UserAgeRange, UserEmploymentStatus, UserGender } from '@/types/user';
 import { readApiHttpStatus } from '@/utils/readApiError';
 
 const DUPLICATE_CHECK_ERROR_MESSAGE = '닉네임 중복 확인에 실패했습니다. 다시 시도해 주세요.';
@@ -18,6 +18,7 @@ export interface SignupInfoFormInput {
   nickname: string;
   gender: UserGender | null;
   ageRange: UserAgeRange | null;
+  employmentStatus: UserEmploymentStatus | null;
 }
 
 export function useSignupInfoSubmit() {
@@ -56,22 +57,19 @@ export function useSignupInfoSubmit() {
     }
   };
 
-  const submit = async ({ nickname, gender, ageRange }: SignupInfoFormInput) => {
+  const submit = async ({ nickname, gender, ageRange, employmentStatus }: SignupInfoFormInput) => {
     setSubmitError(null);
 
     try {
       const response = await signupProfile.mutateAsync(
-        mapSignupProfileInput({ nickname, gender, ageRange })
+        mapSignupProfileInput({ nickname, gender, ageRange, employmentStatus })
       );
 
       if (response.data.signup_step !== 'PROFILE_COMPLETED') {
         throw new Error(PROFILE_SUBMIT_ERROR_MESSAGE);
       }
 
-      router.push({
-        pathname: AUTH_ROUTES.signupComplete,
-        params: { nickname },
-      });
+      router.push(AUTH_ROUTES.onboardingStep4);
     } catch (profileError) {
       if (isSignupStepInvalidError(profileError)) {
         await handleSignupStepInvalid();

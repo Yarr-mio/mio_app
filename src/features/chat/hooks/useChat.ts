@@ -1,7 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { useEffect } from 'react';
-import { AppState, Alert } from 'react-native';
 import { queryKeys } from '@/api/queryKeys';
 import {
   endSession,
@@ -12,6 +8,10 @@ import {
 } from '@/api/endpoints/chat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import {
+  invalidateReportQueries,
+  invalidateTodoRelatedQueries,
+} from '@/api/invalidateReportQueries';
+import {
   HTTP_STATUS,
   SESSION_SUMMARY_CACHE_GC_TIME_MS,
   SESSION_SUMMARY_POLL_INTERVAL_MS,
@@ -19,6 +19,10 @@ import {
 import { AUTH_ROUTES } from '@/constants/routes';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import type { ActiveSessionResponse } from '@/types/chat';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
+import { useEffect } from 'react';
+import { AppState, Alert } from 'react-native';
 
 export function useActiveSession() {
   const queryClient = useQueryClient();
@@ -64,8 +68,8 @@ export function useStartChatSession() {
       const errorCode = readApiErrorCode(error);
 
       if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'ONBOARDING_REQUIRED') {
-        Alert.alert('온보딩이 필요해요', '먼저 온보딩을 마치면 대화를 시작할 수 있어요.', [
-          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.onboardingStep1) },
+        Alert.alert('온보딩이 필요해요', '먼저 캐릭터 선택을 마치면 대화를 시작할 수 있어요.', [
+          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.onboardingStep4) },
         ]);
         return;
       }
@@ -95,8 +99,8 @@ export function useEndChatSession() {
     // 마운트될 때 이미 끝난 세션을 다시 활성 세션으로 착각해 startSession()을 재호출할 수 있다
     // (chat-trouble-shoot/08 원인 E)
     queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
-    // 세션 종료 후 서버가 비동기로 Todo를 생성하므로, 홈/Todo 화면이 최신 목록을 다시 받아오도록 무효화한다
-    queryClient.invalidateQueries({ queryKey: queryKeys.todo.all() });
+    // 세션 종료 후 Todo 및 리포트 캐시 무효화
+    void invalidateTodoRelatedQueries(queryClient);
     // SessionEnd의 dismissAll()이 스택 루트(index)로 돌아간다는 전제를 깨지 않기 위해 push 유지 —
     // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당
     router.push('/(main)/chat/summary');
@@ -121,11 +125,14 @@ export function useEndChatSession() {
 }
 
 export function useSubmitCbtEmotionScore() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ reconstructionId, score }: { reconstructionId: string; score: number }) =>
       submitCbtEmotionScore(reconstructionId, score),
     onSuccess: () => {
       useChatStore.getState().deactivateEmotionScoring();
+      void invalidateReportQueries(queryClient);
     },
     onError: (error) => {
       const status = readApiHttpStatus(error);

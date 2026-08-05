@@ -30,14 +30,15 @@ interface TermItem {
   id: TermConsentId;
   label: string;
   required: boolean;
+  hasDetail: boolean;
 }
 
 const TERM_ITEMS: TermItem[] = [
-  { id: 'age', label: '만 14세 이상 확인', required: true },
-  { id: 'service', label: '서비스 이용약관', required: true },
-  { id: 'privacy', label: '개인정보 처리방침', required: true },
-  { id: 'sensitive', label: '민감정보 수집 및 이용', required: true },
-  { id: 'marketing', label: '마케팅 정보 수신 동의', required: false },
+  { id: 'age', label: '만 14세 이상 확인', required: true, hasDetail: false },
+  { id: 'service', label: '서비스 이용약관', required: true, hasDetail: true },
+  { id: 'privacy', label: '개인정보 처리방침', required: true, hasDetail: true },
+  { id: 'sensitive', label: '민감정보 수집 및 이용', required: true, hasDetail: true },
+  { id: 'marketing', label: '마케팅 정보 수신 동의', required: false, hasDetail: true },
 ];
 
 const REQUIRED_TERM_IDS = TERM_ITEMS.filter((item) => item.required).map((item) => item.id);
@@ -97,11 +98,19 @@ interface AgreementRowProps {
   label: string;
   required: boolean;
   checked: boolean;
+  hasDetail: boolean;
   onToggle: () => void;
   onDetailPress?: () => void;
 }
 
-function AgreementRow({ label, required, checked, onToggle, onDetailPress }: AgreementRowProps) {
+function AgreementRow({
+  label,
+  required,
+  checked,
+  hasDetail,
+  onToggle,
+  onDetailPress,
+}: AgreementRowProps) {
   return (
     <View className={cn('flex-row items-center gap-3 px-4', AGREEMENT_CARD_HEIGHT)}>
       <Pressable
@@ -118,18 +127,20 @@ function AgreementRow({ label, required, checked, onToggle, onDetailPress }: Agr
           {required ? '[필수]' : '[선택]'}
         </ThemedText>
       </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${label} 상세 보기`}
-        hitSlop={PressableConfig.hitSlop}
-        onPress={onDetailPress}
-      >
-        <Ionicons
-          name="chevron-forward"
-          size={HeaderLayout.backHeaderIconSize}
-          color={FgColors.muted}
-        />
-      </Pressable>
+      {hasDetail ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${label} 상세 보기`}
+          hitSlop={PressableConfig.hitSlop}
+          onPress={onDetailPress}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={HeaderLayout.backHeaderIconSize}
+            color={FgColors.muted}
+          />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -208,10 +219,15 @@ export default function TermsOfServiceScreen() {
                   label={item.label}
                   required={item.required}
                   checked={checkedState[item.id]}
+                  hasDetail={item.hasDetail}
                   onToggle={() => handleToggleTerm(item.id)}
-                  onDetailPress={() => {
-                    // 약관 상세 화면 이동 나중에 추가
-                  }}
+                  onDetailPress={
+                    item.hasDetail
+                      ? () => {
+                          // 약관 상세 화면 이동 예정
+                        }
+                      : undefined
+                  }
                 />
               </AgreementTab>
             ))}

@@ -9,18 +9,21 @@ import {
   getOnboardingCharacterById,
   ONBOARDING_ALL_CHARACTER_IDS,
   ONBOARDING_STEP4_ALL_TITLE,
-  ONBOARDING_STEP4_RECOMMENDED_TITLE,
   ONBOARDING_STEP4_SEE_MORE_LABEL,
   ONBOARDING_STEP4_SUBTITLE,
   type OnboardingCharacterId,
 } from '@/constants/characters';
 import type { OnboardingStyleType } from '@/constants/onboarding';
 import {
+  CharacterSelectFloatingCtaClasses,
+  CharacterSelectFloatingCtaLayout,
   OnboardingStyleCardClasses,
   OnboardingStyleCardLayout,
   PressableConfig,
   ScreenSpacing,
+  SignupFlowLayout,
 } from '@/constants/theme';
+import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
 import { useOnboardingCharacterRecommendations } from '@/features/onboarding/hooks/useOnboardingCharacterRecommendations';
 import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
@@ -29,6 +32,17 @@ import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
+const SIGNUP_CURRENT_STEP = SignupFlowLayout.characterCurrentStep;
+const FLOATING_CTA_ENTER_MS = CharacterSelectFloatingCtaLayout.enterDurationMs;
+const FLOATING_CTA_EXIT_MS = CharacterSelectFloatingCtaLayout.exitDurationMs;
+const LIST_BOTTOM_PADDING = CharacterSelectFloatingCtaLayout.listBottomPadding;
+const LIST_BOTTOM_PADDING_WITH_CTA = CharacterSelectFloatingCtaLayout.scrollBottomPaddingWithCta;
+const FLOATING_CTA_BOTTOM_EXTRA = CharacterSelectFloatingCtaLayout.bottomOffsetExtra;
+const FLOATING_CTA_HORIZONTAL_INSET = CharacterSelectFloatingCtaLayout.horizontalInset;
 
 interface SeeMoreCharactersButtonProps {
   onPress: () => void;
@@ -39,7 +53,7 @@ function SeeMoreCharactersButton({ onPress }: SeeMoreCharactersButtonProps) {
     <OnboardingSkipButton
       label={`${ONBOARDING_STEP4_SEE_MORE_LABEL} >`}
       onPress={onPress}
-      className="flex-row items-center justify-center gap-1 py-4"
+      className={CharacterSelectFloatingCtaClasses.seeMoreButton}
     />
   );
 }
@@ -71,7 +85,7 @@ function CharacterOptionCard({
       accessibilityState={{ selected }}
       accessibilityLabel={name}
       className={cn(
-        'flex-row items-center gap-3 rounded-card border-2 py-6 pl-2 pr-4',
+        CharacterSelectFloatingCtaClasses.cardRow,
         selected
           ? 'border-sub-tab-selected-border bg-sub-tab-selected-bg'
           : 'border-sub-tab-inactive-border bg-sub-tab-inactive-bg'
@@ -79,13 +93,14 @@ function CharacterOptionCard({
       hitSlop={PressableConfig.hitSlop}
     >
       <View className={OnboardingStyleCardClasses.iconSlot}>
+        {/* expo-image 크기 지정용 인라인 스타일 예외 */}
         <Image
           source={characterImage}
           style={{ width: iconRenderSize, height: iconRenderSize }}
           contentFit="contain"
         />
       </View>
-      <View className="flex-1 gap-2">
+      <View className={CharacterSelectFloatingCtaClasses.cardTextWrap}>
         <ThemedText type="smallTitle" className="text-fg-default">
           {name}
         </ThemedText>
@@ -98,10 +113,43 @@ function CharacterOptionCard({
   );
 }
 
+interface FloatingNextCtaProps {
+  error: string | null;
+  isPending: boolean;
+  onPress: () => void;
+}
+
+function FloatingNextCta({ error, isPending, onPress }: FloatingNextCtaProps) {
+  const insets = useSafeAreaInsets();
+  const bottomOffset =
+    Math.max(insets.bottom, ScreenSpacing.bottomInsetMin) + FLOATING_CTA_BOTTOM_EXTRA;
+
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(FLOATING_CTA_ENTER_MS)}
+      exiting={FadeOutDown.duration(FLOATING_CTA_EXIT_MS)}
+      pointerEvents="box-none"
+      className={CharacterSelectFloatingCtaClasses.floatingCta}
+      style={{
+        // 플로팅 CTA safe area 및 좌우 inset용 인라인 스타일 예외
+        bottom: bottomOffset,
+        left: FLOATING_CTA_HORIZONTAL_INSET,
+        right: FLOATING_CTA_HORIZONTAL_INSET,
+      }}
+    >
+      {error ? <ErrorState message={error} /> : null}
+      <Button disabled={isPending} onPress={onPress} loading={isPending}>
+        다음
+      </Button>
+    </Animated.View>
+  );
+}
+
 export function Step4CharacterScreen() {
   const { preferred_style, character_id, setCharacterId } = useOnboardingSelection();
   const { submit, isPending, error, clearError } = useOnboardingStep4Submit();
-  const [showAllCharacters, setShowAllCharacters] = useState(false);
+  // QnA 생략 시 전체 캐릭터 목록 표시
+  const [showAllCharacters, setShowAllCharacters] = useState(true);
 
   const selectedStyle = preferred_style as OnboardingStyleType | null;
   const { recommendedIds, isStatusLoading } = useOnboardingCharacterRecommendations(selectedStyle);
@@ -109,15 +157,12 @@ export function Step4CharacterScreen() {
     ? ONBOARDING_ALL_CHARACTER_IDS
     : recommendedIds;
 
-  const pageTitle = showAllCharacters
-    ? ONBOARDING_STEP4_ALL_TITLE
-    : ONBOARDING_STEP4_RECOMMENDED_TITLE;
-
   const isCharacterSelected = character_id !== null;
 
   const handleSelectCharacter = (id: OnboardingCharacterId) => {
     clearError();
-    setCharacterId(id);
+    // 동일 카드 재선택 시 선택 해제
+    setCharacterId(character_id === id ? null : id);
   };
 
   const handleSeeMore = () => {
@@ -135,22 +180,33 @@ export function Step4CharacterScreen() {
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
-      <ScreenContainer className="flex-1 px-8 mt-6" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
+      <ScreenContainer
+        className={CharacterSelectFloatingCtaClasses.screenContainer}
+        bottomInsetMin={ScreenSpacing.bottomInsetMin}
+      >
+        <View className={CharacterSelectFloatingCtaClasses.stepIndicatorWrap}>
+          <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
+        </View>
+
         <ScrollView
           className="flex-1"
           showsVerticalScrollIndicator={false}
-          contentContainerClassName="grow pb-4"
+          contentContainerClassName="grow"
+          contentContainerStyle={{
+            // 플로팅 CTA 오버레이 스크롤 여백용 인라인 스타일 예외
+            paddingBottom: isCharacterSelected ? LIST_BOTTOM_PADDING_WITH_CTA : LIST_BOTTOM_PADDING,
+          }}
         >
-          <View className="mt-10">
+          <View className={CharacterSelectFloatingCtaClasses.titleWrap}>
             <ThemedText type="title" className="text-fg">
-              {pageTitle}
+              {ONBOARDING_STEP4_ALL_TITLE}
             </ThemedText>
-            <ThemedText type="subtitle" className="mt-3 text-subtitle">
+            <ThemedText type="subtitle" className={CharacterSelectFloatingCtaClasses.subtitle}>
               {ONBOARDING_STEP4_SUBTITLE}
             </ThemedText>
           </View>
 
-          <View className="mt-8 gap-3">
+          <View className={CharacterSelectFloatingCtaClasses.listWrap}>
             {displayCharacterIds.map((id) => {
               const character = getOnboardingCharacterById(id);
 
@@ -167,17 +223,15 @@ export function Step4CharacterScreen() {
               );
             })}
           </View>
+
+          {!showAllCharacters ? <SeeMoreCharactersButton onPress={handleSeeMore} /> : null}
         </ScrollView>
 
-        <View className="pt-4 gap-2">
-          {error ? <ErrorState message={error} /> : null}
-          <Button disabled={!isCharacterSelected || isPending} onPress={handleNext}>
-            다음
-          </Button>
-          {!showAllCharacters && <SeeMoreCharactersButton onPress={handleSeeMore} />}
-        </View>
+        {isCharacterSelected ? (
+          <FloatingNextCta error={error} isPending={isPending} onPress={handleNext} />
+        ) : null}
       </ScreenContainer>
-      <LoadingOverlay visible={isStatusLoading} />
+      <LoadingOverlay visible={!showAllCharacters && isStatusLoading} />
     </View>
   );
 }

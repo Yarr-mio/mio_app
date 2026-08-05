@@ -8,9 +8,9 @@ export function routeForSignupStep(step: SignupStep): AuthRoute {
     case 'CONSENT_AGREED':
       return AUTH_ROUTES.signupInfo;
     case 'PROFILE_COMPLETED':
-      return AUTH_ROUTES.signupComplete;
+      return AUTH_ROUTES.onboardingStep4;
     case 'ONBOARDING_COMPLETED':
-      return AUTH_ROUTES.signupComplete;
+      return AUTH_ROUTES.onboardingComplete;
     case 'COMPLETED':
       return AUTH_ROUTES.home;
     default: {
