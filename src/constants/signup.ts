@@ -1,9 +1,7 @@
+import type { EmploymentStatus } from '@/types/auth';
+
 export const EMPLOYMENT_STATUS_OPTIONS = [
-  { value: 'university_student', label: '대학생/대학원생' },
+  { value: 'student_or_unemployed', label: '대학(원)생 및 무직' },
   { value: 'job_seeker', label: '취업 준비 중' },
   { value: 'employed', label: '재직 중' },
-  { value: 'self_employed', label: '자영업/프리랜서' },
-  { value: 'homemaker', label: '전업주부/육아 중' },
-] as const;
-
-export type EmploymentStatusValue = (typeof EMPLOYMENT_STATUS_OPTIONS)[number]['value'];
+] as const satisfies readonly { value: EmploymentStatus; label: string }[];

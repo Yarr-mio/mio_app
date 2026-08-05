@@ -238,6 +238,22 @@ export default function SignUpInfoScreen() {
               )}
             </View>
 
+            <SelectableField label="직업 (선택)">
+              <View className="flex-row flex-wrap justify-start gap-2">
+                {EMPLOYMENT_OPTIONS.map((option) => (
+                  <SelectionChip
+                    key={option.value}
+                    label={option.label}
+                    selected={employmentStatus === option.value}
+                    onPress={() => {
+                      clearErrors();
+                      setEmploymentStatus((prev) => (prev === option.value ? null : option.value));
+                    }}
+                  />
+                ))}
+              </View>
+            </SelectableField>
+
             <SelectableField label="성별 (선택)">
               <View className="flex-row flex-wrap justify-start gap-2">
                 {GENDER_OPTIONS.map((option) => (
@@ -264,22 +280,6 @@ export default function SignUpInfoScreen() {
                     onPress={() => {
                       clearErrors();
                       setAge((prev) => (prev === option.value ? null : option.value));
-                    }}
-                  />
-                ))}
-              </View>
-            </SelectableField>
-
-            <SelectableField label="직업 (선택)">
-              <View className="flex-row flex-wrap justify-start gap-2">
-                {EMPLOYMENT_OPTIONS.map((option) => (
-                  <SelectionChip
-                    key={option.value}
-                    label={option.label}
-                    selected={employmentStatus === option.value}
-                    onPress={() => {
-                      clearErrors();
-                      setEmploymentStatus((prev) => (prev === option.value ? null : option.value));
                     }}
                   />
                 ))}
