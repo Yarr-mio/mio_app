@@ -3,7 +3,7 @@ import { AUTH_ROUTES } from '@/constants/routes';
 import type { EmotionType } from '@/types/checkin';
 import type { OnboardingSkippableStep } from '@/types/onboarding';
 
-// API 온보딩 단계는 3단계(step1~3)! step4 캐릭터 선택 화면은 OnboardingHeader를 렌더링하지 않는 별도 화면
+// 캐릭터 선택 전 QnA step1~3은 미사용 경로
 export const ONBOARDING_TOTAL_STEPS = 3;
 
 export const ONBOARDING_QUESTION_IDS = {

@@ -1,14 +1,17 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
 import type { OnboardingConcernType, OnboardingStyleType } from '@/constants/onboarding';
+import type { EmploymentStatusValue } from '@/constants/signup';
 import type { EmotionType } from '@/types/checkin';
 
 export type UserGender = 'female' | 'male';
 export type UserAgeRange = '10s' | '20s' | '30s' | '40s';
+export type UserEmploymentStatus = EmploymentStatusValue;
 
 export interface UserSignupInfo {
   nickname: string;
   gender: UserGender | null;
   ageRange: UserAgeRange | null;
+  employmentStatus: UserEmploymentStatus | null;
 }
 
 export interface UserOnboardingEmotionSelection {

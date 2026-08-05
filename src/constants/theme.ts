@@ -238,9 +238,19 @@ export const SignupInfoLayout = {
 /** 회원가입 플로우 StepIndicator */
 export const SignupFlowLayout = {
   totalSteps: 4,
-  termsCurrentStep: 2,
-  infoCurrentStep: 3,
+  termsCurrentStep: 1,
+  infoCurrentStep: 2,
+  characterCurrentStep: 3,
   completeCurrentStep: 4,
+} as const;
+
+/** 캐릭터 선택 플로팅 CTA */
+export const CharacterSelectFloatingCtaLayout = {
+  enterDurationMs: 280,
+  exitDurationMs: 200,
+  listBottomPadding: 24,
+  scrollBottomPaddingWithCta: 120,
+  bottomOffsetExtra: 8,
 } as const;
 
 /** 약관 동의 화면 레이아웃 */

@@ -65,13 +65,14 @@ export interface AuthSignupConsentData {
 
 export type AuthSignupConsentResponse = ApiResponse<AuthSignupConsentData>;
 
-export type AgeRange = '10대' | '20대' | '30대' | '40대' | '50대+';
+export type AgeRange = '10대' | '20대' | '30대' | '40대+';
 export type Gender = 'male' | 'female' | 'other';
 
 export interface AuthSignupProfileRequest {
   nickname: string;
   age_range?: AgeRange;
   gender?: Gender;
+  employment_status?: string;
 }
 
 export interface AuthSignupProfileData {
