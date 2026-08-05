@@ -2,7 +2,7 @@ import { create, type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { Platform } from 'react-native';
 
 import queryClient from '@/api/queryClient';
-import { API_BASE_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants/config';
+import { API_BASE_URL, API_TIMEOUT_MS, AUTH_API_ERROR_CODE, HTTP_STATUS } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
 import type { AuthRefreshResponse } from '@/types/auth';
@@ -185,6 +185,15 @@ async function refreshAccessToken(): Promise<string> {
   return nextAccessToken;
 }
 
+function getSharedRefreshedAccessToken(): Promise<string> {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
 /**
  * 로컬 인증정보 삭제
  *
@@ -227,7 +236,7 @@ apiClient.interceptors.response.use(
       throw error;
     }
 
-    if (errorCode === 'REFRESH_TOKEN_INVALID') {
+    if (errorCode === AUTH_API_ERROR_CODE.REFRESH_TOKEN_INVALID) {
       await clearLocalAuth();
       if (!originalRequest._skipAuthRedirect) {
         notifyAuthInvalid();
@@ -240,7 +249,7 @@ apiClient.interceptors.response.use(
     }
 
     // 401
-    if (errorCode !== 'AUTH_TOKEN_EXPIRED') {
+    if (errorCode !== AUTH_API_ERROR_CODE.TOKEN_EXPIRED) {
       throw error;
     }
 
@@ -250,12 +259,7 @@ apiClient.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      if (!refreshPromise) {
-        refreshPromise = refreshAccessToken().finally(() => {
-          refreshPromise = null;
-        });
-      }
-      const nextAccessToken = await refreshPromise;
+      const nextAccessToken = await getSharedRefreshedAccessToken();
       originalRequest.headers = originalRequest.headers ?? {};
       originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`;
       return await apiClient(originalRequest);
@@ -274,5 +278,25 @@ apiClient.interceptors.response.use(
     }
   }
 );
+
+/**
+ * apiClient 외부용 access token 갱신
+ * refreshPromise 병합
+ * 실패 시 로컬 인증 정리
+ */
+export async function refreshAccessTokenForNonAxios(): Promise<string> {
+  try {
+    return await getSharedRefreshedAccessToken();
+  } catch (refreshError) {
+    if (!authInvalidationPromise) {
+      authInvalidationPromise = clearLocalAuth().finally(() => {
+        authInvalidationPromise = null;
+      });
+    }
+    await authInvalidationPromise;
+    notifyAuthInvalid();
+    throw refreshError;
+  }
+}
 
 export default apiClient;

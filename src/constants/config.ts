@@ -55,6 +55,12 @@ export const HTTP_STATUS = {
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
+/** 인증 API 에러 코드 */
+export const AUTH_API_ERROR_CODE = {
+  TOKEN_EXPIRED: 'AUTH_TOKEN_EXPIRED',
+  REFRESH_TOKEN_INVALID: 'REFRESH_TOKEN_INVALID',
+} as const;
+
 /** 리포트 PENDING 상태 폴링 간격(ms) */
 export const REPORT_POLL_INTERVAL_MS = 5_000;
 

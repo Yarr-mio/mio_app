@@ -10,12 +10,8 @@ function isAxiosStatusMessage(message: string): boolean {
 
 export const API_ERROR_FALLBACK_MESSAGE = '오류가 발생했습니다. 다시 시도해 주세요.';
 
-export function readApiErrorCode(error: unknown): string | null {
-  if (!isAxiosError(error)) {
-    return null;
-  }
-
-  const data = error.response?.data as unknown;
+/** fetch 및 axios 응답 본문 에러 코드 추출 */
+export function readErrorCodeFromBody(data: unknown): string | null {
   if (!isRecord(data)) {
     return null;
   }
@@ -36,6 +32,14 @@ export function readApiErrorCode(error: unknown): string | null {
   }
 
   return null;
+}
+
+export function readApiErrorCode(error: unknown): string | null {
+  if (!isAxiosError(error)) {
+    return null;
+  }
+
+  return readErrorCodeFromBody(error.response?.data);
 }
 
 export function readApiHttpStatus(error: unknown): number | null {
