@@ -116,6 +116,10 @@ export const PRIVACY_POLICY_DOCUMENT: LegalDocument = {
     { type: 'heading', text: 'Amazon Web Services Korea LLC 및 Amazon Web Services, Inc.' },
     {
       type: 'paragraph',
+      text: '위탁 업무: 서버, 데이터베이스, CloudWatch 로그, S3 및 백업 운영',
+    },
+    {
+      type: 'paragraph',
       text: '처리 지역: 대한민국 AWS Asia Pacific (Seoul)',
     },
     {

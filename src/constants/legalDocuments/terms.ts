@@ -268,7 +268,7 @@ export const TERMS_OF_SERVICE_DOCUMENT: LegalDocument = {
     { type: 'heading', text: '제13조 서비스의 변경·중단 및 종료' },
     {
       type: 'paragraph',
-      text: '1. 회사는 점검, 장애, 보안 사고, 외부 요청자 장애, 정책 변경 또는 불가피한 운영상 사유가 있는 경우 서비스의 전부 또는 일부를 변경하거나 중단할 수 있습니다.',
+      text: '1. 회사는 점검, 장애, 보안 사고, 외부 서비스 장애, 정책 변경 또는 불가피한 운영상 사유가 있는 경우 서비스의 전부 또는 일부를 변경하거나 중단할 수 있습니다.',
     },
     {
       type: 'paragraph',
