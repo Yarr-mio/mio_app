@@ -13,10 +13,9 @@ function getScreenNameForAuthRoute(route: AuthRoute): string {
     [AUTH_ROUTES.login]: 'LoginScreen',
     [AUTH_ROUTES.termsOfService]: 'TermsOfServiceScreen',
     [AUTH_ROUTES.signupInfo]: 'SignupInfoScreen',
-    [AUTH_ROUTES.signupComplete]: 'OnboardingCompleteScreen',
+    [AUTH_ROUTES.signupCharacter]: 'CharacterSelectScreen',
+    [AUTH_ROUTES.signupComplete]: 'SignUpCompleteScreen',
     [AUTH_ROUTES.signupLegalDocument]: 'LegalDocumentScreen',
-    [AUTH_ROUTES.onboardingStep4]: 'OnboardingStep4Screen',
-    [AUTH_ROUTES.onboardingComplete]: 'OnboardingCompleteScreen',
     [AUTH_ROUTES.home]: '홈 화면',
   };
 

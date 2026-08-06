@@ -11,6 +11,7 @@ import {
   HOME_RECOMMENDED_ACTIONS_TITLE,
   HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL,
   HOME_RECOMMENDED_TODO_MAX_COUNT,
+  HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN,
   HOME_SPEECH_BUBBLE_MESSAGES,
   HOME_TITLES,
 } from '@/constants/home';
@@ -66,7 +67,11 @@ export function HomeScreen() {
     refetch: refetchTodayTodos,
   } = useTodos(getDateIso(new Date()));
   const { completeTodo, isSubmitting: isHomeTodoSubmitting } = useHomeRecommendedTodoCheckin();
-  const recommendedTodoTotalCount = todayTodos?.length;
+  const recommendedTodoTotalCount = todayTodos?.length ?? 0;
+  const recommendedTodoTitleCount =
+    recommendedTodoTotalCount >= HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN
+      ? recommendedTodoTotalCount
+      : undefined;
   const visibleRecommendedTodos = (todayTodos ?? []).slice(0, HOME_RECOMMENDED_TODO_MAX_COUNT);
   const hasActions = visibleRecommendedTodos.length > 0;
 
@@ -156,7 +161,7 @@ export function HomeScreen() {
 
             <HomeCardShell
               title={HOME_RECOMMENDED_ACTIONS_TITLE}
-              titleCount={recommendedTodoTotalCount}
+              titleCount={recommendedTodoTitleCount}
               headerActionLabel={HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL}
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"

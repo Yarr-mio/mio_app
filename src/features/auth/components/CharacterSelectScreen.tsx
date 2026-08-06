@@ -11,6 +11,7 @@ import {
   ONBOARDING_STEP4_SUBTITLE,
   type OnboardingCharacterId,
 } from '@/constants/characters';
+import { SIGNUP_NEXT_BUTTON_LABEL } from '@/constants/signup';
 import {
   CharacterSelectFloatingCtaClasses,
   CharacterSelectFloatingCtaLayout,
@@ -22,8 +23,8 @@ import {
   SignupFlowLayout,
 } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
-import { useOnboardingStep4Submit } from '@/features/onboarding/hooks/useOnboardingStep4Submit';
+import { useCharacterSelectSubmit } from '@/features/auth/hooks/useCharacterSelectSubmit';
+import { useCharacterSelection } from '@/features/auth/hooks/useCharacterSelection';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -121,15 +122,15 @@ function FloatingNextCta({ error, isPending, onPress }: FloatingNextCtaProps) {
     >
       {error ? <ErrorState message={error} /> : null}
       <Button disabled={isPending} onPress={onPress} loading={isPending}>
-        다음
+        {SIGNUP_NEXT_BUTTON_LABEL}
       </Button>
     </Animated.View>
   );
 }
 
-export function Step4CharacterScreen() {
-  const { character_id, setCharacterId } = useOnboardingSelection();
-  const { submit, isPending, error, clearError } = useOnboardingStep4Submit();
+export function CharacterSelectScreen() {
+  const { character_id, setCharacterId } = useCharacterSelection();
+  const { submit, isPending, error, clearError } = useCharacterSelectSubmit();
   const isCharacterSelected = character_id !== null;
 
   const handleSelectCharacter = (id: OnboardingCharacterId) => {

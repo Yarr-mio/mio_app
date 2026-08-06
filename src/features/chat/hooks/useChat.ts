@@ -1,4 +1,3 @@
-import { queryKeys } from '@/api/queryKeys';
 import {
   endSession,
   fetchActiveSession,
@@ -6,23 +5,24 @@ import {
   startSession,
   submitCbtEmotionScore,
 } from '@/api/endpoints/chat';
-import { useChatStore } from '@/features/chat/store/chatStore';
 import {
   invalidateReportQueries,
   invalidateTodoRelatedQueries,
 } from '@/api/invalidateReportQueries';
+import { queryKeys } from '@/api/queryKeys';
 import {
   HTTP_STATUS,
   SESSION_SUMMARY_CACHE_GC_TIME_MS,
   SESSION_SUMMARY_POLL_INTERVAL_MS,
 } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
-import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
+import { useChatStore } from '@/features/chat/store/chatStore';
 import type { ActiveSessionResponse } from '@/types/chat';
+import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { AppState, Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
 
 export function useActiveSession() {
   const queryClient = useQueryClient();
@@ -69,7 +69,7 @@ export function useStartChatSession() {
 
       if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'ONBOARDING_REQUIRED') {
         Alert.alert('온보딩이 필요해요', '먼저 캐릭터 선택을 마치면 대화를 시작할 수 있어요.', [
-          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.onboardingStep4) },
+          { text: '확인', onPress: () => router.replace(AUTH_ROUTES.signupCharacter) },
         ]);
         return;
       }
