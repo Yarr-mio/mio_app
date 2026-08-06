@@ -19,7 +19,6 @@ export function SessionEnd() {
   const navigation = useNavigation();
 
   // iOS 스와이프 백 차단 — `_layout.tsx`의 정적 옵션만으로는 적용이 누락되는 경우가 있어 동적으로도 보강
-  // (onboarding/Step1EmotionScreen.tsx와 동일 패턴)
   useEffect(() => {
     navigation.setOptions({ gestureEnabled: false });
   }, [navigation]);
