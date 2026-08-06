@@ -6,13 +6,15 @@ import { Modal, Pressable, View } from 'react-native';
 interface AppModalProps {
   visible: boolean;
   onClose: () => void;
-  icon: ReactNode;
-  iconBgColor: string;
-  iconBorderColor: string;
   title: string;
-  description: string;
+  description: ReactNode;
   confirmLabel: string;
   onConfirm: () => void;
+  // 아이콘 영역 선택 렌더링함
+  icon?: ReactNode;
+  iconBgColor?: string;
+  iconBorderColor?: string;
+  // 취소 버튼 선택 렌더링함
   cancelLabel?: string;
   onCancel?: () => void;
 }
@@ -27,9 +29,13 @@ export function AppModal({
   description,
   confirmLabel,
   onConfirm,
-  cancelLabel = AppModalDefaults.cancelLabel,
+  cancelLabel,
   onCancel,
 }: AppModalProps) {
+  const showIcon = icon != null && iconBgColor != null && iconBorderColor != null;
+  const showCancelButton = cancelLabel != null || onCancel != null;
+  const resolvedCancelLabel = cancelLabel ?? AppModalDefaults.cancelLabel;
+
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
@@ -52,29 +58,35 @@ export function AppModal({
           className="z-10 w-full rounded-base-card border border-modal-border bg-modal-surface px-6 pb-6 pt-8"
           style={AppModalShadowStyle}
         >
-          <View className="mb-4 items-center">
-            <View
-              className="items-center justify-center"
-              style={{
-                width: AppModalLayout.iconCircleSize,
-                height: AppModalLayout.iconCircleSize,
-                borderRadius: AppModalLayout.iconCircleSize / 2,
-                backgroundColor: iconBgColor,
-                borderWidth: 1,
-                borderColor: iconBorderColor,
-              }}
-            >
-              {icon}
+          {showIcon ? (
+            <View className="mb-4 items-center">
+              <View
+                className="items-center justify-center"
+                style={{
+                  width: AppModalLayout.iconCircleSize,
+                  height: AppModalLayout.iconCircleSize,
+                  borderRadius: AppModalLayout.iconCircleSize / 2,
+                  backgroundColor: iconBgColor,
+                  borderWidth: 1,
+                  borderColor: iconBorderColor,
+                }}
+              >
+                {icon}
+              </View>
             </View>
-          </View>
+          ) : null}
 
           <ThemedText type="defaultBold" className="mb-3 text-center text-xl text-fg-default">
             {title}
           </ThemedText>
 
-          <ThemedText type="small" className="mb-6 text-center text-subtitle">
-            {description}
-          </ThemedText>
+          {typeof description === 'string' ? (
+            <ThemedText type="small" className="mb-6 text-center text-subtitle">
+              {description}
+            </ThemedText>
+          ) : (
+            <View className="mb-6">{description}</View>
+          )}
 
           <View className="gap-3">
             <Pressable
@@ -89,17 +101,19 @@ export function AppModal({
               </ThemedText>
             </Pressable>
 
-            <Pressable
-              onPress={handleCancel}
-              accessibilityRole="button"
-              accessibilityLabel={cancelLabel}
-              className="items-center justify-center rounded-modal-button bg-btn-disabled"
-              style={{ height: AppModalLayout.buttonHeight }}
-            >
-              <ThemedText type="default" className="text-lg font-bold text-fg">
-                {cancelLabel}
-              </ThemedText>
-            </Pressable>
+            {showCancelButton ? (
+              <Pressable
+                onPress={handleCancel}
+                accessibilityRole="button"
+                accessibilityLabel={resolvedCancelLabel}
+                className="items-center justify-center rounded-modal-button bg-btn-disabled"
+                style={{ height: AppModalLayout.buttonHeight }}
+              >
+                <ThemedText type="default" className="text-lg font-bold text-fg">
+                  {resolvedCancelLabel}
+                </ThemedText>
+              </Pressable>
+            ) : null}
           </View>
         </View>
       </View>

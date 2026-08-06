@@ -1,5 +1,5 @@
-import SignUpCompleteScreen from '@/features/auth/components/SignUpCompleteScreen';
+import { OnboardingCompleteScreen } from '@/features/onboarding/components/OnboardingCompleteScreen';
 
 export default function SignUpCompleteRoute() {
-  return <SignUpCompleteScreen />;
+  return <OnboardingCompleteScreen />;
 }

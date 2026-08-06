@@ -1,5 +1,10 @@
 import { fetchEmotionTrend, fetchMonthlyReport, fetchWeeklyReport } from '@/api/endpoints/report';
 import { queryKeys } from '@/api/queryKeys';
+import {
+  getReportPollFetchCount,
+  incrementReportPollFetchCount,
+  resetReportPollFetchCount,
+} from '@/api/reportPollFetchCountStore';
 import { HTTP_STATUS, REPORT_POLL_INTERVAL_MS, REPORT_POLL_MAX_ATTEMPTS } from '@/constants/config';
 import {
   EMOTION_TREND_PERIOD,
@@ -16,35 +21,23 @@ import type {
 } from '@/types/report';
 import { getMonthStartIso, getWeekStartIso } from '@/utils/date';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
-import {
-  keepPreviousData,
-  useQuery,
-  useQueryClient,
-  type QueryFunctionContext,
-} from '@tanstack/react-query';
+import { keepPreviousData, useQuery, type QueryFunctionContext } from '@tanstack/react-query';
 import { useEffect } from 'react';
-
-interface ReportQueryMeta {
-  maxAttempts: number;
-  fetchCount?: number;
-}
 
 interface ReportPollingData {
   status: ReportStatus;
 }
 
 interface ReportPollingQuery {
+  queryKey: readonly unknown[];
   state: { data: unknown };
-  meta?: Record<string, unknown>;
 }
 
 function getReportPollingInterval(query: ReportPollingQuery): false | number {
   const data = query.state.data as ReportPollingData | undefined;
-  const meta = query.meta as Partial<ReportQueryMeta> | undefined;
-  const maxAttempts = meta?.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS;
-  const fetchCount = meta?.fetchCount ?? 0;
+  const fetchCount = getReportPollFetchCount(query.queryKey);
 
-  if (fetchCount >= maxAttempts && data?.status === REPORT_STATUS.PENDING) {
+  if (fetchCount >= REPORT_POLL_MAX_ATTEMPTS && data?.status === REPORT_STATUS.PENDING) {
     return false;
   }
 
@@ -56,36 +49,7 @@ function getReportPollingInterval(query: ReportPollingQuery): false | number {
 }
 
 function updateReportQueryFetchCount(context: QueryFunctionContext): void {
-  const query = context.client.getQueryCache().find({ queryKey: context.queryKey });
-  if (!query) {
-    return;
-  }
-
-  const meta = query.meta as Partial<ReportQueryMeta>;
-  query.setOptions({
-    meta: {
-      maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
-      fetchCount: (meta.fetchCount ?? 0) + 1,
-    },
-  });
-}
-
-function resetReportQueryFetchCount(
-  queryClient: ReturnType<typeof useQueryClient>,
-  queryKey: readonly unknown[]
-): void {
-  const query = queryClient.getQueryCache().find({ queryKey });
-  if (!query) {
-    return;
-  }
-
-  const meta = query.meta as Partial<ReportQueryMeta>;
-  query.setOptions({
-    meta: {
-      maxAttempts: meta.maxAttempts ?? REPORT_POLL_MAX_ATTEMPTS,
-      fetchCount: 0,
-    },
-  });
+  incrementReportPollFetchCount(context.queryKey);
 }
 
 function createWeeklyReportQueryFn(weekStart: string) {
@@ -114,7 +78,6 @@ export function useWeeklyReport(weekStart: string, options?: ReportQueryOptions)
     queryFn: createWeeklyReportQueryFn(weekStart),
     enabled: (options?.enabled ?? true) && weekStart.length > 0,
     placeholderData: keepPreviousData,
-    meta: { maxAttempts: REPORT_POLL_MAX_ATTEMPTS },
     refetchInterval: (query) => getReportPollingInterval(query),
   });
 
@@ -133,7 +96,6 @@ export function useMonthlyReport(monthStart: string, options?: ReportQueryOption
     queryFn: createMonthlyReportQueryFn(monthStart),
     enabled: (options?.enabled ?? true) && monthStart.length > 0,
     placeholderData: keepPreviousData,
-    meta: { maxAttempts: REPORT_POLL_MAX_ATTEMPTS },
     refetchInterval: (query) => getReportPollingInterval(query),
   });
 
@@ -207,17 +169,7 @@ interface UseReportResult {
   refetch: () => void;
 }
 
-function getReportFetchCount(
-  queryClient: ReturnType<typeof useQueryClient>,
-  queryKey: readonly unknown[]
-): number {
-  const query = queryClient.getQueryCache().find({ queryKey });
-  const meta = query?.meta as Partial<ReportQueryMeta> | undefined;
-  return meta?.fetchCount ?? 0;
-}
-
 export function useReport({ period, anchorDate }: UseReportOptions): UseReportResult {
-  const queryClient = useQueryClient();
   const weekStart = getWeekStartIso(anchorDate);
   const monthStart = getMonthStartIso(anchorDate);
 
@@ -231,7 +183,7 @@ export function useReport({ period, anchorDate }: UseReportOptions): UseReportRe
       : queryKeys.report.monthly(monthStart);
 
   const report = activeQuery.data;
-  const fetchCount = getReportFetchCount(queryClient, activeQueryKey);
+  const fetchCount = getReportPollFetchCount(activeQueryKey);
   const isPollingTimedOut =
     fetchCount >= REPORT_POLL_MAX_ATTEMPTS && report?.status === REPORT_STATUS.PENDING;
   const isServerError =
@@ -251,7 +203,7 @@ export function useReport({ period, anchorDate }: UseReportOptions): UseReportRe
     isPollingTimedOut,
     error: activeQuery.error,
     refetch: () => {
-      resetReportQueryFetchCount(queryClient, activeQueryKey);
+      resetReportPollFetchCount(activeQueryKey);
       void activeQuery.refetch();
     },
   };

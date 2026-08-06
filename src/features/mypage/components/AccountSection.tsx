@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { AppModal } from '@/components/ui/AppModal';
 import { BaseCard } from '@/components/ui/BaseCard';
 import { getPartnerByKey } from '@/constants/characters';
-import { AccountModalColors, AppModalLayout } from '@/constants/theme';
+import { AccountModalColors, AppModalDefaults, AppModalLayout } from '@/constants/theme';
 import { useAccountActions } from '@/features/mypage/hooks/useAccountActions';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { useState } from 'react';
@@ -86,6 +86,7 @@ export function AccountSection() {
         title={LOGOUT_MODAL.title}
         description={LOGOUT_MODAL.description}
         confirmLabel={LOGOUT_MODAL.confirmLabel}
+        cancelLabel={AppModalDefaults.cancelLabel}
         onConfirm={() => {
           closeModal();
           handleLogout();
@@ -107,6 +108,7 @@ export function AccountSection() {
         title={WITHDRAW_MODAL.title(partnerName)}
         description={WITHDRAW_MODAL.description(partnerName)}
         confirmLabel={WITHDRAW_MODAL.confirmLabel}
+        cancelLabel={AppModalDefaults.cancelLabel}
         onConfirm={() => {
           closeModal();
           handleWithdraw();

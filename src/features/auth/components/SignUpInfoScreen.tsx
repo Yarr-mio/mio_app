@@ -7,11 +7,13 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { EMPLOYMENT_STATUS_OPTIONS } from '@/constants/signup';
 import {
   EditNicknameLayout,
   InputColors,
   NicknameDuplicateCheckClasses,
   ScreenSpacing,
+  SignupFlowClasses,
   SignupFlowLayout,
   SignupInfoLayout,
 } from '@/constants/theme';
@@ -21,26 +23,28 @@ import {
 } from '@/features/auth/components/NicknameDuplicateCheckButton';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import { useSignupInfoSubmit } from '@/features/auth/hooks/useSignupInfoSubmit';
-import type { UserAgeRange, UserGender } from '@/types/user';
+import type { UserAgeRange, UserEmploymentStatus, UserGender } from '@/types/user';
 import { cn } from '@/utils/cn';
 
 const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_profile.png');
 
 const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
 const SIGNUP_CURRENT_STEP = SignupFlowLayout.infoCurrentStep;
+const STEP_INDICATOR_WRAP = SignupFlowClasses.stepIndicatorWrap;
 const PROFILE_IMAGE_SIZE = EditNicknameLayout.avatarSize;
 const NICKNAME_MAX_LENGTH = SignupInfoLayout.nicknameMaxLength;
 const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
 const NICKNAME_HINT_DEFAULT = `닉네임은 ${NICKNAME_MIN_LENGTH}자 이상, 최대 ${NICKNAME_MAX_LENGTH}자까지 가능해요`;
 const NICKNAME_HINT_DUPLICATE = '중복된 닉네임입니다';
 
-type GenderOption = UserGender | 'none';
+type GenderOption = UserGender;
 type AgeOption = UserAgeRange;
+type EmploymentOption = UserEmploymentStatus;
 
 const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
   { value: 'female', label: '여성' },
   { value: 'male', label: '남성' },
-  { value: 'none', label: '선택 안 함' },
+  { value: 'other', label: '선택 안 함' },
 ];
 
 const AGE_OPTIONS: { value: AgeOption; label: string }[] = [
@@ -48,6 +52,10 @@ const AGE_OPTIONS: { value: AgeOption; label: string }[] = [
   { value: '20s', label: '20대' },
   { value: '30s', label: '30대' },
   { value: '40s', label: '40대+' },
+];
+
+const EMPLOYMENT_OPTIONS: { value: EmploymentOption; label: string }[] = [
+  ...EMPLOYMENT_STATUS_OPTIONS,
 ];
 
 interface SelectionChipProps {
@@ -106,6 +114,7 @@ export default function SignUpInfoScreen() {
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [gender, setGender] = useState<GenderOption | null>(null);
   const [age, setAge] = useState<AgeOption | null>(null);
+  const [employmentStatus, setEmploymentStatus] = useState<EmploymentOption | null>(null);
   const [duplicateCheckStatus, setDuplicateCheckStatus] =
     useState<NicknameDuplicateCheckStatus>('idle');
 
@@ -139,11 +148,11 @@ export default function SignUpInfoScreen() {
       return;
     }
 
-    const normalizedGender = gender === 'none' ? null : gender;
     const result = await submit({
       nickname: trimmedNickname,
-      gender: normalizedGender,
+      gender,
       ageRange: age,
+      employmentStatus,
     });
 
     if (result?.conflict) {
@@ -155,7 +164,7 @@ export default function SignUpInfoScreen() {
     <View className="flex-1 bg-midnight">
       <AuthBackground />
       <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
-        <View className="pt-4 mt-6">
+        <View className={STEP_INDICATOR_WRAP}>
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
@@ -230,6 +239,22 @@ export default function SignUpInfoScreen() {
                 </ThemedText>
               )}
             </View>
+
+            <SelectableField label="직업 (선택)">
+              <View className="flex-row flex-wrap justify-start gap-2">
+                {EMPLOYMENT_OPTIONS.map((option) => (
+                  <SelectionChip
+                    key={option.value}
+                    label={option.label}
+                    selected={employmentStatus === option.value}
+                    onPress={() => {
+                      clearErrors();
+                      setEmploymentStatus((prev) => (prev === option.value ? null : option.value));
+                    }}
+                  />
+                ))}
+              </View>
+            </SelectableField>
 
             <SelectableField label="성별 (선택)">
               <View className="flex-row flex-wrap justify-start gap-2">

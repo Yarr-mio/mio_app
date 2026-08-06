@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -8,16 +9,25 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import { LEGAL_DOCUMENT_IDS } from '@/constants/legalDocuments';
+import { AUTH_ROUTES } from '@/constants/routes';
 import {
   FgColors,
   HeaderLayout,
   HomeLayout,
   PressableConfig,
   ScreenSpacing,
+  SignupFlowClasses,
   SignupFlowLayout,
   TermsOfServiceClasses,
 } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
+import {
+  INITIAL_CHECKED_STATE,
+  REQUIRED_TERM_IDS,
+  TERM_ITEMS,
+  TERMS_OF_SERVICE_COPY,
+} from '@/features/auth/constants/termsOfService';
 import { useTermsOfServiceSubmit } from '@/features/auth/hooks/useTermsOfServiceSubmit';
 import { type TermConsentId } from '@/features/auth/utils/buildSignupConsents';
 import { cn } from '@/utils/cn';
@@ -25,30 +35,7 @@ import { cn } from '@/utils/cn';
 const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
 const SIGNUP_CURRENT_STEP = SignupFlowLayout.termsCurrentStep;
 const AGREEMENT_CARD_HEIGHT = TermsOfServiceClasses.agreementCardHeight;
-
-interface TermItem {
-  id: TermConsentId;
-  label: string;
-  required: boolean;
-}
-
-const TERM_ITEMS: TermItem[] = [
-  { id: 'age', label: '만 14세 이상 확인', required: true },
-  { id: 'service', label: '서비스 이용약관', required: true },
-  { id: 'privacy', label: '개인정보 처리방침', required: true },
-  { id: 'sensitive', label: '민감정보 수집 및 이용', required: true },
-  { id: 'marketing', label: '마케팅 정보 수신 동의', required: false },
-];
-
-const REQUIRED_TERM_IDS = TERM_ITEMS.filter((item) => item.required).map((item) => item.id);
-
-const INITIAL_CHECKED_STATE: Record<TermConsentId, boolean> = {
-  age: false,
-  service: false,
-  privacy: false,
-  sensitive: false,
-  marketing: false,
-};
+const STEP_INDICATOR_WRAP = SignupFlowClasses.stepIndicatorWrap;
 
 interface AgreementTabProps {
   selected: boolean;
@@ -97,11 +84,19 @@ interface AgreementRowProps {
   label: string;
   required: boolean;
   checked: boolean;
+  hasDetail: boolean;
   onToggle: () => void;
   onDetailPress?: () => void;
 }
 
-function AgreementRow({ label, required, checked, onToggle, onDetailPress }: AgreementRowProps) {
+function AgreementRow({
+  label,
+  required,
+  checked,
+  hasDetail,
+  onToggle,
+  onDetailPress,
+}: AgreementRowProps) {
   return (
     <View className={cn('flex-row items-center gap-3 px-4', AGREEMENT_CARD_HEIGHT)}>
       <Pressable
@@ -115,26 +110,29 @@ function AgreementRow({ label, required, checked, onToggle, onDetailPress }: Agr
           {label}
         </ThemedText>
         <ThemedText type="small" className="text-badge">
-          {required ? '[필수]' : '[선택]'}
+          {required ? TERMS_OF_SERVICE_COPY.requiredBadge : TERMS_OF_SERVICE_COPY.optionalBadge}
         </ThemedText>
       </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${label} 상세 보기`}
-        hitSlop={PressableConfig.hitSlop}
-        onPress={onDetailPress}
-      >
-        <Ionicons
-          name="chevron-forward"
-          size={HeaderLayout.backHeaderIconSize}
-          color={FgColors.muted}
-        />
-      </Pressable>
+      {hasDetail ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${label} 상세 보기`}
+          hitSlop={PressableConfig.hitSlop}
+          onPress={onDetailPress}
+        >
+          <Ionicons
+            name="chevron-forward"
+            size={HeaderLayout.backHeaderIconSize}
+            color={FgColors.muted}
+          />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
 
 export default function TermsOfServiceScreen() {
+  const router = useRouter();
   const { submit, isPending, error, clearError } = useTermsOfServiceSubmit();
   const [checkedState, setCheckedState] = useState(INITIAL_CHECKED_STATE);
 
@@ -169,20 +167,38 @@ export default function TermsOfServiceScreen() {
     void submit(checkedState);
   };
 
+  const handleDetailPress = (item: (typeof TERM_ITEMS)[number]) => {
+    if (!item.documentId) {
+      return;
+    }
+
+    router.push({
+      pathname: AUTH_ROUTES.signupLegalDocument,
+      params: { documentId: item.documentId },
+    });
+  };
+
+  const handlePrivacyPolicyPress = () => {
+    router.push({
+      pathname: AUTH_ROUTES.signupLegalDocument,
+      params: { documentId: LEGAL_DOCUMENT_IDS.privacyPolicy },
+    });
+  };
+
   return (
     <View className="flex-1 bg-midnight">
       <AuthBackground />
       <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
-        <View className="pt-4 mt-6">
+        <View className={STEP_INDICATOR_WRAP}>
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
         <View className="mt-12">
           <ThemedText type="title" className="text-fg">
-            먼저 약관에{'\n'}동의해 주세요
+            {TERMS_OF_SERVICE_COPY.pageTitle}
           </ThemedText>
           <ThemedText type="subtitle" className="mt-3 text-subtitle">
-            MIO를 안전하게 이용하기 위한 약관이에요
+            {TERMS_OF_SERVICE_COPY.pageSubtitle}
           </ThemedText>
         </View>
 
@@ -196,32 +212,46 @@ export default function TermsOfServiceScreen() {
             >
               <AgreementCheckbox checked={isAgreeAllChecked} />
               <ThemedText type="smallTitle" className="text-fg-high">
-                전체 동의하기
+                {TERMS_OF_SERVICE_COPY.agreeAllLabel}
               </ThemedText>
             </Pressable>
           </AgreementTab>
 
-          <View className="mt-4 gap-2">
+          <View className={TermsOfServiceClasses.termList}>
             {TERM_ITEMS.map((item) => (
               <AgreementTab key={item.id} selected={checkedState[item.id]} className="px-4">
                 <AgreementRow
                   label={item.label}
                   required={item.required}
                   checked={checkedState[item.id]}
+                  hasDetail={item.hasDetail}
                   onToggle={() => handleToggleTerm(item.id)}
-                  onDetailPress={() => {
-                    // 약관 상세 화면 이동 나중에 추가
-                  }}
+                  onDetailPress={item.hasDetail ? () => handleDetailPress(item) : undefined}
                 />
               </AgreementTab>
             ))}
           </View>
         </View>
 
-        <View className="mt-auto pt-8 gap-2">
-          {error ? <ErrorState message={error} /> : null}
+        <View className={TermsOfServiceClasses.footer}>
+          {error ? (
+            <View className={TermsOfServiceClasses.footerError}>
+              <ErrorState message={error} />
+            </View>
+          ) : null}
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={TERMS_OF_SERVICE_COPY.privacyPolicyLinkLabel}
+            onPress={handlePrivacyPolicyPress}
+            hitSlop={PressableConfig.hitSlop}
+            className={TermsOfServiceClasses.privacyPolicyLink}
+          >
+            <ThemedText type="smallRegular" className={TermsOfServiceClasses.privacyPolicyLinkText}>
+              {TERMS_OF_SERVICE_COPY.privacyPolicyLinkLabel}
+            </ThemedText>
+          </Pressable>
           <Button disabled={!requiredChecked || isPending} onPress={handleContinue}>
-            동의하고 계속하기
+            {TERMS_OF_SERVICE_COPY.continueLabel}
           </Button>
         </View>
       </ScreenContainer>

@@ -1,22 +1,24 @@
 import type { AgeRange, AuthSignupProfileRequest, Gender } from '@/types/auth';
-import type { UserAgeRange, UserGender } from '@/types/user';
+import type { UserAgeRange, UserEmploymentStatus, UserGender } from '@/types/user';
 
 const USER_AGE_TO_API: Record<UserAgeRange, AgeRange> = {
   '10s': '10대',
   '20s': '20대',
   '30s': '30대',
-  '40s': '40대',
+  '40s': '40대+',
 };
 
 const USER_GENDER_TO_API: Record<UserGender, Gender> = {
   female: 'female',
   male: 'male',
+  other: 'other',
 };
 
 interface SignupProfileFormInput {
   nickname: string;
   gender: UserGender | null;
   ageRange: UserAgeRange | null;
+  employmentStatus: UserEmploymentStatus | null;
 }
 
 export function mapSignupProfileInput(input: SignupProfileFormInput): AuthSignupProfileRequest {
@@ -28,6 +30,10 @@ export function mapSignupProfileInput(input: SignupProfileFormInput): AuthSignup
 
   if (input.gender) {
     body.gender = USER_GENDER_TO_API[input.gender];
+  }
+
+  if (input.employmentStatus) {
+    body.employment_status = input.employmentStatus;
   }
 
   return body;

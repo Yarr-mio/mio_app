@@ -47,6 +47,7 @@ function CardHeaderLink({ label, onPress }: CardHeaderLinkProps) {
 
 export interface HomeCardShellProps extends PropsWithChildren {
   title: string;
+  titleCount?: number;
   titleTextType?: ThemedTextType;
   titleClassName?: string;
   headerActionLabel?: string;
@@ -57,6 +58,7 @@ export interface HomeCardShellProps extends PropsWithChildren {
 
 export function HomeCardShell({
   title,
+  titleCount,
   titleTextType = 'smallTitle2',
   titleClassName,
   headerActionLabel,
@@ -66,13 +68,26 @@ export function HomeCardShell({
   children,
 }: HomeCardShellProps) {
   const showHeaderAction = Boolean(headerActionLabel);
+  const accessibilityLabel = titleCount == null ? title : `${title} ${titleCount}`;
 
   return (
     <View className={HomeCardClasses.container}>
       <View className={cn('flex-row items-center justify-between', headerContainerClassName)}>
-        <ThemedText type={titleTextType} className={cn('text-fg-default', titleClassName)}>
-          {title}
-        </ThemedText>
+        <View
+          accessible={true}
+          className={HomeCardClasses.titleRow}
+          accessibilityRole="header"
+          accessibilityLabel={accessibilityLabel}
+        >
+          <ThemedText type={titleTextType} className={cn('text-fg-default', titleClassName)}>
+            {title}
+          </ThemedText>
+          {titleCount != null ? (
+            <ThemedText type={titleTextType} className={HomeCardClasses.titleCount}>
+              {titleCount}
+            </ThemedText>
+          ) : null}
+        </View>
         {showHeaderAction ? (
           <CardHeaderLink label={headerActionLabel!} onPress={onHeaderActionPress} />
         ) : null}
