@@ -1,6 +1,6 @@
-import { LegalPlaceholderScreen } from '@/features/mypage/components/legalScreen/LegalPlaceholderScreen';
-import { getLegalInfoLabel } from '@/features/mypage/constants/legalInfo';
+import { LegalDocumentScreen } from '@/components/legal/LegalDocumentScreen';
+import { LEGAL_DOCUMENT_IDS } from '@/constants/legalDocuments';
 
 export function TermsOfServiceLegalScreen() {
-  return <LegalPlaceholderScreen title={getLegalInfoLabel('terms')} />;
+  return <LegalDocumentScreen documentId={LEGAL_DOCUMENT_IDS.terms} />;
 }
