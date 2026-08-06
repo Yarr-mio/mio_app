@@ -1,3 +1,6 @@
+import { PUSH_PERMISSION_TRIGGER } from '@/analytics/events';
+import { trackPushPermissionResultFromCurrentStatus } from '@/analytics/pushPermission';
+import { track } from '@/analytics/track';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
@@ -82,7 +85,11 @@ export function SettingsScreen() {
       try {
         // 권한 실패와 무관하게 설정 PATCH 전송
         if (isEnablingNotificationSettings(params)) {
+          // ⚠️ trigger를 signup_flow와 나누지 않으면 퍼널 5행 분모가 설정 재동의로 부푼다(감사 M-1)
+          track('push_permission_prompted', { trigger: PUSH_PERMISSION_TRIGGER.settings });
           await ensureReady();
+          // 기다리지 않는다 — 계측이 설정 PATCH 전송 순서에 끼어들면 안 된다
+          trackPushPermissionResultFromCurrentStatus(PUSH_PERMISSION_TRIGGER.settings);
         }
 
         await updateNotificationSettings(params);

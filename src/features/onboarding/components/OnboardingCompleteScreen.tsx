@@ -1,3 +1,6 @@
+import { PUSH_PERMISSION_TRIGGER } from '@/analytics/events';
+import { trackPushPermissionResultFromCurrentStatus } from '@/analytics/pushPermission';
+import { track } from '@/analytics/track';
 import { NotificationIcon } from '@/assets/icons';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { AuthBackground } from '@/components/themed/AuthBackground';
@@ -15,7 +18,7 @@ import { useOnboardingNotificationLater } from '@/features/onboarding/hooks/useO
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,6 +30,9 @@ export function OnboardingCompleteScreen() {
   const [notificationModalVisible, setNotificationModalVisible] = useState(false);
   const [signupCompleted, setSignupCompleted] = useState(false);
   const [notificationPending, setNotificationPending] = useState(false);
+  // ⚠️ push_permission_prompted는 §3-B dedup 대상이 아니라 뒷단이 중복을 접어 주지 않는다 —
+  // 모달 1회 노출당 정확히 1건이 되도록 컴포넌트에서 가드한다
+  const promptTrackedRef = useRef(false);
   const { ensureReady } = useEnsurePushNotificationReady();
   const { mutateAsync: enableNotificationSettings } = useOnboardingNotificationAgree();
   const { mutateAsync: declineNotificationSettings } = useOnboardingNotificationLater();
@@ -34,6 +40,11 @@ export function OnboardingCompleteScreen() {
     onSuccess: () => {
       setSignupCompleted(true);
       setNotificationModalVisible(true);
+
+      if (!promptTrackedRef.current) {
+        promptTrackedRef.current = true;
+        track('push_permission_prompted', { trigger: PUSH_PERMISSION_TRIGGER.signupFlow });
+      }
     },
   });
 
@@ -57,6 +68,9 @@ export function OnboardingCompleteScreen() {
       try {
         // 권한 요청 및 디바이스 등록
         await ensureReady();
+        // ensureReady가 결과를 삼키므로 권한 상태를 재조회해 granted를 얻는다 (읽기 전용 — 프롬프트 없음).
+        // 기다리지 않는다 — 계측이 알림 설정 저장·홈 이동 순서에 끼어들면 안 된다
+        trackPushPermissionResultFromCurrentStatus(PUSH_PERMISSION_TRIGGER.signupFlow);
         // 알림 설정 전체 활성화
         await enableNotificationSettings();
       } catch (notificationError) {
@@ -73,6 +87,12 @@ export function OnboardingCompleteScreen() {
     if (notificationPending) {
       return;
     }
+
+    // ⚠️ 「나중에」도 결과다. 빠뜨리면 5행 완료율의 분모가 「확인」을 누른 사람으로 줄어 동의율이 부푼다
+    track('push_permission_result', {
+      granted: false,
+      trigger: PUSH_PERMISSION_TRIGGER.signupFlow,
+    });
 
     setNotificationModalVisible(false);
     void declineNotificationSettings()
