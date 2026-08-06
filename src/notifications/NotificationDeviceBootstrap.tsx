@@ -185,6 +185,10 @@ export function NotificationDeviceBootstrap() {
       void (async () => {
         try {
           const granted = await getNotificationPermissionGrantedAsync();
+          if (cancelled) {
+            return;
+          }
+
           const wasGranted = wasPermissionGrantedRef.current;
           wasPermissionGrantedRef.current = granted;
 
@@ -192,8 +196,12 @@ export function NotificationDeviceBootstrap() {
             return;
           }
 
+          if (cancelled) {
+            return;
+          }
+
           const result = await ensurePushNotificationReady({ registerDeviceToken });
-          if (result !== 'ready') {
+          if (cancelled || result !== 'ready') {
             return;
           }
 
