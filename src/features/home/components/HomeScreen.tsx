@@ -8,6 +8,8 @@ import { getPartnerByKey } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
 import {
   HOME_MIND_EXPLORE_COMING_SOON_MODAL,
+  HOME_RECOMMENDED_ACTIONS_TITLE,
+  HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL,
   HOME_SPEECH_BUBBLE_MESSAGES,
   HOME_TITLES,
 } from '@/constants/home';
@@ -150,8 +152,9 @@ export function HomeScreen() {
             </HomeCardShell>
 
             <HomeCardShell
-              title="오늘의 추천 행동"
-              headerActionLabel="전체보기"
+              title={HOME_RECOMMENDED_ACTIONS_TITLE}
+              titleCount={todayTodos?.length}
+              headerActionLabel={HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL}
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
             >

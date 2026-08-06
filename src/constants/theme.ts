@@ -437,6 +437,8 @@ export const HomeSpeechBubbleClasses = {
 export const HomeCardClasses = {
   container: 'rounded-card border border-line bg-surface p-6',
   emptyState: 'min-h-[120px] items-center justify-center',
+  titleRow: 'min-w-0 flex-1 flex-row items-center gap-2',
+  titleCount: 'text-fg-default',
 } as const;
 
 /** NativeWind className — HomeLayout.checkboxSize(20) 등과 함께 유지 */

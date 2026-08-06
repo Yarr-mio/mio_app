@@ -3,6 +3,10 @@ export const HOME_TITLES = {
   notCheckedIn: '오늘의 마음을 꺼내 봐요',
 } as const;
 
+export const HOME_RECOMMENDED_ACTIONS_TITLE = '오늘의 추천 행동';
+
+export const HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL = '전체보기';
+
 // 홈 추천 행동 카드 최대 표시 개수 제한함
 export const HOME_RECOMMENDED_TODO_MAX_COUNT = 3;
 
