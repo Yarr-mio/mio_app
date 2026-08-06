@@ -16,12 +16,13 @@ mio_app/
 │   │   ├── (auth)/                       # 비로그인 접근 그룹
 │   │   │   ├── _layout.tsx
 │   │   │   ├── login.tsx                 # 소셜 로그인
-│   │   │   └── onboarding/
+│   │   │   └── signup/
 │   │   │       ├── _layout.tsx
-│   │   │       ├── step1Emotion.tsx
-│   │   │       ├── step2Concern.tsx
-│   │   │       ├── step3Style.tsx
-│   │   │       └── step4Character.tsx
+│   │   │       ├── termsOfService.tsx
+│   │   │       ├── info.tsx
+│   │   │       ├── character.tsx          # 캐릭터 선택
+│   │   │       ├── complete.tsx          # 가입 완료 환영
+│   │   │       └── legal/
 │   │   │
 │   │   ├── (main)/                       # 로그인 후 탭 그룹
 │   │   │   ├── _layout.tsx               # Bottom Tab Navigator + 탭바 숨김 조건 처리
@@ -52,20 +53,17 @@ mio_app/
 │   │   │
 │   │   ├── auth/
 │   │   │   ├── components/
-│   │   │   │   └── SocialLoginButton.tsx
+│   │   │   │   ├── SocialLoginButton.tsx
+│   │   │   │   ├── CharacterSelectScreen.tsx             # 가입 캐릭터 선택
+│   │   │   │   └── SignUpCompleteScreen.tsx              # 가입 완료 환영 및 알림 동의
 │   │   │   └── hooks/
-│   │   │       └── useAuth.ts            # 로그인/로그아웃 useMutation
-│   │   │
-│   │   ├── onboarding/
-│   │   │   ├── components/
-│   │   │   │   ├── StepEmotionSelect.tsx
-│   │   │   │   ├── StepConcernSelect.tsx
-│   │   │   │   ├── StepStyleSelect.tsx
-│   │   │   │   └── StepCharacterSelect.tsx
-│   │   │   ├── hooks/
-│   │   │   │   └── useOnboarding.ts      # 온보딩 제출 useMutation
-│   │   │   └── store/
-│   │   │       └── onboardingStore.ts    # 스텝별 선택값 (완료 후 초기화)
+│   │   │       ├── useAuth.ts                            # 로그인/로그아웃 useMutation
+│   │   │       ├── useSignupCharacter.ts                 # POST onboarding/character
+│   │   │       ├── useCharacterSelection.ts              # 캐릭터 선택 로컬 상태
+│   │   │       ├── useCharacterSelectSubmit.ts           # 캐릭터 선택 제출
+│   │   │       ├── useSignupCompleteSubmit.ts            # POST auth/signup/complete
+│   │   │       ├── useSignupNotificationAgree.ts         # 알림 동의 설정 ON
+│   │   │       └── useSignupNotificationLater.ts         # 알림 나중에 설정 OFF
 │   │   │
 │   │   ├── home/
 │   │   │   ├── components/
