@@ -2,10 +2,15 @@ import { CheckinSummaryRow } from '@/components/checkin/CheckinSummaryRow';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { HomeReportBackground } from '@/components/themed/HomeReportBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { AppModal } from '@/components/ui/AppModal';
 import { HomeCardShell } from '@/components/ui/HomeCardShell';
 import { getPartnerByKey } from '@/constants/characters';
 import { EMOTION_META } from '@/constants/emotions';
-import { HOME_SPEECH_BUBBLE_MESSAGES, HOME_TITLES } from '@/constants/home';
+import {
+  HOME_MIND_EXPLORE_COMING_SOON_MODAL,
+  HOME_SPEECH_BUBBLE_MESSAGES,
+  HOME_TITLES,
+} from '@/constants/home';
 import { HOME_ROUTES } from '@/constants/routes';
 import {
   ButtonColors,
@@ -19,8 +24,8 @@ import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeRecommendedTodoCheckin } from '@/features/home/hooks/useHomeRecommendedTodoCheckin';
-import { useTodos } from '@/features/todo/hooks/useTodo';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
+import { useTodos } from '@/features/todo/hooks/useTodo';
 import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
 import type { CheckinRecord } from '@/types/checkin';
 import { cn } from '@/utils/cn';
@@ -29,7 +34,7 @@ import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
   if (checkins.length === 0) {
@@ -63,11 +68,16 @@ export function HomeScreen() {
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
     pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
   );
+  const [mindExploreModalVisible, setMindExploreModalVisible] = useState(false);
 
   useFocusEffect(() => {
     setSpeechBubbleMessage(pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES));
     refetchTodayTodos();
   });
+
+  const closeMindExploreModal = () => {
+    setMindExploreModalVisible(false);
+  };
 
   return (
     <View className="flex-1 bg-midnight">
@@ -182,16 +192,31 @@ export function HomeScreen() {
                     새로운 테스트로 나를 더 알아가요
                   </ThemedText>
                 </View>
-                <View className={HomeActionClasses.mindExploreCta}>
+                {/* 마음 탐색 준비중 안내 모달 연결함 */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="테스트 시작"
+                  onPress={() => setMindExploreModalVisible(true)}
+                  className={HomeActionClasses.mindExploreCta}
+                >
                   <ThemedText type="smallBold" className="text-fg-default">
                     테스트 시작
                   </ThemedText>
-                </View>
+                </Pressable>
               </View>
             </View>
           </View>
         </ScrollView>
       </ScreenContainer>
+
+      <AppModal
+        visible={mindExploreModalVisible}
+        onClose={closeMindExploreModal}
+        title={HOME_MIND_EXPLORE_COMING_SOON_MODAL.title}
+        description={HOME_MIND_EXPLORE_COMING_SOON_MODAL.description}
+        confirmLabel={HOME_MIND_EXPLORE_COMING_SOON_MODAL.confirmLabel}
+        onConfirm={closeMindExploreModal}
+      />
     </View>
   );
 }
