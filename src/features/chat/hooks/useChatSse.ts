@@ -1,3 +1,5 @@
+import { commitSentMessage, peekNextMessageIndex } from '@/analytics/chatMessageIndex';
+import { track } from '@/analytics/track';
 import { refreshAccessTokenForNonAxios } from '@/api/client';
 import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
@@ -52,6 +54,9 @@ export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   // 화면 이탈/언마운트 시 진행 중인 스트림을 취소하기 위해 보관
   const abortRef = useRef<AbortController | null>(null);
+  // 이번 턴에 수신한 done 데이터 — chat_message_sent의 대화 품질 4필드 원천.
+  // consumeStream의 반환 계약을 바꾸지 않고 값을 꺼내기 위한 계측 전용 통로다
+  const lastDoneRef = useRef<SseDoneData | null>(null);
   const queryClient = useQueryClient();
 
   // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
@@ -253,6 +258,7 @@ export function useChatSse(sessionId: string | null) {
               break;
             case 'done':
               handleDone(parsed.data as SseDoneData);
+              lastDoneRef.current = parsed.data as SseDoneData;
               receivedDone = true;
               break;
           }
@@ -270,6 +276,14 @@ export function useChatSse(sessionId: string | null) {
   }
 
   async function performSendMessage(currentSessionId: string, content: string) {
+    // 전송 시점에 캡처한다 — done 계열 4필드는 응답 스트림이 끝날 때 도착하므로, 이 턴의 이벤트는
+    // done 수신 / 스트림 종료 / abort 어디로 끝나든 finally에서 정확히 1건만 발행한다.
+    // PR #55의 401 재시도는 while 루프로 이 함수 안쪽에 있어 finally가 메시지당 1회만 실행된다
+    const messageIndex = peekNextMessageIndex(currentSessionId);
+    const charCount = content.length;
+    // 서버가 메시지를 받지 못한 경로에서는 발행하지 않는다 — 발행하면 활성화율이 부푼다
+    let shouldTrackSend = true;
+
     const controller = new AbortController();
     abortRef.current = controller;
     let timedOut = false;
@@ -315,12 +329,14 @@ export function useChatSse(sessionId: string | null) {
                 accessToken = await refreshAccessTokenForNonAxios();
               } catch (refreshError) {
                 authRefreshFailed = true;
+                shouldTrackSend = false;
                 throw refreshError;
               }
               continue;
             }
           }
 
+          shouldTrackSend = false;
           resetStreamingState();
           handleSyncValidationError(res.status, currentSessionId);
           return;
@@ -359,6 +375,24 @@ export function useChatSse(sessionId: string | null) {
       if (abortRef.current === controller) {
         abortRef.current = null;
       }
+
+      if (shouldTrackSend) {
+        commitSentMessage(currentSessionId);
+        // done을 못 받았으면 대화 품질 4필드는 null로 둔다 — 결손을 0/false로 감추지 않는다
+        const doneData = lastDoneRef.current;
+        track('chat_message_sent', {
+          chat_session_id: currentSessionId,
+          message_index: messageIndex,
+          char_count: charCount,
+          ai_emotion_score: doneData?.emotion_score ?? null,
+          is_socratic: doneData?.is_socratic ?? null,
+          cbt_intervention_state: doneData?.cbt_intervention_state ?? null,
+          is_crisis_flagged: doneData?.is_crisis_flagged ?? null,
+        });
+      }
+
+      // 읽은 뒤 비운다 — 다음 턴이 done을 못 받았을 때 이번 턴의 값이 새어 들어가면 안 된다
+      lastDoneRef.current = null;
     }
   }
 

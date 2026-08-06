@@ -1,3 +1,4 @@
+import { track } from '@/analytics/track';
 import { queryKeys } from '@/api/queryKeys';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
@@ -14,7 +15,7 @@ import type { SessionSummaryResponse } from '@/types/chat';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -36,6 +37,8 @@ export function SessionSummary() {
   const sessionId = routeSessionId ?? storeSessionId;
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  // 이미 발행한 세션 id — 폴링·리렌더·재포커스로 두 번 세지 않게 한다
+  const viewTrackedSessionIdRef = useRef<string | null>(null);
 
   const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
   // 직전 세션은 화면에 그리는 대상이 아니라 감정 변화율 계산용 숫자만 필요하다. useSessionSummary로 다시
@@ -75,6 +78,18 @@ export function SessionSummary() {
       router.replace('/(main)/chat');
     }
   }, [sessionId, isFocused]);
+
+  // ⚠️ 발행을 useSessionSummary(폴링 useQuery)에 걸면 요약이 생성될 때까지 한 화면 진입에 수 건이
+  // 나간다. 이 이벤트만 뒷단 중복 제거 대상이 아니라(반복 조회가 곧 값) 부푼 값이 그대로
+  // Core Action 건수로 들어가므로, 화면 포커스 1회 + sessionId별 가드로 못박는다
+  useEffect(() => {
+    if (!isFocused || !sessionId || viewTrackedSessionIdRef.current === sessionId) {
+      return;
+    }
+
+    viewTrackedSessionIdRef.current = sessionId;
+    track('session_summary_viewed', { chat_session_id: sessionId });
+  }, [isFocused, sessionId]);
 
   if (!sessionId) {
     return (

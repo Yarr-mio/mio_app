@@ -1,3 +1,5 @@
+import { REPORT_PERIOD_TO_EVENT_PERIOD } from '@/analytics/events';
+import { track } from '@/analytics/track';
 import { fetchEmotionTrend, fetchMonthlyReport, fetchWeeklyReport } from '@/api/endpoints/report';
 import { queryKeys } from '@/api/queryKeys';
 import {
@@ -21,6 +23,7 @@ import type {
 } from '@/types/report';
 import { getMonthStartIso, getWeekStartIso } from '@/utils/date';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
+import { useIsFocused } from '@react-navigation/native';
 import { keepPreviousData, useQuery, type QueryFunctionContext } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
@@ -170,8 +173,20 @@ interface UseReportResult {
 }
 
 export function useReport({ period, anchorDate }: UseReportOptions): UseReportResult {
+  const isFocused = useIsFocused();
   const weekStart = getWeekStartIso(anchorDate);
   const monthStart = getMonthStartIso(anchorDate);
+
+  // 리포트만 useQuery라 onSuccess 앵커가 없고, 캐시 히트 시엔 네트워크 호출조차 없다.
+  // 그래서 화면 진입과 주간↔월간 전환 시점에 명시 발행한다 (§0 원칙의 유일한 예외 — 대시보드가
+  // period 분포만 읽으므로 허용 가능하다)
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
+    track('report_viewed', { period: REPORT_PERIOD_TO_EVENT_PERIOD[period] });
+  }, [isFocused, period]);
 
   const weeklyQuery = useWeeklyReport(weekStart, { enabled: period === REPORT_PERIOD.week });
   const monthlyQuery = useMonthlyReport(monthStart, { enabled: period === REPORT_PERIOD.month });
