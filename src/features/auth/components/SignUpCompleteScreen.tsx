@@ -8,10 +8,10 @@ import { getOnboardingCharacterById } from '@/constants/characters';
 import { NOTIFICATION_MODAL, NotificationModalColors } from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
+import { useSignupCompleteSubmit } from '@/features/auth/hooks/useSignupCompleteSubmit';
+import { useSignupNotificationAgree } from '@/features/auth/hooks/useSignupNotificationAgree';
+import { useSignupNotificationLater } from '@/features/auth/hooks/useSignupNotificationLater';
 import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
-import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
-import { useOnboardingNotificationAgree } from '@/features/onboarding/hooks/useOnboardingNotificationAgree';
-import { useOnboardingNotificationLater } from '@/features/onboarding/hooks/useOnboardingNotificationLater';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -19,7 +19,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function OnboardingCompleteScreen() {
+export function SignUpCompleteScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const characterId = useSelectedCharacterId();
@@ -28,9 +28,9 @@ export function OnboardingCompleteScreen() {
   const [signupCompleted, setSignupCompleted] = useState(false);
   const [notificationPending, setNotificationPending] = useState(false);
   const { ensureReady } = useEnsurePushNotificationReady();
-  const { mutateAsync: enableNotificationSettings } = useOnboardingNotificationAgree();
-  const { mutateAsync: declineNotificationSettings } = useOnboardingNotificationLater();
-  const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit({
+  const { mutateAsync: enableNotificationSettings } = useSignupNotificationAgree();
+  const { mutateAsync: declineNotificationSettings } = useSignupNotificationLater();
+  const { submit, isPending, error, clearError } = useSignupCompleteSubmit({
     onSuccess: () => {
       setSignupCompleted(true);
       setNotificationModalVisible(true);
@@ -60,7 +60,7 @@ export function OnboardingCompleteScreen() {
         // 알림 설정 전체 활성화
         await enableNotificationSettings();
       } catch (notificationError) {
-        console.warn('[OnboardingCompleteNotification]', notificationError);
+        console.warn('[SignUpCompleteNotification]', notificationError);
       } finally {
         setNotificationPending(false);
         setNotificationModalVisible(false);

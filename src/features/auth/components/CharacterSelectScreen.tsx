@@ -22,8 +22,8 @@ import {
   SignupFlowLayout,
 } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
-import { useOnboardingStep4Submit } from '@/features/onboarding/hooks/useOnboardingStep4Submit';
+import { useCharacterSelectSubmit } from '@/features/auth/hooks/useCharacterSelectSubmit';
+import { useCharacterSelection } from '@/features/auth/hooks/useCharacterSelection';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -127,9 +127,9 @@ function FloatingNextCta({ error, isPending, onPress }: FloatingNextCtaProps) {
   );
 }
 
-export function Step4CharacterScreen() {
-  const { character_id, setCharacterId } = useOnboardingSelection();
-  const { submit, isPending, error, clearError } = useOnboardingStep4Submit();
+export function CharacterSelectScreen() {
+  const { character_id, setCharacterId } = useCharacterSelection();
+  const { submit, isPending, error, clearError } = useCharacterSelectSubmit();
   const isCharacterSelected = character_id !== null;
 
   const handleSelectCharacter = (id: OnboardingCharacterId) => {

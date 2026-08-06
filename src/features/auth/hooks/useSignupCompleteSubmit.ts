@@ -5,13 +5,13 @@ import { AUTH_ROUTES } from '@/constants/routes';
 import { useSignupComplete } from '@/features/auth/hooks/useAuth';
 import { readApiErrorMessage } from '@/utils/readApiError';
 
-const ONBOARDING_COMPLETE_ERROR_MESSAGE = '가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
+const SIGNUP_COMPLETE_ERROR_MESSAGE = '가입 완료 처리에 실패했습니다. 다시 시도해 주세요.';
 
-interface UseOnboardingCompleteSubmitOptions {
+interface UseSignupCompleteSubmitOptions {
   onSuccess?: () => void | Promise<void>;
 }
 
-export function useOnboardingCompleteSubmit(options: UseOnboardingCompleteSubmitOptions = {}) {
+export function useSignupCompleteSubmit(options: UseSignupCompleteSubmitOptions = {}) {
   const router = useRouter();
   const signupComplete = useSignupComplete();
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function useOnboardingCompleteSubmit(options: UseOnboardingCompleteSubmit
 
       router.replace(AUTH_ROUTES.home);
     } catch (submitError) {
-      setError(readApiErrorMessage(submitError, ONBOARDING_COMPLETE_ERROR_MESSAGE));
+      setError(readApiErrorMessage(submitError, SIGNUP_COMPLETE_ERROR_MESSAGE));
     }
   };
 

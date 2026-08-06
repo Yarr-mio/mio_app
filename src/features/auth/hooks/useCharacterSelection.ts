@@ -1,7 +1,7 @@
 import type { OnboardingCharacterId } from '@/constants/characters';
 import { useUserStore } from '@/store/userStore';
 
-export function useOnboardingSelection() {
+export function useCharacterSelection() {
   const onboardingResult = useUserStore((state) => state.onboardingResult);
   const patchOnboardingCharacterId = useUserStore((state) => state.patchOnboardingCharacterId);
   const clearOnboardingCharacterId = useUserStore((state) => state.clearOnboardingCharacterId);
