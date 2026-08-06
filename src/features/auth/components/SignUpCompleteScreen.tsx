@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { NOTIFICATION_MODAL, NotificationModalColors } from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
+import { SIGNUP_COMPLETE_COPY } from '@/constants/signup';
 import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
 import { useSignupCompleteSubmit } from '@/features/auth/hooks/useSignupCompleteSubmit';
 import { useSignupNotificationAgree } from '@/features/auth/hooks/useSignupNotificationAgree';
@@ -98,10 +99,10 @@ export function SignUpCompleteScreen() {
         <View className="flex-1">
           <View className="mt-10">
             <ThemedText type="subtitle" className="text-fg">
-              반가워요!
+              {SIGNUP_COMPLETE_COPY.greeting}
             </ThemedText>
             <ThemedText type="title" className="mt-2 text-fg">
-              {character.name}와 함께{'\n'}여정을 떠나 볼까요?
+              {SIGNUP_COMPLETE_COPY.title(character.name)}
             </ThemedText>
           </View>
 
@@ -128,7 +129,7 @@ export function SignUpCompleteScreen() {
         <View className="pt-4 gap-2">
           {error ? <ErrorState message={error} /> : null}
           <Button disabled={isPending} onPress={handleStart}>
-            {character.name}와 시작하기
+            {SIGNUP_COMPLETE_COPY.startButton(character.name)}
           </Button>
         </View>
       </View>

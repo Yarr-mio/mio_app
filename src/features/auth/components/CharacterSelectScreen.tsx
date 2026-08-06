@@ -11,6 +11,7 @@ import {
   ONBOARDING_STEP4_SUBTITLE,
   type OnboardingCharacterId,
 } from '@/constants/characters';
+import { SIGNUP_NEXT_BUTTON_LABEL } from '@/constants/signup';
 import {
   CharacterSelectFloatingCtaClasses,
   CharacterSelectFloatingCtaLayout,
@@ -121,7 +122,7 @@ function FloatingNextCta({ error, isPending, onPress }: FloatingNextCtaProps) {
     >
       {error ? <ErrorState message={error} /> : null}
       <Button disabled={isPending} onPress={onPress} loading={isPending}>
-        다음
+        {SIGNUP_NEXT_BUTTON_LABEL}
       </Button>
     </Animated.View>
   );
