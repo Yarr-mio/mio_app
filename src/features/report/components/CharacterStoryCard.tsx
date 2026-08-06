@@ -5,11 +5,11 @@ import { getOnboardingCharacterById, type OnboardingCharacterId } from '@/consta
 import {
   CHARACTER_STORY_A11Y_COLLAPSE,
   CHARACTER_STORY_A11Y_EXPAND,
+  CHARACTER_STORY_BODY_SEPARATOR,
   CHARACTER_STORY_COLLAPSE_LABEL,
   CHARACTER_STORY_PERIOD_WEEKLY,
   CHARACTER_STORY_READ_MORE_INLINE_LABEL,
   CHARACTER_STORY_READ_MORE_MIN_LENGTH,
-  CHARACTER_STORY_TRUNCATE_ELLIPSIS,
   formatCharacterStoryCardTitle,
   type CharacterStoryPeriod,
 } from '@/constants/report';
@@ -24,6 +24,7 @@ import {
   formatCharacterStoryMonthlyDateLabel,
   formatCharacterStoryWeeklyDateLabel,
 } from '@/utils/date';
+import { getCharacterStoryCollapsedPreview, getCharacterStoryContentLength } from '@/utils/report';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -33,6 +34,45 @@ interface CharacterStoryCardProps {
   characterId: OnboardingCharacterId;
   storyText: string;
   coachingDirection?: string | null;
+}
+
+interface StoryBodyContentProps {
+  storyPortion: string;
+  coachingPortion: string | null;
+  showSeparator: boolean;
+  readMoreLabel?: string;
+  onReadMorePress?: () => void;
+}
+
+function StoryBodyContent({
+  storyPortion,
+  coachingPortion,
+  showSeparator,
+  readMoreLabel,
+  onReadMorePress,
+}: StoryBodyContentProps) {
+  return (
+    <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
+      {storyPortion}
+      {showSeparator && coachingPortion ? CHARACTER_STORY_BODY_SEPARATOR : null}
+      {coachingPortion ? (
+        <ThemedText type="smallBold" className={ReportTextClasses.coachingDirection}>
+          {coachingPortion}
+        </ThemedText>
+      ) : null}
+      {readMoreLabel && onReadMorePress ? (
+        <ThemedText
+          type="small"
+          className={ReportTextClasses.characterStoryReadMore}
+          onPress={onReadMorePress}
+          accessibilityRole="button"
+          accessibilityLabel={CHARACTER_STORY_A11Y_EXPAND}
+        >
+          {readMoreLabel}
+        </ThemedText>
+      ) : null}
+    </ThemedText>
+  );
 }
 
 export function CharacterStoryCard({
@@ -50,9 +90,12 @@ export function CharacterStoryCard({
     period === CHARACTER_STORY_PERIOD_WEEKLY
       ? formatCharacterStoryWeeklyDateLabel(anchorDate)
       : formatCharacterStoryMonthlyDateLabel(anchorDate);
-  const isStoryLongEnough = storyText.length > CHARACTER_STORY_READ_MORE_MIN_LENGTH;
-  const collapsedStoryText = storyText.slice(0, CHARACTER_STORY_READ_MORE_MIN_LENGTH);
-  const showCollapse = expanded && isStoryLongEnough;
+
+  // 이야기와 코칭 방향 문자 수 합으로 접기 여부 판단
+  const contentLength = getCharacterStoryContentLength(storyText, coachingDirection);
+  const isContentLongEnough = contentLength > CHARACTER_STORY_READ_MORE_MIN_LENGTH;
+  const showCollapse = expanded && isContentLongEnough;
+  const hasCoachingDirection = Boolean(coachingDirection);
 
   const handleReadMorePress = () => {
     setExpanded(true);
@@ -62,55 +105,27 @@ export function CharacterStoryCard({
     setExpanded(false);
   };
 
-  const renderInlineCoachingDirection = (hasLeadingText: boolean) => {
-    if (!coachingDirection) {
-      return null;
-    }
-
-    return (
-      <>
-        {hasLeadingText ? ' ' : null}
-        <ThemedText type="smallBold" className={ReportTextClasses.coachingDirection}>
-          {coachingDirection}
-        </ThemedText>
-      </>
-    );
-  };
-
   const renderStoryBody = () => {
-    if (expanded) {
+    if (expanded || !isContentLongEnough) {
       return (
-        <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
-          {storyText}
-          {renderInlineCoachingDirection(storyText.length > 0)}
-        </ThemedText>
+        <StoryBodyContent
+          storyPortion={storyText}
+          coachingPortion={hasCoachingDirection ? (coachingDirection ?? null) : null}
+          showSeparator={storyText.length > 0 && hasCoachingDirection}
+        />
       );
     }
 
-    if (isStoryLongEnough) {
-      return (
-        <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
-          {collapsedStoryText}
-          {CHARACTER_STORY_TRUNCATE_ELLIPSIS}{' '}
-          <ThemedText
-            type="small"
-            className={ReportTextClasses.characterStoryReadMore}
-            onPress={handleReadMorePress}
-            accessibilityRole="button"
-            accessibilityLabel={CHARACTER_STORY_A11Y_EXPAND}
-          >
-            {CHARACTER_STORY_READ_MORE_INLINE_LABEL}
-          </ThemedText>
-          {renderInlineCoachingDirection(true)}
-        </ThemedText>
-      );
-    }
+    const collapsedPreview = getCharacterStoryCollapsedPreview(storyText, coachingDirection);
 
     return (
-      <ThemedText type="small" className={ReportCharacterStoryClasses.storyText}>
-        {storyText}
-        {renderInlineCoachingDirection(storyText.length > 0)}
-      </ThemedText>
+      <StoryBodyContent
+        storyPortion={collapsedPreview.storyPortion}
+        coachingPortion={collapsedPreview.coachingPortion}
+        showSeparator={collapsedPreview.showSeparator}
+        readMoreLabel={CHARACTER_STORY_READ_MORE_INLINE_LABEL}
+        onReadMorePress={handleReadMorePress}
+      />
     );
   };
 

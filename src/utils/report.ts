@@ -1,4 +1,5 @@
 import {
+  CHARACTER_STORY_READ_MORE_MIN_LENGTH,
   REPORT_MONTH_WEEK_LABELS,
   REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES,
   REPORT_PERIOD,
@@ -8,6 +9,53 @@ import {
 import type { ConstellationChartPoint, EmotionTrendPoint } from '@/types/report';
 import { DAYS_PER_WEEK, getMonthRange, getWeekRange, MS_PER_DAY, toKstDate } from '@/utils/date';
 import { addDays, format, getDate, parseISO } from 'date-fns';
+
+export interface CharacterStoryCollapsedPreview {
+  storyPortion: string;
+  coachingPortion: string | null;
+  showSeparator: boolean;
+}
+
+/** 이야기와 코칭 방향의 문자 수 합 반환 */
+export function getCharacterStoryContentLength(
+  storyText: string,
+  coachingDirection: string | null | undefined
+): number {
+  return storyText.length + (coachingDirection?.length ?? 0);
+}
+
+/** 접힌 상태에서 보여줄 이야기와 코칭 방향 일부 계산 */
+export function getCharacterStoryCollapsedPreview(
+  storyText: string,
+  coachingDirection: string | null | undefined,
+  maxLength: number = CHARACTER_STORY_READ_MORE_MIN_LENGTH
+): CharacterStoryCollapsedPreview {
+  const coaching = coachingDirection ?? '';
+
+  if (storyText.length >= maxLength) {
+    return {
+      storyPortion: storyText.slice(0, maxLength),
+      coachingPortion: null,
+      showSeparator: false,
+    };
+  }
+
+  if (coaching.length === 0) {
+    return {
+      storyPortion: storyText,
+      coachingPortion: null,
+      showSeparator: false,
+    };
+  }
+
+  const remaining = maxLength - storyText.length;
+
+  return {
+    storyPortion: storyText,
+    coachingPortion: coaching.slice(0, remaining),
+    showSeparator: storyText.length > 0,
+  };
+}
 
 function getMonthlyWeekBucketIndex(dayOfMonth: number): number {
   if (dayOfMonth <= REPORT_MONTHLY_WEEK_BUCKET_BOUNDARIES[0]) {
