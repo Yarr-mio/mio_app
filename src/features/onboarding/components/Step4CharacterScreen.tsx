@@ -4,16 +4,13 @@ import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/Label';
-import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import {
   getOnboardingCharacterById,
   ONBOARDING_ALL_CHARACTER_IDS,
   ONBOARDING_STEP4_ALL_TITLE,
-  ONBOARDING_STEP4_SEE_MORE_LABEL,
   ONBOARDING_STEP4_SUBTITLE,
   type OnboardingCharacterId,
 } from '@/constants/characters';
-import type { OnboardingStyleType } from '@/constants/onboarding';
 import {
   CharacterSelectFloatingCtaClasses,
   CharacterSelectFloatingCtaLayout,
@@ -21,42 +18,27 @@ import {
   OnboardingStyleCardLayout,
   PressableConfig,
   ScreenSpacing,
+  SignupFlowClasses,
   SignupFlowLayout,
 } from '@/constants/theme';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
-import { OnboardingSkipButton } from '@/features/onboarding/components/OnboardingSkipButton';
-import { useOnboardingCharacterRecommendations } from '@/features/onboarding/hooks/useOnboardingCharacterRecommendations';
 import { useOnboardingSelection } from '@/features/onboarding/hooks/useOnboardingSelection';
 import { useOnboardingStep4Submit } from '@/features/onboarding/hooks/useOnboardingStep4Submit';
 import { cn } from '@/utils/cn';
 import { Image, type ImageSource } from 'expo-image';
-import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
 const SIGNUP_CURRENT_STEP = SignupFlowLayout.characterCurrentStep;
+const STEP_INDICATOR_WRAP = SignupFlowClasses.stepIndicatorWrap;
 const FLOATING_CTA_ENTER_MS = CharacterSelectFloatingCtaLayout.enterDurationMs;
 const FLOATING_CTA_EXIT_MS = CharacterSelectFloatingCtaLayout.exitDurationMs;
 const LIST_BOTTOM_PADDING = CharacterSelectFloatingCtaLayout.listBottomPadding;
 const LIST_BOTTOM_PADDING_WITH_CTA = CharacterSelectFloatingCtaLayout.scrollBottomPaddingWithCta;
 const FLOATING_CTA_BOTTOM_EXTRA = CharacterSelectFloatingCtaLayout.bottomOffsetExtra;
 const FLOATING_CTA_HORIZONTAL_INSET = CharacterSelectFloatingCtaLayout.horizontalInset;
-
-interface SeeMoreCharactersButtonProps {
-  onPress: () => void;
-}
-
-function SeeMoreCharactersButton({ onPress }: SeeMoreCharactersButtonProps) {
-  return (
-    <OnboardingSkipButton
-      label={`${ONBOARDING_STEP4_SEE_MORE_LABEL} >`}
-      onPress={onPress}
-      className={CharacterSelectFloatingCtaClasses.seeMoreButton}
-    />
-  );
-}
 
 interface CharacterOptionCardProps {
   name: string;
@@ -146,27 +128,14 @@ function FloatingNextCta({ error, isPending, onPress }: FloatingNextCtaProps) {
 }
 
 export function Step4CharacterScreen() {
-  const { preferred_style, character_id, setCharacterId } = useOnboardingSelection();
+  const { character_id, setCharacterId } = useOnboardingSelection();
   const { submit, isPending, error, clearError } = useOnboardingStep4Submit();
-  // QnA 생략 시 전체 캐릭터 목록 표시
-  const [showAllCharacters, setShowAllCharacters] = useState(true);
-
-  const selectedStyle = preferred_style as OnboardingStyleType | null;
-  const { recommendedIds, isStatusLoading } = useOnboardingCharacterRecommendations(selectedStyle);
-  const displayCharacterIds: OnboardingCharacterId[] = showAllCharacters
-    ? ONBOARDING_ALL_CHARACTER_IDS
-    : recommendedIds;
-
   const isCharacterSelected = character_id !== null;
 
   const handleSelectCharacter = (id: OnboardingCharacterId) => {
     clearError();
     // 동일 카드 재선택 시 선택 해제
     setCharacterId(character_id === id ? null : id);
-  };
-
-  const handleSeeMore = () => {
-    setShowAllCharacters(true);
   };
 
   const handleNext = () => {
@@ -184,7 +153,7 @@ export function Step4CharacterScreen() {
         className={CharacterSelectFloatingCtaClasses.screenContainer}
         bottomInsetMin={ScreenSpacing.bottomInsetMin}
       >
-        <View className={CharacterSelectFloatingCtaClasses.stepIndicatorWrap}>
+        <View className={STEP_INDICATOR_WRAP}>
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
@@ -207,7 +176,7 @@ export function Step4CharacterScreen() {
           </View>
 
           <View className={CharacterSelectFloatingCtaClasses.listWrap}>
-            {displayCharacterIds.map((id) => {
+            {ONBOARDING_ALL_CHARACTER_IDS.map((id) => {
               const character = getOnboardingCharacterById(id);
 
               return (
@@ -223,15 +192,12 @@ export function Step4CharacterScreen() {
               );
             })}
           </View>
-
-          {!showAllCharacters ? <SeeMoreCharactersButton onPress={handleSeeMore} /> : null}
         </ScrollView>
 
         {isCharacterSelected ? (
           <FloatingNextCta error={error} isPending={isPending} onPress={handleNext} />
         ) : null}
       </ScreenContainer>
-      <LoadingOverlay visible={!showAllCharacters && isStatusLoading} />
     </View>
   );
 }

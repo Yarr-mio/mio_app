@@ -1,4 +1,3 @@
-import type { OnboardingStyleType } from '@/constants/onboarding';
 import type { ImageSource } from 'expo-image';
 import type { ImageSourcePropType } from 'react-native';
 
@@ -87,24 +86,8 @@ export const ONBOARDING_ALL_CHARACTER_IDS: OnboardingCharacterId[] = [
   'chichi',
 ];
 
-/**
- * preferred_style별 추천 캐릭터 id (최대 3명)
- */
-export const ONBOARDING_CHARACTER_RECOMMENDATIONS_BY_STYLE: Record<
-  OnboardingStyleType | 'default',
-  OnboardingCharacterId[]
-> = {
-  empathetic: ['mio', 'momo', 'rumi'],
-  analytical: ['chichi', 'rumi', 'mio'],
-  solution: ['bau', 'mio', 'chichi'],
-  balanced: ['rumi', 'mio', 'momo'],
-  default: ['mio', 'momo', 'rumi'],
-};
-
-export const ONBOARDING_STEP4_RECOMMENDED_TITLE = 'Mio가 당신과 잘 맞을\n친구들을 골랐어요';
 export const ONBOARDING_STEP4_ALL_TITLE = '파트너를 선택해요';
 export const ONBOARDING_STEP4_SUBTITLE = '마음이 끌리는 친구를 선택해 보세요';
-export const ONBOARDING_STEP4_SEE_MORE_LABEL = '다른 친구들도 궁금해요';
 
 const CHARACTER_BY_ID = Object.fromEntries(
   ONBOARDING_CHARACTERS.map((character) => [character.id, character])
