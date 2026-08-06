@@ -53,25 +53,59 @@ mio_app/
 │   │   │
 │   │   ├── auth/
 │   │   │   ├── components/
+│   │   │   │   ├── SplashScreen.tsx
+│   │   │   │   ├── RootAppContent.tsx
+│   │   │   │   ├── LoginScreen.tsx
 │   │   │   │   ├── SocialLoginButton.tsx
+│   │   │   │   ├── TermsOfServiceScreen.tsx
+│   │   │   │   ├── SignUpInfoScreen.tsx
+│   │   │   │   ├── NicknameDuplicateCheckButton.tsx
+│   │   │   │   ├── StepIndicator.tsx
 │   │   │   │   ├── CharacterSelectScreen.tsx             # 가입 캐릭터 선택
 │   │   │   │   └── SignUpCompleteScreen.tsx              # 가입 완료 환영 및 알림 동의
-│   │   │   └── hooks/
-│   │   │       ├── useAuth.ts                            # 로그인/로그아웃 useMutation
-│   │   │       ├── useSignupCharacter.ts                 # POST onboarding/character
-│   │   │       ├── useCharacterSelection.ts              # 캐릭터 선택 로컬 상태
-│   │   │       ├── useCharacterSelectSubmit.ts           # 캐릭터 선택 제출
-│   │   │       ├── useSignupCompleteSubmit.ts            # POST auth/signup/complete
-│   │   │       ├── useSignupNotificationAgree.ts         # 알림 동의 설정 ON
-│   │   │       └── useSignupNotificationLater.ts         # 알림 나중에 설정 OFF
+│   │   │   ├── hooks/
+│   │   │   │   ├── useAuth.ts                            # 로그인/로그아웃 useMutation
+│   │   │   │   ├── useSplashAuth.ts
+│   │   │   │   ├── useKakaoLogin.ts / useAppleLogin.ts
+│   │   │   │   ├── useTermsOfServiceSubmit.ts
+│   │   │   │   ├── useSignupInfoSubmit.ts
+│   │   │   │   ├── useSignupCharacter.ts                 # POST onboarding/character
+│   │   │   │   ├── useCharacterSelection.ts              # 캐릭터 선택 로컬 상태
+│   │   │   │   ├── useCharacterSelectSubmit.ts           # 캐릭터 선택 제출
+│   │   │   │   ├── useSignupCompleteSubmit.ts            # POST auth/signup/complete
+│   │   │   │   ├── useSignupNotificationAgree.ts         # 알림 동의 설정 ON
+│   │   │   │   ├── useSignupNotificationLater.ts         # 알림 나중에 설정 OFF
+│   │   │   │   ├── useHandleSignupStepInvalid.ts
+│   │   │   │   └── useSyncAuthProfileOnForeground.ts
+│   │   │   ├── services/
+│   │   │   │   ├── restoreSession.ts
+│   │   │   │   ├── signupNavigation.ts
+│   │   │   │   ├── appleLoginFlow.ts
+│   │   │   │   └── syncAuthProfileCharacter.ts
+│   │   │   ├── utils/
+│   │   │   │   ├── routeForSignupStep.ts
+│   │   │   │   ├── isCurrentAuthRoute.ts
+│   │   │   │   ├── mapSignupProfileInput.ts
+│   │   │   │   ├── buildSignupConsents.ts
+│   │   │   │   ├── isSignupStepInvalidError.ts
+│   │   │   │   ├── kakaoLogin.ts
+│   │   │   │   └── appleLogin.ts
+│   │   │   └── constants/
+│   │   │       └── termsOfService.ts
 │   │   │
 │   │   ├── home/
 │   │   │   ├── components/
-│   │   │   │   ├── EmotionConstellation.tsx
-│   │   │   │   ├── TodaySummaryCard.tsx
-│   │   │   │   └── TodoList.tsx
+│   │   │   │   ├── HomeScreen.tsx
+│   │   │   │   └── HomeRecommendedActionsList.tsx
+│   │   │   ├── hooks/
+│   │   │   │   └── useHomeRecommendedTodoCheckin.ts
+│   │   │   └── utils/
+│   │   │       └── resolveStableHomeTodoOrder.ts
+│   │   │
+│   │   ├── notifications/
 │   │   │   └── hooks/
-│   │   │       └── useHome.ts            # home-today, constellation, todos
+│   │   │       ├── useEnsurePushNotificationReady.ts     # 권한·토큰·디바이스 등록 오케스트레이션
+│   │   │       └── useNotificationDevice.ts              # POST/DELETE /devices mutation
 │   │   │
 │   │   ├── checkin/
 │   │   │   ├── components/
@@ -168,9 +202,13 @@ mio_app/
 │   ├── store/                            # 앱 전역 클라이언트 상태 (Zustand)
 │   │   └── authStore.ts                  # 토큰, isAuthenticated, isOnboarded (앱 전역 접근)
 │   │
-│   ├── notifications/                    # FCM 푸시 알림 처리
-│   │   ├── fcm.ts                        # 디바이스 토큰 등록/갱신
+│   ├── notifications/                    # FCM 푸시 알림 처리 (순수 로직·부트스트랩)
+│   │   ├── fcm.ts                        # 권한·푸시 토큰 획득
+│   │   ├── ensurePushNotificationReady.ts # 권한 → 토큰 → POST /devices
+│   │   ├── setupNotificationHandler.ts   # 포그라운드 알림 핸들러
 │   │   ├── handleTap.ts                  # 알림 탭 → 딥링크 라우팅
+│   │   ├── NotificationDeviceBootstrap.tsx   # 로그인 시·권한 복귀 시 디바이스 등록
+│   │   ├── NotificationListenersBootstrap.tsx # 알림 수신/탭 리스너
 │   │   └── types.ts                      # 알림 타입 상수 + payload 타입
 │   │
 │   ├── hooks/                            # 앱 전체 공유 훅
@@ -183,22 +221,30 @@ mio_app/
 │   │
 │   ├── constants/
 │   │   ├── theme.ts                      # 색상, 타이포그래피, 간격 (디자인 토큰 기준)
+│   │   ├── config.ts                     # API BASE_URL, 앱 설정값
+│   │   ├── routes.ts                     # AUTH_ROUTES / MAIN_ROUTES 등 경로 상수
+│   │   ├── signup.ts                     # 가입 플로우 카피·고용상태 옵션
 │   │   ├── emotions.ts                   # EmotionType → 이모지·한글 라벨·색상 매핑
 │   │   ├── characters.ts                 # 캐릭터 메타데이터 (mio·bau·rumi·momo·chichi)
-│   │   └── config.ts                     # API BASE_URL, 앱 설정값
+│   │   ├── notifications.ts              # 알림 모달·권한 Alert 카피
+│   │   ├── home.ts                       # 홈 추천 행동 등 홈 상수
+│   │   ├── checkin.ts / todo.ts / report.ts / user.ts / onboarding.ts / fonts.ts
+│   │   └── legalDocuments/               # 약관·개인정보 문서 본문
 │   │
 │   ├── types/                            # 공유 TypeScript 타입
 │   │   ├── auth.ts
-│   │   ├── emotion.ts                    # EmotionType (7종), EmotionMeta
-│   │   ├── chat.ts                       # ChatMessage, MessageType, RestructurePrompt
-│   │   ├── report.ts
-│   │   ├── character.ts                  # CharacterId (5종)
+│   │   ├── user.ts
+│   │   ├── onboarding.ts
+│   │   ├── notification.ts
+│   │   ├── checkin.ts / todo.ts / chat.ts / report.ts / legal.ts
 │   │   └── common.ts                     # ApiResponse<T>, Pagination 등 공통 응답 타입
 │   │
 │   ├── utils/                            # 순수 유틸 함수
-│   │   ├── date.ts                       # date-fns 래퍼
-│   │   ├── storage.ts                    # expo-secure-store 래퍼
-│   │   └── format.ts
+│   │   ├── cn.ts
+│   │   ├── date.ts / time.ts
+│   │   ├── storage.ts / zustandStorage.ts
+│   │   ├── deviceId.ts / appInfo.ts / jwt.ts / base64.ts
+│   │   └── readApiError.ts / report.ts / random.ts
 │   │
 │   └── global.css                        # NativeWind 전역 스타일
 │
