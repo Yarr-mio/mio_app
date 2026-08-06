@@ -69,7 +69,7 @@ export function useSignupInfoSubmit() {
         throw new Error(PROFILE_SUBMIT_ERROR_MESSAGE);
       }
 
-      router.push(AUTH_ROUTES.onboardingStep4);
+      router.push(AUTH_ROUTES.signupCharacter);
     } catch (profileError) {
       if (isSignupStepInvalidError(profileError)) {
         await handleSignupStepInvalid();

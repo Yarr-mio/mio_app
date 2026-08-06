@@ -90,7 +90,7 @@ export function useSubmitCheckin() {
 
       if (status === HTTP_STATUS.FORBIDDEN && errorCode === 'ONBOARDING_REQUIRED') {
         Alert.alert('온보딩이 필요해요', '체크인을 시작하기 전에 캐릭터 선택을 완료해 주세요.');
-        router.replace(AUTH_ROUTES.onboardingStep4);
+        router.replace(AUTH_ROUTES.signupCharacter);
         return;
       }
 
