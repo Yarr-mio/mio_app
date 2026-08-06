@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
+import { AnalyticsSessionProvider } from '@/analytics/AnalyticsSessionProvider';
 import queryClient from '@/api/queryClient';
 import { NANUM_MYEONGJO_FONTS, NOTO_SANS_KR_FONTS } from '@/constants/fonts';
 import { AUTH_ROUTES } from '@/constants/routes';
@@ -37,6 +38,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AnalyticsSessionProvider />
       <NotificationListenersBootstrap />
       <NotificationDeviceBootstrap />
       <RootAppContent />
