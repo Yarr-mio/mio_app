@@ -10,6 +10,7 @@ import {
   HOME_MIND_EXPLORE_COMING_SOON_MODAL,
   HOME_RECOMMENDED_ACTIONS_TITLE,
   HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL,
+  HOME_RECOMMENDED_TODO_MAX_COUNT,
   HOME_SPEECH_BUBBLE_MESSAGES,
   HOME_TITLES,
 } from '@/constants/home';
@@ -65,7 +66,9 @@ export function HomeScreen() {
     refetch: refetchTodayTodos,
   } = useTodos(getDateIso(new Date()));
   const { completeTodo, isSubmitting: isHomeTodoSubmitting } = useHomeRecommendedTodoCheckin();
-  const hasActions = Boolean(todayTodos && todayTodos.length > 0);
+  const recommendedTodoTotalCount = todayTodos?.length;
+  const visibleRecommendedTodos = (todayTodos ?? []).slice(0, HOME_RECOMMENDED_TODO_MAX_COUNT);
+  const hasActions = visibleRecommendedTodos.length > 0;
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
     pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
@@ -153,7 +156,7 @@ export function HomeScreen() {
 
             <HomeCardShell
               title={HOME_RECOMMENDED_ACTIONS_TITLE}
-              titleCount={todayTodos?.length}
+              titleCount={recommendedTodoTotalCount}
               headerActionLabel={HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL}
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
@@ -164,7 +167,7 @@ export function HomeScreen() {
                 </View>
               ) : hasActions ? (
                 <HomeRecommendedActionsList
-                  actions={todayTodos ?? []}
+                  actions={visibleRecommendedTodos}
                   isSubmitting={isHomeTodoSubmitting}
                   onCompleteTodo={completeTodo}
                 />

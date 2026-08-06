@@ -74,6 +74,7 @@ export function HomeCardShell({
     <View className={HomeCardClasses.container}>
       <View className={cn('flex-row items-center justify-between', headerContainerClassName)}>
         <View
+          accessible={true}
           className={HomeCardClasses.titleRow}
           accessibilityRole="header"
           accessibilityLabel={accessibilityLabel}
