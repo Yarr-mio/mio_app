@@ -13,6 +13,7 @@ import {
   InputColors,
   NicknameDuplicateCheckClasses,
   ScreenSpacing,
+  SignupFlowClasses,
   SignupFlowLayout,
   SignupInfoLayout,
 } from '@/constants/theme';
@@ -29,6 +30,7 @@ const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_pr
 
 const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
 const SIGNUP_CURRENT_STEP = SignupFlowLayout.infoCurrentStep;
+const STEP_INDICATOR_WRAP = SignupFlowClasses.stepIndicatorWrap;
 const PROFILE_IMAGE_SIZE = EditNicknameLayout.avatarSize;
 const NICKNAME_MAX_LENGTH = SignupInfoLayout.nicknameMaxLength;
 const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
@@ -162,7 +164,7 @@ export default function SignUpInfoScreen() {
     <View className="flex-1 bg-midnight">
       <AuthBackground />
       <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
-        <View className="pt-4 mt-6">
+        <View className={STEP_INDICATOR_WRAP}>
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 

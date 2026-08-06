@@ -101,11 +101,7 @@ export const HeaderClasses = {
   titleOverlay: 'pointer-events-none absolute inset-0 items-center justify-center px-12',
 } as const;
 
-export const EmotionSelectBoxLayout = {
-  iconSize: 85,
-} as const;
-
-/** 온보딩 Step3 대화 방식 카드 */
+/** 캐릭터 선택 카드 아이콘 슬롯 */
 export const OnboardingStyleCardLayout = {
   iconSlotSize: 92,
   iconRenderScale: 0.9,
@@ -244,6 +240,11 @@ export const SignupFlowLayout = {
   completeCurrentStep: 4,
 } as const;
 
+/** NativeWind className — 회원가입 온보딩 공통 헤더 영역 */
+export const SignupFlowClasses = {
+  stepIndicatorWrap: 'pt-4 mt-2',
+} as const;
+
 /** 캐릭터 선택 플로팅 CTA */
 export const CharacterSelectFloatingCtaLayout = {
   enterDurationMs: 280,
@@ -258,13 +259,11 @@ export const CharacterSelectFloatingCtaLayout = {
 export const CharacterSelectFloatingCtaClasses = {
   floatingCta: 'absolute gap-2',
   screenContainer: 'flex-1 px-8',
-  stepIndicatorWrap: 'pt-4 mt-6',
   titleWrap: 'mt-10',
   subtitle: 'mt-3 text-subtitle',
   listWrap: 'mt-8 gap-3',
   cardRow: 'flex-row items-center gap-3 rounded-card border-2 py-6 pl-2 pr-4',
   cardTextWrap: 'flex-1 gap-2',
-  seeMoreButton: 'flex-row items-center justify-center gap-1 py-4',
 } as const;
 
 /** 약관 동의 화면 레이아웃 */
@@ -275,6 +274,22 @@ export const TermsOfServiceLayout = {
 /** NativeWind className — TermsOfServiceLayout px 값과 동일하게 유지 */
 export const TermsOfServiceClasses = {
   agreementCardHeight: 'h-[64px]',
+  termList: 'mt-4 gap-2',
+  privacyPolicyLink: 'mb-6 items-center',
+  footer: 'mt-auto pt-4',
+  footerError: 'mb-2',
+  privacyPolicyLinkText: 'text-center text-subtitle underline',
+} as const;
+
+/** 약관 및 개인정보 문서 화면 */
+export const LegalDocumentClasses = {
+  root: 'flex-1',
+  scroll: 'flex-1',
+  scrollContent: 'gap-4 px-6 pb-10',
+  heading: 'mt-2 text-fg',
+  body: 'text-fg-soft leading-6',
+  bulletRow: 'flex-row gap-2',
+  bulletText: 'flex-1 text-fg-soft leading-6',
 } as const;
 
 /** 회원가입 완료 화면 레이아웃 */
