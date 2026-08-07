@@ -34,6 +34,10 @@ export function SignUpCompleteScreen() {
   // ⚠️ push_permission_prompted는 §3-B dedup 대상이 아니라 뒷단이 중복을 접어 주지 않는다 —
   // 모달 1회 노출당 정확히 1건이 되도록 컴포넌트에서 가드한다
   const promptTrackedRef = useRef(false);
+  // ⚠️ 모달 액션은 state가 아니라 ref로 잠근다 — setState는 리렌더 뒤에야 반영돼 같은 틱의
+  // 재진입을 못 막고, push_permission_result는 §3-B dedup 대상이 아니라 뒷단이 접어주지 않는다.
+  // confirm/later가 같은 잠금을 공유해야 confirm이 모달을 닫으며 onClose로 later를 부르는 경로도 막힌다
+  const notificationActionStartedRef = useRef(false);
   const { ensureReady } = useEnsurePushNotificationReady();
   const { mutateAsync: enableNotificationSettings } = useSignupNotificationAgree();
   const { mutateAsync: declineNotificationSettings } = useSignupNotificationLater();
@@ -60,10 +64,11 @@ export function SignUpCompleteScreen() {
   };
 
   const handleNotificationConfirm = () => {
-    if (notificationPending) {
+    if (notificationPending || notificationActionStartedRef.current) {
       return;
     }
 
+    notificationActionStartedRef.current = true;
     setNotificationPending(true);
     void (async () => {
       try {
@@ -85,9 +90,11 @@ export function SignUpCompleteScreen() {
   };
 
   const handleNotificationLater = () => {
-    if (notificationPending) {
+    if (notificationPending || notificationActionStartedRef.current) {
       return;
     }
+
+    notificationActionStartedRef.current = true;
 
     // ⚠️ 「나중에」도 결과다. 빠뜨리면 5행 완료율의 분모가 「확인」을 누른 사람으로 줄어 동의율이 부푼다
     track('push_permission_result', {
