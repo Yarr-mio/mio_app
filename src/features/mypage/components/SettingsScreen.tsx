@@ -145,6 +145,8 @@ export function SettingsScreen() {
     }
 
     isOsPermissionSyncInFlightRef.current = true;
+    isNotificationUpdateInFlightRef.current = true;
+    setIsNotificationUpdateLocked(true);
 
     try {
       // hydrate 전에 sync하면 전환 감지가 깨짐
@@ -152,41 +154,26 @@ export function SettingsScreen() {
 
       const granted = await getNotificationPermissionGrantedAsync();
       const prevGranted = prevGrantedRef.current;
-      // 조회 직후 이전 상태를 갱신해 중복 전환 감지를 막음
-      prevGrantedRef.current = granted;
-      await setLastOsNotificationPermissionGranted(granted);
 
       const anyEnabled = hasAnyNotificationEnabled(notificationSettings);
       const allDisabled = areAllNotificationSettingsDisabled(notificationSettings);
 
       // denied인데 서버에 true가 있으면 전체 OFF로 내림
       if (!granted && anyEnabled) {
-        isNotificationUpdateInFlightRef.current = true;
-        setIsNotificationUpdateLocked(true);
-
-        try {
-          await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
-          setReadyModal('permission_denied');
-        } finally {
-          isNotificationUpdateInFlightRef.current = false;
-          setIsNotificationUpdateLocked(false);
-        }
-        return;
+        await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
+        setReadyModal('permission_denied');
       }
-
       // denied에서 granted로 바뀐 뒤에만 서버 전체 OFF를 전체 ON으로 올림
-      if (granted && prevGranted === false && allDisabled) {
-        isNotificationUpdateInFlightRef.current = true;
-        setIsNotificationUpdateLocked(true);
-
-        try {
-          await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_ENABLED);
-        } finally {
-          isNotificationUpdateInFlightRef.current = false;
-          setIsNotificationUpdateLocked(false);
-        }
+      else if (granted && prevGranted === false && allDisabled) {
+        await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_ENABLED);
       }
+
+      // 서버 상태가 정상적으로 반영된 뒤에만 현재 OS 권한 상태를 저장
+      prevGrantedRef.current = granted;
+      await setLastOsNotificationPermissionGranted(granted);
     } finally {
+      isNotificationUpdateInFlightRef.current = false;
+      setIsNotificationUpdateLocked(false);
       isOsPermissionSyncInFlightRef.current = false;
     }
   }, [hydratePrevGranted, notificationSettings, updateNotificationSettings]);
