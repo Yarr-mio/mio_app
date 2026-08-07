@@ -66,7 +66,12 @@ export function useSocialLogin() {
       // user_id는 응답 user가 신규 가입 중 null이므로 access token의 sub에서 뽑는다
       const userId = readUserIdFromAccessToken(res.data.access_token);
       if (userId) {
-        void trackIdentify(userId);
+        // identify가 login_succeeded보다 먼저 큐에 들어가야 뒷단이 익명 id ↔ 유저 id를 잇는다.
+        // void로 두면 두 track()의 await 정렬이 엇갈려 순서도 ts_client도 역전될 수 있다.
+        // 계측 실패가 로그인 후속 처리(프로필 세팅·캐릭터 동기화)를 막지 않도록 여기서 삼킨다
+        await trackIdentify(userId).catch((error: unknown) => {
+          console.warn('[analytics] failed to track identify', error);
+        });
       }
       track('login_succeeded', {
         provider: variables.provider,
