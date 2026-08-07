@@ -1,3 +1,5 @@
+import { commitSentMessage, peekNextMessageIndex } from '@/analytics/chatMessageIndex';
+import { track } from '@/analytics/track';
 import { refreshAccessTokenForNonAxios } from '@/api/client';
 import { queryKeys } from '@/api/queryKeys';
 import { useChatStore } from '@/features/chat/store/chatStore';
@@ -52,6 +54,12 @@ export function useChatSse(sessionId: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   // 화면 이탈/언마운트 시 진행 중인 스트림을 취소하기 위해 보관
   const abortRef = useRef<AbortController | null>(null);
+  // 이번 턴에 수신한 done 데이터 — chat_message_sent의 대화 품질 4필드 원천.
+  // consumeStream의 반환 계약을 바꾸지 않고 값을 꺼내기 위한 계측 전용 통로다
+  const lastDoneRef = useRef<SseDoneData | null>(null);
+  // 이번 턴에 session_meta(사용자 메시지 ack)를 받았는지. 서버가 메시지를 받은 것이 확인된 뒤에만
+  // chat_message_sent를 발행하기 위한 계측 전용 통로 — consumeStream의 반환 계약은 그대로 둔다
+  const sessionMetaAckRef = useRef(false);
   const queryClient = useQueryClient();
 
   // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
@@ -89,6 +97,7 @@ export function useChatSse(sessionId: string | null) {
   // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
   // outboundMsgId 대신 placeholder id로 빈 AI 메시지를 추적하고, 최초 delta 수신 시 확정한다
   function handleSessionMeta(data: SseSessionMetaData) {
+    sessionMetaAckRef.current = true;
     const placeholderId = `pending-ai-${data.message_id}`;
     const store = useChatStore.getState();
     store.addMessage({
@@ -253,6 +262,7 @@ export function useChatSse(sessionId: string | null) {
               break;
             case 'done':
               handleDone(parsed.data as SseDoneData);
+              lastDoneRef.current = parsed.data as SseDoneData;
               receivedDone = true;
               break;
           }
@@ -270,6 +280,16 @@ export function useChatSse(sessionId: string | null) {
   }
 
   async function performSendMessage(currentSessionId: string, content: string) {
+    // 전송 시점에 캡처한다 — done 계열 4필드는 응답 스트림이 끝날 때 도착하므로, 이 턴의 이벤트는
+    // done 수신 / 스트림 종료 / abort 어디로 끝나든 finally에서 정확히 1건만 발행한다.
+    // PR #55의 401 재시도는 while 루프로 이 함수 안쪽에 있어 finally가 메시지당 1회만 실행된다
+    const messageIndex = peekNextMessageIndex(currentSessionId);
+    const charCount = content.length;
+    // 서버가 메시지를 받지 못한 경로에서는 발행하지 않는다 — 발행하면 활성화율이 부푼다.
+    // 기준은 session_meta 수신(= 사용자 메시지 ack)이다. HTTP 200 헤더는 영속화 전에 flush될 수
+    // 있고, fetch 자체가 거부되는 연결 오류 경로는 애초에 여기까지 오지도 않는다
+    sessionMetaAckRef.current = false;
+
     const controller = new AbortController();
     abortRef.current = controller;
     let timedOut = false;
@@ -359,6 +379,25 @@ export function useChatSse(sessionId: string | null) {
       if (abortRef.current === controller) {
         abortRef.current = null;
       }
+
+      if (sessionMetaAckRef.current) {
+        commitSentMessage(currentSessionId);
+        // done을 못 받았으면 대화 품질 4필드는 null로 둔다 — 결손을 0/false로 감추지 않는다
+        const doneData = lastDoneRef.current;
+        track('chat_message_sent', {
+          chat_session_id: currentSessionId,
+          message_index: messageIndex,
+          char_count: charCount,
+          ai_emotion_score: doneData?.emotion_score ?? null,
+          is_socratic: doneData?.is_socratic ?? null,
+          cbt_intervention_state: doneData?.cbt_intervention_state ?? null,
+          is_crisis_flagged: doneData?.is_crisis_flagged ?? null,
+        });
+      }
+
+      // 읽은 뒤 비운다 — 다음 턴이 done/ack을 못 받았을 때 이번 턴의 값이 새어 들어가면 안 된다
+      lastDoneRef.current = null;
+      sessionMetaAckRef.current = false;
     }
   }
 

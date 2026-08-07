@@ -180,6 +180,22 @@ export function formatJoinedAtLabel(isoString: string): string {
   return `${format(kst(isoString), 'yyyy.MM.dd')} 가입`;
 }
 
+/**
+ * offset을 포함한 KST ISO8601 문자열 (예: `2026-08-05T21:13:02+09:00`)
+ *
+ * 이벤트 로그의 `ts_client`용. `toISOString()`은 UTC `Z` 표기라 계약(offset 포함)에 맞지 않는다.
+ */
+export function formatKstIsoWithOffset(date: Date = new Date()): string {
+  return format(kstDate(date), "yyyy-MM-dd'T'HH:mm:ssXXX");
+}
+
+/** 두 시각 사이의 KST 기준 날짜 차이(일). 같은 날이면 0 */
+export function getKstDayDifference(from: Date, to: Date): number {
+  const fromDay = format(kstDate(from), 'yyyy-MM-dd');
+  const toDay = format(kstDate(to), 'yyyy-MM-dd');
+  return Math.round((new Date(toDay).getTime() - new Date(fromDay).getTime()) / MS_PER_DAY);
+}
+
 /** 현재 시각(KST 기준)이 속한 체크인 시간대(아침/오후/저녁). 0시부터 곧바로 오전으로 판단(서버 "오늘" 판정과 동일 기준) */
 export function getCurrentTimeOfDay(): TimeOfDay {
   const hour = toKstDate().getHours();

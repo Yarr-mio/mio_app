@@ -1,3 +1,4 @@
+import { track } from '@/analytics/track';
 import { checkinTodo, fetchTodos } from '@/api/endpoints/todo';
 import { queryKeys } from '@/api/queryKeys';
 import { HTTP_STATUS } from '@/constants/config';
@@ -24,7 +25,22 @@ export function useTodoCheckin() {
   return useMutation({
     mutationFn: ({ todoId, body }: { todoId: string; body: TodoCheckinRequest }) =>
       checkinTodo(todoId, body),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
+      // chat_session_id는 TodoResponse에 세션 참조가 없어 BE가 노출할 때까지 생략한다.
+      // 감정 3필드는 현재 UI가 수집하지 않아 사실상 null — 억지로 채우지 않는다
+      const { before_emotion, after_emotion, feedback } = variables.body;
+      track('todo_checked_in', {
+        todo_id: variables.todoId,
+        task_status: variables.body.status,
+        emotion_before: before_emotion ?? null,
+        emotion_after: after_emotion ?? null,
+        emotion_delta:
+          before_emotion !== undefined && after_emotion !== undefined
+            ? after_emotion - before_emotion
+            : null,
+        has_feedback: Boolean(feedback?.trim()),
+      });
+
       await invalidateTodoRelatedQueries(queryClient);
     },
     onError: (error) => {

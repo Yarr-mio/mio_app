@@ -1,3 +1,5 @@
+import { claimSummaryView } from '@/analytics/summaryViewGuard';
+import { track } from '@/analytics/track';
 import { queryKeys } from '@/api/queryKeys';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
@@ -74,6 +76,18 @@ export function SessionSummary() {
       router.replace('/(main)/chat');
     }
   }, [sessionId, isFocused]);
+
+  // ⚠️ 발행을 useSessionSummary(폴링 useQuery)에 걸면 요약이 생성될 때까지 한 화면 진입에 수 건이
+  // 나간다. 이 이벤트만 뒷단 중복 제거 대상이 아니라(반복 조회가 곧 값) 부푼 값이 그대로
+  // Core Action 건수로 들어가므로, 화면 포커스 1회 + sessionId별 가드로 못박는다.
+  // 가드는 모듈 스코프다 — 인스턴스별 ref로 두면 이 화면이 두 번 마운트될 때 각자 1건씩 발행한다
+  useEffect(() => {
+    if (!isFocused || !sessionId || !claimSummaryView(sessionId)) {
+      return;
+    }
+
+    track('session_summary_viewed', { chat_session_id: sessionId });
+  }, [isFocused, sessionId]);
 
   if (!sessionId) {
     return (

@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
+import { track, trackIdentify } from '@/analytics/track';
 import {
   deleteAuthWithdraw,
   getAuthNicknameDuplicateCheck,
@@ -28,14 +29,20 @@ import type {
   AuthSignupProfileResponse,
   AuthSignupStatusResponse,
   AuthWithdrawResponse,
+  SignupConsent,
   SocialProvider,
 } from '@/types/auth';
+import { readUserIdFromAccessToken } from '@/utils/jwt';
 import { storage } from '@/utils/storage';
 
 interface SocialLoginInput {
   provider: SocialProvider;
   id_token: string | null;
   access_token: string | null;
+}
+
+function findConsent(consents: SignupConsent[], type: SignupConsent['type']) {
+  return consents.find((consent) => consent.type === type);
 }
 
 // 카카오/애플 로그인
@@ -45,7 +52,7 @@ export function useSocialLogin() {
 
   return useMutation<AuthLoginResponse, Error, SocialLoginInput>({
     mutationFn: (input) => postAuthLogin(input),
-    onSuccess: async (res) => {
+    onSuccess: async (res, variables) => {
       // 이전 계정 잔존 데이터 제거
       useUserStore.getState().reset();
       clearReportPollFetchCounts();
@@ -54,6 +61,23 @@ export function useSocialLogin() {
       await storage.refreshToken.set(res.data.refresh_token);
       setSignupStep(res.data.signup_step);
       setAccessToken(res.data.access_token);
+
+      // ⚠️ identify는 로그인 성공에만 1회 — 토큰 갱신·재시도 경로에는 절대 걸지 않는다.
+      // user_id는 응답 user가 신규 가입 중 null이므로 access token의 sub에서 뽑는다
+      const userId = readUserIdFromAccessToken(res.data.access_token);
+      if (userId) {
+        // identify가 login_succeeded보다 먼저 큐에 들어가야 뒷단이 익명 id ↔ 유저 id를 잇는다.
+        // void로 두면 두 track()의 await 정렬이 엇갈려 순서도 ts_client도 역전될 수 있다.
+        // 계측 실패가 로그인 후속 처리(프로필 세팅·캐릭터 동기화)를 막지 않도록 여기서 삼킨다
+        await trackIdentify(userId).catch((error: unknown) => {
+          console.warn('[analytics] failed to track identify', error);
+        });
+      }
+      track('login_succeeded', {
+        provider: variables.provider,
+        is_new_user: res.data.is_new_user,
+        is_new_device: res.data.is_new_device,
+      });
 
       if (!res.data.is_new_user && res.data.signup_step === 'COMPLETED' && res.data.user) {
         useUserStore.getState().setAuthProfile({
@@ -72,8 +96,14 @@ export function useSignupConsent() {
 
   return useMutation<AuthSignupConsentResponse, Error, AuthSignupConsentRequest>({
     mutationFn: (body) => postAuthSignupConsent(body),
-    onSuccess: (res) => {
+    onSuccess: (res, variables) => {
       setSignupStep(res.data.signup_step);
+
+      track('consent_agreed', {
+        consent_version: findConsent(variables.consents, 'terms')?.version ?? null,
+        marketing_agree: findConsent(variables.consents, 'marketing')?.agreed ?? false,
+        sensitive_info_agreed: findConsent(variables.consents, 'sensitive_info')?.agreed ?? false,
+      });
     },
   });
 }
@@ -84,9 +114,20 @@ export function useSignupProfile() {
 
   return useMutation<AuthSignupProfileResponse, Error, AuthSignupProfileRequest>({
     mutationFn: (body) => postAuthSignupProfile(body),
-    onSuccess: (res) => {
+    onSuccess: (res, variables) => {
       setSignupStep(res.data.signup_step);
       useUserStore.getState().patchOnboardingNickname(res.data.nickname);
+
+      // 같은 200에서 2건을 연달아 발행한다 — 의도된 것이다.
+      // profile_submitted는 "제출 사실", signup_completed는 리텐션 t0 앵커로 역할이 다르다.
+      // ⚠️ signup_completed를 가입 완료 화면 진입에 걸면 온보딩 개편으로 t0가 통째로 어긋난다
+      // (개편으로 그 화면이 캐릭터 선택 뒤로 이동했다)
+      track('profile_submitted', {
+        age_range: variables.age_range ?? null,
+        gender: variables.gender ?? null,
+        employment_status: variables.employment_status ?? null,
+      });
+      track('signup_completed', {});
     },
   });
 }
@@ -119,6 +160,7 @@ export function useSignupComplete() {
     onSuccess: (res) => {
       setSignupStep(res.data.signup_step);
       commitAuthProfileFromStoredSelection();
+      track('onboarding_completed', {});
     },
   });
 }
@@ -177,6 +219,9 @@ export function useWithdraw() {
   return useMutation<AuthWithdrawResponse, Error, void>({
     mutationFn: () => deleteAuthWithdraw(),
     onSuccess: async () => {
+      // 인증정보를 지우기 전에 발행해야 envelope의 user_id가 채워진다 (투영의 탈퇴 제외 근거)
+      track('account_withdrawn', {});
+
       setAccessToken(null);
       setSignupStep(null);
       useUserStore.getState().reset();
