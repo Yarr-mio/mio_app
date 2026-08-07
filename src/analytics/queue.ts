@@ -102,7 +102,7 @@ function scheduleBackoff(): void {
 
 /**
  * 큐를 비울 때까지 배치를 연달아 보낸다.
- * 거부된 항목은 재전송해도 다시 거부되므로 배치 전체를 큐에서 뺀다.
+ * 거부된 항목은 재전송해도 다시 거부되므로 보낸 배치는 통째로 큐에서 뺀다.
  */
 async function drainQueue(): Promise<void> {
   while (queue.length > 0 && Date.now() >= retryNotBeforeAt) {
@@ -121,7 +121,10 @@ async function drainQueue(): Promise<void> {
     }
 
     logRejections(batch, result.rejections);
-    queue = queue.slice(batch.length);
+    // ⚠️ 인덱스로 자르면 안 된다 — await 동안 restoreQueue가 앞에 prepend하거나
+    // enqueueEvent가 상한 초과로 앞에서 버리면 전송되지 않은 이벤트가 조용히 사라진다
+    const sentIds = new Set(batch.map((event) => event.event_id));
+    queue = queue.filter((event) => !sentIds.has(event.event_id));
     consecutiveFailures = 0;
     retryNotBeforeAt = 0;
     persistQueue();
