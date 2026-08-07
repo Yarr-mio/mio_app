@@ -110,13 +110,23 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        // 네이티브 스플래시는 배경색만 JS 커스텀 스플래시로 전환
+        // Android 12+는 splashscreen_logo drawable이 필수라 image 없으면 빌드 실패함
+        // 네이티브 로고는 최소화하고 실제 UI는 JS 커스텀 스플래시로 전환
         backgroundColor: '#0D0D1A',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 1,
+        resizeMode: 'contain',
         android: {
           backgroundColor: '#0D0D1A',
+          image: './assets/images/splash-icon.png',
+          imageWidth: 1,
+          resizeMode: 'contain',
         },
         ios: {
           backgroundColor: '#0D0D1A',
+          image: './assets/images/splash-icon.png',
+          imageWidth: 1,
+          resizeMode: 'contain',
         },
       },
     ],
