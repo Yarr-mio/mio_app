@@ -9,6 +9,7 @@ import {
   EVENT_RETRY_MAX_DELAY_MS,
 } from '@/analytics/constants';
 import { loadBufferedEvents, saveBufferedEvents, trimToBufferLimit } from '@/analytics/buffer';
+import { utf8ByteLength } from '@/analytics/byteSize';
 import type { AnyAnalyticsEvent } from '@/analytics/envelope';
 import { sendEventBatch, type EventBatchRejection } from '@/analytics/transport';
 
@@ -31,28 +32,6 @@ let retryNotBeforeAt = 0;
 let consecutiveFailures = 0;
 /** 영속화 순서 보장용 — 겹쳐 쓰면 오래된 스냅샷이 최신을 덮을 수 있다 */
 let persistChain: Promise<void> = Promise.resolve();
-
-function utf8ByteLength(text: string): number {
-  let bytes = 0;
-
-  for (let index = 0; index < text.length; index += 1) {
-    const code = text.charCodeAt(index);
-
-    if (code < 0x80) {
-      bytes += 1;
-    } else if (code < 0x800) {
-      bytes += 2;
-    } else if (code >= 0xd800 && code <= 0xdbff) {
-      // surrogate pair — 4바이트 문자 하나
-      bytes += 4;
-      index += 1;
-    } else {
-      bytes += 3;
-    }
-  }
-
-  return bytes;
-}
 
 function persistQueue(): void {
   const snapshot = [...queue];

@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { ANALYTICS_STORAGE_KEYS, EVENT_BUFFER_MAX_COUNT } from '@/analytics/constants';
+import { utf8ByteLength } from '@/analytics/byteSize';
+import {
+  ANALYTICS_STORAGE_KEYS,
+  EVENT_BUFFER_MAX_BYTES,
+  EVENT_BUFFER_MAX_COUNT,
+} from '@/analytics/constants';
 import type { AnyAnalyticsEvent } from '@/analytics/envelope';
 
 /**
@@ -13,6 +18,9 @@ import type { AnyAnalyticsEvent } from '@/analytics/envelope';
  *
  * ⚠️ `utils/storage.ts`(SecureStore)를 쓰면 안 된다 — 키체인이라 항목 크기 제한·쓰기 비용이 크고,
  * 애초에 비밀값이 아니다.
+ *
+ * 상한은 건수와 바이트에 나란히 건다 — 건수 상한이 가정한 1건 크기가 깨져도 한 항목이
+ * 플랫폼 상한에 닿아 영속화가 통째로 무력해지지 않게 한다.
  */
 
 function isAnalyticsEvent(value: unknown): value is AnyAnalyticsEvent {
@@ -60,15 +68,61 @@ export async function loadBufferedEvents(): Promise<AnyAnalyticsEvent[]> {
   }
 }
 
-export async function saveBufferedEvents(events: AnyAnalyticsEvent[]): Promise<void> {
-  try {
-    if (events.length === 0) {
-      await AsyncStorage.removeItem(ANALYTICS_STORAGE_KEYS.eventQueue);
-      return;
-    }
+/**
+ * 직렬화 바이트 상한을 넘으면 오래된 것부터 버린다 — 최신 쪽에서 역순으로 누적해 남길 구간을 찾는다.
+ * ⚠️ 여기서도 버린 건수를 로깅한다 (`trimToBufferLimit`과 같은 이유).
+ */
+function trimToByteLimit(events: AnyAnalyticsEvent[]): AnyAnalyticsEvent[] {
+  let bytes = 2; // 배열 대괄호
+  let keepFrom = events.length;
 
-    await AsyncStorage.setItem(ANALYTICS_STORAGE_KEYS.eventQueue, JSON.stringify(events));
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    bytes += utf8ByteLength(JSON.stringify(events[index])) + 1; // 구분자 1B
+    if (bytes > EVENT_BUFFER_MAX_BYTES) {
+      break;
+    }
+    keepFrom = index;
+  }
+
+  if (keepFrom === 0) {
+    return events;
+  }
+
+  console.warn(
+    `[analytics] event buffer byte overflow — dropped ${keepFrom} oldest events (limit ${EVENT_BUFFER_MAX_BYTES}B)`
+  );
+  return events.slice(keepFrom);
+}
+
+export async function saveBufferedEvents(events: AnyAnalyticsEvent[]): Promise<void> {
+  if (events.length === 0) {
+    try {
+      await AsyncStorage.removeItem(ANALYTICS_STORAGE_KEYS.eventQueue);
+    } catch (error) {
+      console.warn('[analytics] failed to clear event buffer', error);
+    }
+    return;
+  }
+
+  const bounded = trimToByteLimit(events);
+
+  try {
+    await AsyncStorage.setItem(ANALYTICS_STORAGE_KEYS.eventQueue, JSON.stringify(bounded));
+    return;
   } catch (error) {
-    console.warn('[analytics] failed to persist event buffer', error);
+    // 플랫폼 상한을 다 알 수 없다 — 여기서 포기하면 영속 버퍼가 영영 실패한 채로 남는다
+    console.warn('[analytics] failed to persist event buffer — retrying with newest half', error);
+  }
+
+  const halved = bounded.slice(Math.ceil(bounded.length / 2));
+  if (halved.length === 0) {
+    return;
+  }
+
+  try {
+    await AsyncStorage.setItem(ANALYTICS_STORAGE_KEYS.eventQueue, JSON.stringify(halved));
+    console.warn(`[analytics] persisted only newest ${halved.length}/${bounded.length} events`);
+  } catch (retryError) {
+    console.warn('[analytics] failed to persist event buffer after trim', retryError);
   }
 }

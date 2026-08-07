@@ -34,6 +34,12 @@ export const EVENT_FLUSH_THRESHOLD_COUNT = 20;
  */
 export const EVENT_BUFFER_MAX_COUNT = 2_000;
 
+/**
+ * 영속 버퍼 직렬화 최대 바이트. 건수 상한이 가정한 "1건 300~500B"가 깨져도
+ * AsyncStorage 한 항목이 플랫폼 상한(Android SQLite CursorWindow)에 닿지 않게 바이트로도 막는다.
+ */
+export const EVENT_BUFFER_MAX_BYTES = 1024 * 1024;
+
 /** 전송 실패 재시도 백오프 초기 대기(ms) */
 export const EVENT_RETRY_BASE_DELAY_MS = 2_000;
 
