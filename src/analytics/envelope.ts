@@ -53,16 +53,21 @@ function createEventId(): string {
  *
  * envelope 조립이 비동기(device id 조회)라, 그 사이에 시간이 흐르거나 로그아웃·탈퇴로 토큰이
  * 비워질 수 있다. 발행 순간의 값을 `track()`이 동기로 캡처해 넘긴다.
+ *
+ * `appSessionId`도 같은 이유다 — device id 조회 사이에 30분 규칙으로 세션이 갈리면 이전 세션에서
+ * 발행한 이벤트가 새 세션 id를 달고 나가 세션 경계가 흐려진다.
  */
 export interface AnalyticsEventContext {
   tsClient: string;
   accessToken: string | null;
+  appSessionId: string;
 }
 
 export function captureEventContext(): AnalyticsEventContext {
   return {
     tsClient: formatKstIsoWithOffset(),
     accessToken: useAuthStore.getState().accessToken,
+    appSessionId: getOrCreateAppSessionId(),
   };
 }
 
@@ -78,7 +83,7 @@ export async function buildAnalyticsEvent<N extends AnalyticsEventName>(
     ts_client: context.tsClient,
     anonymous_id: await getOrCreateDeviceId(),
     user_id: readUserIdFromAccessToken(context.accessToken),
-    app_session_id: getOrCreateAppSessionId(),
+    app_session_id: context.appSessionId,
     app_version: getAppVersion(),
     platform: getDevicePlatform() ?? Platform.OS,
     os_version: String(Platform.Version),
