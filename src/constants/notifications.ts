@@ -83,10 +83,32 @@ export const NOTIFICATION_PERMISSION_DENIED_ALERT = {
   cancelLabel: '닫기',
 } as const;
 
+export const NOTIFICATION_PERMISSION_DENIED_MODAL = {
+  title: '알림 권한이 꺼져 있어요',
+  description: '기기 알림 권한이 꺼져 있어 알림을 받을 수 없어요.\n설정에서 알림을 허용해 주세요.',
+  confirmLabel: '설정으로 이동',
+  cancelLabel: '닫기',
+} as const;
+
+// 마지막 확인한 OS 알림 권한 상태 영속 키 비밀값 아님
+export const LAST_OS_NOTIFICATION_PERMISSION_STORAGE_KEY =
+  'notification.last_os_permission_granted' as const;
+
+export const OS_PERMISSION_GRANTED_STORAGE_VALUE = {
+  granted: '1',
+  denied: '0',
+} as const;
+
 export const NOTIFICATION_TOKEN_UNAVAILABLE_ALERT = {
   title: '앱을 열면 알림을 확인할 수 있어요',
   message:
     '기기 알림을 바로 준비하지 못했어요. 지금은 앱을 열었을 때 알림을 확인할 수 있어요. 잠시 후 다시 시도해 주세요.',
+} as const;
+
+export const NOTIFICATION_TOKEN_UNAVAILABLE_MODAL = {
+  title: '알림을 바로 준비하지 못했어요',
+  description: '기기 알림을 준비하는 중 문제가 생겼어요.\n잠시 후 다시 시도해 주세요.',
+  confirmLabel: '확인',
 } as const;
 
 export const NotificationModalColors = {

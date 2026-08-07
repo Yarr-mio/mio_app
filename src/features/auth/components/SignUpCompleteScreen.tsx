@@ -8,7 +8,12 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { AppModal } from '@/components/ui/AppModal';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
-import { NOTIFICATION_MODAL, NotificationModalColors } from '@/constants/notifications';
+import {
+  NOTIFICATION_MODAL,
+  NOTIFICATION_PERMISSION_DENIED_ALERT,
+  NOTIFICATION_TOKEN_UNAVAILABLE_ALERT,
+  NotificationModalColors,
+} from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { SIGNUP_COMPLETE_COPY } from '@/constants/signup';
 import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
@@ -20,7 +25,7 @@ import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Alert, Linking, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function SignUpCompleteScreen() {
@@ -73,9 +78,30 @@ export function SignUpCompleteScreen() {
     void (async () => {
       try {
         // 권한 요청 및 디바이스 등록
-        await ensureReady();
-        // ensureReady가 결과를 삼키므로 권한 상태를 재조회해 granted를 얻는다 (읽기 전용 — 프롬프트 없음).
-        // 기다리지 않는다 — 계측이 알림 설정 저장·홈 이동 순서에 끼어들면 안 된다
+        const result = await ensureReady();
+        if (result === 'permission_denied') {
+          Alert.alert(
+            NOTIFICATION_PERMISSION_DENIED_ALERT.title,
+            NOTIFICATION_PERMISSION_DENIED_ALERT.message,
+            [
+              { text: NOTIFICATION_PERMISSION_DENIED_ALERT.cancelLabel, style: 'cancel' },
+              {
+                text: NOTIFICATION_PERMISSION_DENIED_ALERT.confirmLabel,
+                onPress: () => {
+                  void Linking.openSettings();
+                },
+              },
+            ]
+          );
+        }
+        if (result === 'token_unavailable') {
+          Alert.alert(
+            NOTIFICATION_TOKEN_UNAVAILABLE_ALERT.title,
+            NOTIFICATION_TOKEN_UNAVAILABLE_ALERT.message
+          );
+        }
+        // 권한 상태를 재조회해 granted를 얻음
+        // 계측이 알림 설정 저장 홈 이동 순서에 끼어들지 않음
         trackPushPermissionResultFromCurrentStatus(PUSH_PERMISSION_TRIGGER.signupFlow);
         // 알림 설정 전체 활성화
         await enableNotificationSettings();

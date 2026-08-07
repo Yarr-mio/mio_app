@@ -12,6 +12,42 @@ import { useAuthStore } from '@/store/authStore';
 import type { NotificationDeviceTokenResponse } from '@/types/notification';
 import { getOrCreateDeviceId } from '@/utils/deviceId';
 
+// 콜드 스타트 직후 네이티브 토큰 발급이 일시적으로 실패하는 경우(APNs 핸드셰이크 지연 등)에 대비한 재시도 설정.
+// 권한이 없어 null이 반환되는 정상 케이스는 재시도 대상이 아님 (권한 요청은 온보딩/마이페이지가 담당).
+const TOKEN_FETCH_MAX_RETRIES = 2;
+const TOKEN_FETCH_RETRY_DELAY_MS = 1500;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getNativeDevicePushTokenWithRetryAsync(): Promise<string | null> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= TOKEN_FETCH_MAX_RETRIES; attempt += 1) {
+    try {
+      return await getNativeDevicePushTokenAsync();
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === TOKEN_FETCH_MAX_RETRIES) {
+        break;
+      }
+
+      if (__DEV__) {
+        console.warn(
+          `[NotificationDeviceBootstrap] token fetch failed, retrying (${attempt + 1}/${TOKEN_FETCH_MAX_RETRIES})`,
+          error
+        );
+      }
+
+      await delay(TOKEN_FETCH_RETRY_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  throw lastError;
+}
+
 async function resolveDeviceIdForRegistration(): Promise<string | null> {
   const device_id = (await getOrCreateDeviceId()).trim();
   return device_id.length > 0 ? device_id : null;
@@ -67,6 +103,7 @@ function enqueueRegisterPushToken({
         }
 
         // device_id platform app_version은 등록 API에서 채움
+        // 네트워크/서버 오류에 대한 재시도는 useRegisterNotificationDevice의 mutation retry 옵션이 담당함
         await registerDeviceToken(pending.token);
         lastRegisteredTokenRef.current = pending.token;
       } catch (error) {
@@ -107,7 +144,7 @@ export function NotificationDeviceBootstrap() {
 
     void (async () => {
       try {
-        const token = await getNativeDevicePushTokenAsync();
+        const token = await getNativeDevicePushTokenWithRetryAsync();
         if (!token || cancelled) {
           return;
         }

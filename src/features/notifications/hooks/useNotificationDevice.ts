@@ -17,6 +17,17 @@ function isNotificationDeviceNotFoundError(error: unknown): boolean {
   return status === HTTP_STATUS.NOT_FOUND || errorCode === 'NOT_FOUND';
 }
 
+// 400(VALIDATION_ERROR), 401(AUTH_TOKEN_EXPIRED) 등 요청을 다시 보내도 같은 결과가 나오는 에러는 재시도하지 않는다.
+// 네트워크 단절/5xx 등 일시적 실패만 재시도 대상으로 본다.
+function isRetryableRegistrationError(error: unknown): boolean {
+  const status = readApiHttpStatus(error);
+  if (status === null) {
+    // 네트워크 자체가 끊긴 경우(HTTP 상태 없음)는 재시도 대상
+    return true;
+  }
+  return status >= 500;
+}
+
 export function useRegisterNotificationDevice() {
   return useMutation<NotificationDeviceTokenResponse, Error, string>({
     mutationFn: async (pushToken) => {
@@ -37,6 +48,9 @@ export function useRegisterNotificationDevice() {
 
       return registerNotificationDevice(pushToken);
     },
+    // 일시적 오류(네트워크 끊김, 5xx)만 최대 2회 재시도. 400/401 등은 즉시 실패 처리.
+    retry: (failureCount, error) => failureCount < 2 && isRetryableRegistrationError(error),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 8000),
     onSuccess: async (_response, pushToken) => {
       await rememberRegisteredPushToken(pushToken);
     },

@@ -3,8 +3,15 @@ import { trackPushPermissionResultFromCurrentStatus } from '@/analytics/pushPerm
 import { track } from '@/analytics/track';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { AppModal } from '@/components/ui/AppModal';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import { getPartnerByKey } from '@/constants/characters';
+import {
+  NOTIFICATION_PERMISSION_DENIED_MODAL,
+  NOTIFICATION_SETTINGS_ALL_DISABLED,
+  NOTIFICATION_SETTINGS_ALL_ENABLED,
+  NOTIFICATION_TOKEN_UNAVAILABLE_MODAL,
+} from '@/constants/notifications';
 import { MAIN_ROUTES } from '@/constants/routes';
 import { FALLBACK_NICKNAME } from '@/constants/user';
 import { AccountSection } from '@/features/mypage/components/AccountSection';
@@ -12,18 +19,23 @@ import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
-import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
 import {
   useMyPage,
   useNotificationSettings,
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
+import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import { getNotificationPermissionGrantedAsync } from '@/notifications/fcm';
+import {
+  getLastOsNotificationPermissionGranted,
+  setLastOsNotificationPermissionGranted,
+} from '@/notifications/lastOsPermissionGranted';
 import type { CheckinTime, NotificationSettingsUpdateParams } from '@/types/user';
 import { formatJoinedAtLabel } from '@/utils/date';
-import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { AppState, Linking, ScrollView, View } from 'react-native';
 
 function isEnablingNotificationSettings(params: NotificationSettingsUpdateParams): boolean {
   return (
@@ -32,6 +44,32 @@ function isEnablingNotificationSettings(params: NotificationSettingsUpdateParams
     params.report_enabled === true
   );
 }
+
+function hasAnyNotificationEnabled(settings: {
+  checkin_enabled: boolean;
+  character_enabled: boolean;
+  report_enabled: boolean;
+}): boolean {
+  return (
+    settings.checkin_enabled === true ||
+    settings.character_enabled === true ||
+    settings.report_enabled === true
+  );
+}
+
+function areAllNotificationSettingsDisabled(settings: {
+  checkin_enabled: boolean;
+  character_enabled: boolean;
+  report_enabled: boolean;
+}): boolean {
+  return (
+    settings.checkin_enabled === false &&
+    settings.character_enabled === false &&
+    settings.report_enabled === false
+  );
+}
+
+type NotificationReadyModal = 'permission_denied' | 'token_unavailable' | null;
 
 export function SettingsScreen() {
   const router = useRouter();
@@ -42,7 +80,14 @@ export function SettingsScreen() {
     useUpdateNotificationSettings();
   const { ensureReady } = useEnsurePushNotificationReady();
   const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
+  const [readyModal, setReadyModal] = useState<NotificationReadyModal>(null);
   const isNotificationUpdateInFlightRef = useRef(false);
+  // 직전 OS 권한 상태 null은 미조회 또는 저장값 없음
+  const prevGrantedRef = useRef<boolean | null>(null);
+  // 영속 저장소 hydrate 완료 여부
+  const isPrevGrantedHydratedRef = useRef(false);
+  // OS 권한 sync 중복 실행 방지
+  const isOsPermissionSyncInFlightRef = useRef(false);
 
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
@@ -69,6 +114,96 @@ export function SettingsScreen() {
     isNotificationSettingsPending ||
     !notificationSettings;
 
+  const closeReadyModal = () => {
+    setReadyModal(null);
+  };
+
+  const openSystemSettings = () => {
+    closeReadyModal();
+    void Linking.openSettings();
+  };
+
+  // 영속 저장소에서 직전 OS 권한 상태를 읽어 ref에 채움
+  const hydratePrevGranted = useCallback(async () => {
+    if (isPrevGrantedHydratedRef.current) {
+      return;
+    }
+
+    const stored = await getLastOsNotificationPermissionGranted();
+    prevGrantedRef.current = stored;
+    isPrevGrantedHydratedRef.current = true;
+  }, []);
+
+  // OS 권한과 서버 알림 설정을 양방향으로 맞춤
+  const syncSettingsWithOsPermission = useCallback(async () => {
+    if (
+      !notificationSettings ||
+      isNotificationUpdateInFlightRef.current ||
+      isOsPermissionSyncInFlightRef.current
+    ) {
+      return;
+    }
+
+    isOsPermissionSyncInFlightRef.current = true;
+    isNotificationUpdateInFlightRef.current = true;
+    setIsNotificationUpdateLocked(true);
+
+    try {
+      // hydrate 전에 sync하면 전환 감지가 깨짐
+      await hydratePrevGranted();
+
+      const granted = await getNotificationPermissionGrantedAsync();
+      const prevGranted = prevGrantedRef.current;
+
+      const anyEnabled = hasAnyNotificationEnabled(notificationSettings);
+      const allDisabled = areAllNotificationSettingsDisabled(notificationSettings);
+
+      // denied인데 서버에 true가 있으면 전체 OFF로 내림
+      if (!granted && anyEnabled) {
+        await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
+        setReadyModal('permission_denied');
+      }
+      // denied에서 granted로 바뀐 뒤에만 서버 전체 OFF를 전체 ON으로 올림
+      else if (granted && prevGranted === false && allDisabled) {
+        await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_ENABLED);
+      }
+
+      // 서버 상태가 정상적으로 반영된 뒤에만 현재 OS 권한 상태를 저장
+      prevGrantedRef.current = granted;
+      await setLastOsNotificationPermissionGranted(granted);
+    } finally {
+      isNotificationUpdateInFlightRef.current = false;
+      setIsNotificationUpdateLocked(false);
+      isOsPermissionSyncInFlightRef.current = false;
+    }
+  }, [hydratePrevGranted, notificationSettings, updateNotificationSettings]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      const runSync = () => {
+        if (cancelled) {
+          return;
+        }
+        void syncSettingsWithOsPermission();
+      };
+
+      runSync();
+
+      const subscription = AppState.addEventListener('change', (nextState) => {
+        if (nextState === 'active') {
+          runSync();
+        }
+      });
+
+      return () => {
+        cancelled = true;
+        subscription.remove();
+      };
+    }, [syncSettingsWithOsPermission])
+  );
+
   const handleNotificationUpdate = (params: NotificationSettingsUpdateParams) => {
     if (
       isNotificationUpdatePending ||
@@ -83,13 +218,24 @@ export function SettingsScreen() {
 
     void (async () => {
       try {
-        // 권한 실패와 무관하게 설정 PATCH 전송
         if (isEnablingNotificationSettings(params)) {
-          // ⚠️ trigger를 signup_flow와 나누지 않으면 퍼널 5행 분모가 설정 재동의로 부푼다(감사 M-1)
+          // trigger를 signup_flow와 나누지 않으면 퍼널 분모가 설정 재동의로 부풂
           track('push_permission_prompted', { trigger: PUSH_PERMISSION_TRIGGER.settings });
-          await ensureReady();
-          // 기다리지 않는다 — 계측이 설정 PATCH 전송 순서에 끼어들면 안 된다
+          const result = await ensureReady();
+          // 계측이 설정 PATCH 전송 순서에 끼어들지 않음
           trackPushPermissionResultFromCurrentStatus(PUSH_PERMISSION_TRIGGER.settings);
+
+          if (result === 'permission_denied') {
+            // denied 시 true PATCH 금지 및 토글 OFF 유지함
+            setReadyModal('permission_denied');
+            return;
+          }
+
+          if (result === 'token_unavailable') {
+            // 토큰 등록 실패 시 true PATCH 금지 및 토글 OFF 유지함
+            setReadyModal('token_unavailable');
+            return;
+          }
         }
 
         await updateNotificationSettings(params);
@@ -193,6 +339,26 @@ export function SettingsScreen() {
           </View>
         </ScrollView>
       </ScreenContainer>
+
+      <AppModal
+        visible={readyModal === 'permission_denied'}
+        onClose={closeReadyModal}
+        title={NOTIFICATION_PERMISSION_DENIED_MODAL.title}
+        description={NOTIFICATION_PERMISSION_DENIED_MODAL.description}
+        confirmLabel={NOTIFICATION_PERMISSION_DENIED_MODAL.confirmLabel}
+        cancelLabel={NOTIFICATION_PERMISSION_DENIED_MODAL.cancelLabel}
+        onConfirm={openSystemSettings}
+        onCancel={closeReadyModal}
+      />
+
+      <AppModal
+        visible={readyModal === 'token_unavailable'}
+        onClose={closeReadyModal}
+        title={NOTIFICATION_TOKEN_UNAVAILABLE_MODAL.title}
+        description={NOTIFICATION_TOKEN_UNAVAILABLE_MODAL.description}
+        confirmLabel={NOTIFICATION_TOKEN_UNAVAILABLE_MODAL.confirmLabel}
+        onConfirm={closeReadyModal}
+      />
     </View>
   );
 }
