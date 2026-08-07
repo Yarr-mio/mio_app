@@ -83,6 +83,13 @@ export const NOTIFICATION_PERMISSION_DENIED_ALERT = {
   cancelLabel: '닫기',
 } as const;
 
+export const NOTIFICATION_PERMISSION_DENIED_MODAL = {
+  title: '알림 권한이 꺼져 있어요',
+  description: '기기 알림 권한이 꺼져 있어 알림을 받을 수 없어요.\n설정에서 알림을 허용해 주세요.',
+  confirmLabel: '설정으로 이동',
+  cancelLabel: '닫기',
+} as const;
+
 export const NOTIFICATION_TOKEN_UNAVAILABLE_ALERT = {
   title: '앱을 열면 알림을 확인할 수 있어요',
   message:
