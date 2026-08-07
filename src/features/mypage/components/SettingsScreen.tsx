@@ -3,8 +3,13 @@ import { trackPushPermissionResultFromCurrentStatus } from '@/analytics/pushPerm
 import { track } from '@/analytics/track';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { AppModal } from '@/components/ui/AppModal';
 import { DefaultBackground } from '@/components/ui/DefaultBackground';
 import { getPartnerByKey } from '@/constants/characters';
+import {
+  NOTIFICATION_PERMISSION_DENIED_MODAL,
+  NOTIFICATION_SETTINGS_ALL_DISABLED,
+} from '@/constants/notifications';
 import { MAIN_ROUTES } from '@/constants/routes';
 import { FALLBACK_NICKNAME } from '@/constants/user';
 import { AccountSection } from '@/features/mypage/components/AccountSection';
@@ -19,17 +24,30 @@ import {
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
+import { getNotificationPermissionGrantedAsync } from '@/notifications/fcm';
 import type { CheckinTime, NotificationSettingsUpdateParams } from '@/types/user';
 import { formatJoinedAtLabel } from '@/utils/date';
-import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { AppState, Linking, ScrollView, View } from 'react-native';
 
 function isEnablingNotificationSettings(params: NotificationSettingsUpdateParams): boolean {
   return (
     params.checkin_enabled === true ||
     params.character_enabled === true ||
     params.report_enabled === true
+  );
+}
+
+function hasAnyNotificationEnabled(settings: {
+  checkin_enabled: boolean;
+  character_enabled: boolean;
+  report_enabled: boolean;
+}): boolean {
+  return (
+    settings.checkin_enabled === true ||
+    settings.character_enabled === true ||
+    settings.report_enabled === true
   );
 }
 
@@ -42,6 +60,7 @@ export function SettingsScreen() {
     useUpdateNotificationSettings();
   const { ensureReady } = useEnsurePushNotificationReady();
   const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
+  const [permissionDeniedModalVisible, setPermissionDeniedModalVisible] = useState(false);
   const isNotificationUpdateInFlightRef = useRef(false);
 
   const selectedCharacterId = useSelectedCharacterId();
@@ -69,6 +88,68 @@ export function SettingsScreen() {
     isNotificationSettingsPending ||
     !notificationSettings;
 
+  const closePermissionDeniedModal = () => {
+    setPermissionDeniedModalVisible(false);
+  };
+
+  const openSystemSettings = () => {
+    closePermissionDeniedModal();
+    void Linking.openSettings();
+  };
+
+  // OS 권한 denied인데 서버가 true면 전체 OFF로 맞춤
+  const syncSettingsWithOsPermission = useCallback(async () => {
+    if (!notificationSettings || isNotificationUpdateInFlightRef.current) {
+      return;
+    }
+
+    if (!hasAnyNotificationEnabled(notificationSettings)) {
+      return;
+    }
+
+    const granted = await getNotificationPermissionGrantedAsync();
+    if (granted) {
+      return;
+    }
+
+    isNotificationUpdateInFlightRef.current = true;
+    setIsNotificationUpdateLocked(true);
+
+    try {
+      await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
+      setPermissionDeniedModalVisible(true);
+    } finally {
+      isNotificationUpdateInFlightRef.current = false;
+      setIsNotificationUpdateLocked(false);
+    }
+  }, [notificationSettings, updateNotificationSettings]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      const runSync = () => {
+        if (cancelled) {
+          return;
+        }
+        void syncSettingsWithOsPermission();
+      };
+
+      runSync();
+
+      const subscription = AppState.addEventListener('change', (nextState) => {
+        if (nextState === 'active') {
+          runSync();
+        }
+      });
+
+      return () => {
+        cancelled = true;
+        subscription.remove();
+      };
+    }, [syncSettingsWithOsPermission])
+  );
+
   const handleNotificationUpdate = (params: NotificationSettingsUpdateParams) => {
     if (
       isNotificationUpdatePending ||
@@ -83,13 +164,18 @@ export function SettingsScreen() {
 
     void (async () => {
       try {
-        // 권한 실패와 무관하게 설정 PATCH 전송
         if (isEnablingNotificationSettings(params)) {
-          // ⚠️ trigger를 signup_flow와 나누지 않으면 퍼널 5행 분모가 설정 재동의로 부푼다(감사 M-1)
+          // trigger를 signup_flow와 나누지 않으면 퍼널 분모가 설정 재동의로 부풂
           track('push_permission_prompted', { trigger: PUSH_PERMISSION_TRIGGER.settings });
-          await ensureReady();
-          // 기다리지 않는다 — 계측이 설정 PATCH 전송 순서에 끼어들면 안 된다
+          const result = await ensureReady();
+          // 계측이 설정 PATCH 전송 순서에 끼어들지 않음
           trackPushPermissionResultFromCurrentStatus(PUSH_PERMISSION_TRIGGER.settings);
+
+          if (result === 'permission_denied') {
+            // denied 시 true PATCH 금지 및 토글 OFF 유지함
+            setPermissionDeniedModalVisible(true);
+            return;
+          }
         }
 
         await updateNotificationSettings(params);
@@ -193,6 +279,17 @@ export function SettingsScreen() {
           </View>
         </ScrollView>
       </ScreenContainer>
+
+      <AppModal
+        visible={permissionDeniedModalVisible}
+        onClose={closePermissionDeniedModal}
+        title={NOTIFICATION_PERMISSION_DENIED_MODAL.title}
+        description={NOTIFICATION_PERMISSION_DENIED_MODAL.description}
+        confirmLabel={NOTIFICATION_PERMISSION_DENIED_MODAL.confirmLabel}
+        cancelLabel={NOTIFICATION_PERMISSION_DENIED_MODAL.cancelLabel}
+        onConfirm={openSystemSettings}
+        onCancel={closePermissionDeniedModal}
+      />
     </View>
   );
 }
