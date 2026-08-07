@@ -7,12 +7,13 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { AuthBackground } from '@/components/themed/AuthBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
-import { EMPLOYMENT_STATUS_OPTIONS } from '@/constants/signup';
+import { EMPLOYMENT_STATUS_OPTIONS, SIGNUP_NEXT_BUTTON_LABEL } from '@/constants/signup';
 import {
   EditNicknameLayout,
   InputColors,
   NicknameDuplicateCheckClasses,
   ScreenSpacing,
+  SignupFlowClasses,
   SignupFlowLayout,
   SignupInfoLayout,
 } from '@/constants/theme';
@@ -29,6 +30,7 @@ const SIGNUP_USER_PROFILE_IMAGE = require('@/assets/images/signup/signup_user_pr
 
 const SIGNUP_STEP_COUNT = SignupFlowLayout.totalSteps;
 const SIGNUP_CURRENT_STEP = SignupFlowLayout.infoCurrentStep;
+const STEP_INDICATOR_WRAP = SignupFlowClasses.stepIndicatorWrap;
 const PROFILE_IMAGE_SIZE = EditNicknameLayout.avatarSize;
 const NICKNAME_MAX_LENGTH = SignupInfoLayout.nicknameMaxLength;
 const NICKNAME_MIN_LENGTH = SignupInfoLayout.nicknameMinLength;
@@ -162,7 +164,7 @@ export default function SignUpInfoScreen() {
     <View className="flex-1 bg-midnight">
       <AuthBackground />
       <ScreenContainer className="flex-1 px-8" bottomInsetMin={ScreenSpacing.bottomInsetMin}>
-        <View className="pt-4 mt-6">
+        <View className={STEP_INDICATOR_WRAP}>
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
@@ -291,7 +293,7 @@ export default function SignUpInfoScreen() {
         <View className="pt-4 gap-2">
           {submitError ? <ErrorState message={submitError} /> : null}
           <Button disabled={!canContinue || isSubmitPending} onPress={handleContinue}>
-            다음
+            {SIGNUP_NEXT_BUTTON_LABEL}
           </Button>
         </View>
       </ScreenContainer>

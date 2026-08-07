@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
+import { AppState } from 'react-native';
 
 import { useRegisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
+import { ensurePushNotificationReady } from '@/notifications/ensurePushNotificationReady';
 import {
   getNativeDevicePushTokenAsync,
+  getNotificationPermissionGrantedAsync,
   subscribeNativePushTokenRefresh,
 } from '@/notifications/fcm';
 import { useAuthStore } from '@/store/authStore';
@@ -83,18 +86,20 @@ function enqueueRegisterPushToken({
 
 export function NotificationDeviceBootstrap() {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const signupStep = useAuthStore((state) => state.signupStep);
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
   const lastRegisteredTokenRef = useRef<string | null>(null);
   const pendingRegistrationRef = useRef<PendingPushTokenRegistration | null>(null);
   const registrationChainRef = useRef(Promise.resolve());
-  // 가입 미완료 시 서버 디바이스 등록 스킵
-  const shouldRegisterDevice = accessToken !== null && signupStep === 'COMPLETED';
+  const wasPermissionGrantedRef = useRef<boolean | null>(null);
+  const isForegroundPermissionSyncInFlightRef = useRef(false);
+  // 비로그인 시 디바이스 등록 스킵함
+  const shouldRegisterDevice = accessToken !== null;
 
   useEffect(() => {
     if (!shouldRegisterDevice) {
       lastRegisteredTokenRef.current = null;
       pendingRegistrationRef.current = null;
+      wasPermissionGrantedRef.current = null;
       return;
     }
 
@@ -147,6 +152,73 @@ export function NotificationDeviceBootstrap() {
     });
 
     return () => {
+      subscription.remove();
+    };
+  }, [shouldRegisterDevice, registerDeviceToken]);
+
+  // 포그라운드 복귀 시 권한 거부에서 허용으로 바뀐 경우만 디바이스 재등록함
+  useEffect(() => {
+    if (!shouldRegisterDevice) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      const granted = await getNotificationPermissionGrantedAsync();
+      if (!cancelled) {
+        wasPermissionGrantedRef.current = granted;
+      }
+    })();
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') {
+        return;
+      }
+
+      if (isForegroundPermissionSyncInFlightRef.current) {
+        return;
+      }
+
+      isForegroundPermissionSyncInFlightRef.current = true;
+
+      void (async () => {
+        try {
+          const granted = await getNotificationPermissionGrantedAsync();
+          if (cancelled) {
+            return;
+          }
+
+          const wasGranted = wasPermissionGrantedRef.current;
+          wasPermissionGrantedRef.current = granted;
+
+          if (wasGranted !== false || granted !== true) {
+            return;
+          }
+
+          if (cancelled) {
+            return;
+          }
+
+          const result = await ensurePushNotificationReady({ registerDeviceToken });
+          if (cancelled || result !== 'ready') {
+            return;
+          }
+
+          const token = await getNativeDevicePushTokenAsync();
+          if (token) {
+            lastRegisteredTokenRef.current = token;
+          }
+        } catch (error) {
+          console.warn('[NotificationDeviceBootstrap:foreground]', error);
+        } finally {
+          isForegroundPermissionSyncInFlightRef.current = false;
+        }
+      })();
+    });
+
+    return () => {
+      cancelled = true;
       subscription.remove();
     };
   }, [shouldRegisterDevice, registerDeviceToken]);

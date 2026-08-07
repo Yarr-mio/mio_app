@@ -3,8 +3,21 @@ export const HOME_TITLES = {
   notCheckedIn: '오늘의 마음을 꺼내 봐요',
 } as const;
 
+export const HOME_RECOMMENDED_ACTIONS_TITLE = '오늘의 추천 행동';
+
+export const HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL = '전체보기';
+
 // 홈 추천 행동 카드 최대 표시 개수 제한함
 export const HOME_RECOMMENDED_TODO_MAX_COUNT = 3;
+
+// 홈 추천 행동 제목 옆 개수는 전체 이 값 이상일 때만 표시함
+export const HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN = 4;
+
+export const HOME_MIND_EXPLORE_COMING_SOON_MODAL = {
+  title: '아직 준비 중인 기능이에요',
+  description: '더 섬세하게 마음을 들여다볼 수 있도록 준비 중이에요. \n조금만 기다려 주세요.',
+  confirmLabel: '확인',
+} as const;
 
 export const HOME_SPEECH_BUBBLE_MESSAGES = [
   '오늘의 감정 체크인을 시작해볼까요? ✨\n작은 기록이 큰 변화를 만들어요',

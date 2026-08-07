@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { NOTIFICATION_MODAL, NotificationModalColors } from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
+import { SIGNUP_COMPLETE_COPY } from '@/constants/signup';
 import { AppModalLayout, OnboardingCompleteLayout, ScreenSpacing } from '@/constants/theme';
+import { useSignupCompleteSubmit } from '@/features/auth/hooks/useSignupCompleteSubmit';
+import { useSignupNotificationAgree } from '@/features/auth/hooks/useSignupNotificationAgree';
+import { useSignupNotificationLater } from '@/features/auth/hooks/useSignupNotificationLater';
 import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
-import { useOnboardingCompleteSubmit } from '@/features/onboarding/hooks/useOnboardingCompleteSubmit';
-import { useOnboardingNotificationAgree } from '@/features/onboarding/hooks/useOnboardingNotificationAgree';
-import { useOnboardingNotificationLater } from '@/features/onboarding/hooks/useOnboardingNotificationLater';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -22,7 +23,7 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function OnboardingCompleteScreen() {
+export function SignUpCompleteScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const characterId = useSelectedCharacterId();
@@ -34,9 +35,9 @@ export function OnboardingCompleteScreen() {
   // 모달 1회 노출당 정확히 1건이 되도록 컴포넌트에서 가드한다
   const promptTrackedRef = useRef(false);
   const { ensureReady } = useEnsurePushNotificationReady();
-  const { mutateAsync: enableNotificationSettings } = useOnboardingNotificationAgree();
-  const { mutateAsync: declineNotificationSettings } = useOnboardingNotificationLater();
-  const { submit, isPending, error, clearError } = useOnboardingCompleteSubmit({
+  const { mutateAsync: enableNotificationSettings } = useSignupNotificationAgree();
+  const { mutateAsync: declineNotificationSettings } = useSignupNotificationLater();
+  const { submit, isPending, error, clearError } = useSignupCompleteSubmit({
     onSuccess: () => {
       setSignupCompleted(true);
       setNotificationModalVisible(true);
@@ -74,7 +75,7 @@ export function OnboardingCompleteScreen() {
         // 알림 설정 전체 활성화
         await enableNotificationSettings();
       } catch (notificationError) {
-        console.warn('[OnboardingCompleteNotification]', notificationError);
+        console.warn('[SignUpCompleteNotification]', notificationError);
       } finally {
         setNotificationPending(false);
         setNotificationModalVisible(false);
@@ -118,10 +119,10 @@ export function OnboardingCompleteScreen() {
         <View className="flex-1">
           <View className="mt-10">
             <ThemedText type="subtitle" className="text-fg">
-              반가워요!
+              {SIGNUP_COMPLETE_COPY.greeting}
             </ThemedText>
             <ThemedText type="title" className="mt-2 text-fg">
-              {character.name}와 함께{'\n'}여정을 떠나 볼까요?
+              {SIGNUP_COMPLETE_COPY.title(character.name)}
             </ThemedText>
           </View>
 
@@ -148,7 +149,7 @@ export function OnboardingCompleteScreen() {
         <View className="pt-4 gap-2">
           {error ? <ErrorState message={error} /> : null}
           <Button disabled={isPending} onPress={handleStart}>
-            {character.name}와 시작하기
+            {SIGNUP_COMPLETE_COPY.startButton(character.name)}
           </Button>
         </View>
       </View>

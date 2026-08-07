@@ -124,18 +124,12 @@ module.exports = {
         // 선택됨: #9D7FEE 10% 배경 + 50% stroke = bg-sub-tab-selected-bg, border-sub-tab-selected-border
         'sub-tab-selected-bg': '#9D7FEE1A',
         'sub-tab-selected-border': '#9D7FEE80',
-        // 비활성 (step2Concern 제외 공통): #FFFFFF 5% 배경 + 10% stroke
+        // 비활성: #FFFFFF 5% 배경 + 10% stroke
         // = bg-sub-tab-inactive-bg, border-sub-tab-inactive-border
         'sub-tab-inactive-bg': '#FFFFFF0D',
         'sub-tab-inactive-border': '#FFFFFF1A',
-        // 비활성 (step2Concern 전용): #E4E4E4 stroke, 배경 없음 = border-sub-tab-concern-inactive-border
-        'sub-tab-concern-inactive-border': '#E4E4E4',
 
-        // 온보딩
-        'progress-inactive': '#E9E9E9', // bg-progress-inactive — 진행 바 미완료
-        'step-muted': '#9CA3AF', // text-step-muted — 단계 표시 (n/3)
-        'onboarding-surface': '#131238', // bg-onboarding-surface — 강도 슬라이더 박스
-        'onboarding-border': '#2C295F', // border-onboarding-border
+        // 온보딩 공통
         badge: '#5A5490', // text-badge — [필수] / [선택]
         'btn-disabled': '#9C9C9C', // bg-btn-disabled
 

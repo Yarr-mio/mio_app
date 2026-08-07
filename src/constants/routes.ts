@@ -2,12 +2,9 @@ export const AUTH_ROUTES = {
   login: '/(auth)/login',
   termsOfService: '/(auth)/signup/termsOfService',
   signupInfo: '/(auth)/signup/info',
+  signupCharacter: '/(auth)/signup/character',
   signupComplete: '/(auth)/signup/complete',
-  onboardingStep1: '/(auth)/onboarding/step1Emotion',
-  onboardingStep2: '/(auth)/onboarding/step2Concern',
-  onboardingStep3: '/(auth)/onboarding/step3Style',
-  onboardingStep4: '/(auth)/onboarding/step4Character',
-  onboardingComplete: '/(auth)/onboarding/onboardingComplete',
+  signupLegalDocument: '/(auth)/signup/legal/[documentId]',
   home: '/(main)/home',
 } as const;
 

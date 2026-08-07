@@ -269,13 +269,13 @@ export const REPORT_PERIOD_TO_CHARACTER_STORY_PERIOD: Record<ReportPeriod, Chara
   month: 'monthly',
 };
 
-export const CHARACTER_STORY_TRUNCATE_ELLIPSIS = '...';
+export const CHARACTER_STORY_BODY_SEPARATOR = '\n\n';
 
-export const CHARACTER_STORY_READ_MORE_INLINE_LABEL = '더보기';
+export const CHARACTER_STORY_READ_MORE_INLINE_LABEL = ' ...더보기';
 
 export const CHARACTER_STORY_COLLAPSE_LABEL = '...접기';
 
-export const CHARACTER_STORY_READ_MORE_MIN_LENGTH = 90;
+export const CHARACTER_STORY_READ_MORE_MIN_LENGTH = 70;
 
 export function formatCharacterStoryCardTitle(
   characterName: string,

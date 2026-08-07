@@ -4,14 +4,14 @@ import { useState } from 'react';
 import type { OnboardingCharacterId } from '@/constants/characters';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useHandleSignupStepInvalid } from '@/features/auth/hooks/useHandleSignupStepInvalid';
+import { useSignupCharacter } from '@/features/auth/hooks/useSignupCharacter';
 import { isSignupStepInvalidError } from '@/features/auth/utils/isSignupStepInvalidError';
-import { useOnboardingCharacter } from '@/features/onboarding/hooks/useOnboarding';
 import { resolveStoredNickname, useUserStore } from '@/store/userStore';
 import { readApiErrorMessage } from '@/utils/readApiError';
 
-export function useOnboardingStep4Submit() {
+export function useCharacterSelectSubmit() {
   const router = useRouter();
-  const onboardingCharacter = useOnboardingCharacter();
+  const signupCharacter = useSignupCharacter();
   const { handleSignupStepInvalid } = useHandleSignupStepInvalid();
   const patchOnboardingCharacterId = useUserStore((state) => state.patchOnboardingCharacterId);
   const setAuthProfile = useUserStore((state) => state.setAuthProfile);
@@ -25,7 +25,7 @@ export function useOnboardingStep4Submit() {
     setError(null);
 
     try {
-      const response = await onboardingCharacter.mutateAsync({ character_id: characterId });
+      const response = await signupCharacter.mutateAsync({ character_id: characterId });
       // 응답 preferred_character_id 우선 사용
       const preferredCharacterId = response.data.preferred_character_id ?? characterId;
       patchOnboardingCharacterId(preferredCharacterId);
@@ -38,7 +38,7 @@ export function useOnboardingStep4Submit() {
         characterId: preferredCharacterId,
       });
 
-      router.push(AUTH_ROUTES.onboardingComplete);
+      router.push(AUTH_ROUTES.signupComplete);
     } catch (submitError) {
       if (isSignupStepInvalidError(submitError)) {
         await handleSignupStepInvalid();
@@ -51,7 +51,7 @@ export function useOnboardingStep4Submit() {
 
   return {
     submit,
-    isPending: onboardingCharacter.isPending,
+    isPending: signupCharacter.isPending,
     error,
     clearError,
   };
