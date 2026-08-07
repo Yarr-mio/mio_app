@@ -90,6 +90,15 @@ export const NOTIFICATION_PERMISSION_DENIED_MODAL = {
   cancelLabel: '닫기',
 } as const;
 
+// 마지막 확인한 OS 알림 권한 상태 영속 키 비밀값 아님
+export const LAST_OS_NOTIFICATION_PERMISSION_STORAGE_KEY =
+  'notification.last_os_permission_granted' as const;
+
+export const OS_PERMISSION_GRANTED_STORAGE_VALUE = {
+  granted: '1',
+  denied: '0',
+} as const;
+
 export const NOTIFICATION_TOKEN_UNAVAILABLE_ALERT = {
   title: '앱을 열면 알림을 확인할 수 있어요',
   message:

@@ -9,6 +9,7 @@ import { getPartnerByKey } from '@/constants/characters';
 import {
   NOTIFICATION_PERMISSION_DENIED_MODAL,
   NOTIFICATION_SETTINGS_ALL_DISABLED,
+  NOTIFICATION_SETTINGS_ALL_ENABLED,
 } from '@/constants/notifications';
 import { MAIN_ROUTES } from '@/constants/routes';
 import { FALLBACK_NICKNAME } from '@/constants/user';
@@ -17,14 +18,18 @@ import { AiPartnerCard } from '@/features/mypage/components/AiPartnerCard';
 import { LegalInfoSection } from '@/features/mypage/components/LegalInfoSection';
 import { NotificationCard } from '@/features/mypage/components/NotificationCard';
 import { UserProfileCard } from '@/features/mypage/components/UserProfileCard';
-import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
 import {
   useMyPage,
   useNotificationSettings,
   useUpdateNotificationSettings,
 } from '@/features/mypage/hooks/useMypage';
+import { useEnsurePushNotificationReady } from '@/features/notifications/hooks/useEnsurePushNotificationReady';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { getNotificationPermissionGrantedAsync } from '@/notifications/fcm';
+import {
+  getLastOsNotificationPermissionGranted,
+  setLastOsNotificationPermissionGranted,
+} from '@/notifications/lastOsPermissionGranted';
 import type { CheckinTime, NotificationSettingsUpdateParams } from '@/types/user';
 import { formatJoinedAtLabel } from '@/utils/date';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -51,6 +56,18 @@ function hasAnyNotificationEnabled(settings: {
   );
 }
 
+function areAllNotificationSettingsDisabled(settings: {
+  checkin_enabled: boolean;
+  character_enabled: boolean;
+  report_enabled: boolean;
+}): boolean {
+  return (
+    settings.checkin_enabled === false &&
+    settings.character_enabled === false &&
+    settings.report_enabled === false
+  );
+}
+
 export function SettingsScreen() {
   const router = useRouter();
   const { data: myPageData } = useMyPage();
@@ -62,6 +79,12 @@ export function SettingsScreen() {
   const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
   const [permissionDeniedModalVisible, setPermissionDeniedModalVisible] = useState(false);
   const isNotificationUpdateInFlightRef = useRef(false);
+  // 직전 OS 권한 상태 null은 미조회 또는 저장값 없음
+  const prevGrantedRef = useRef<boolean | null>(null);
+  // 영속 저장소 hydrate 완료 여부
+  const isPrevGrantedHydratedRef = useRef(false);
+  // OS 권한 sync 중복 실행 방지
+  const isOsPermissionSyncInFlightRef = useRef(false);
 
   const selectedCharacterId = useSelectedCharacterId();
   const partner = getPartnerByKey(selectedCharacterId);
@@ -97,32 +120,73 @@ export function SettingsScreen() {
     void Linking.openSettings();
   };
 
-  // OS 권한 denied인데 서버가 true면 전체 OFF로 맞춤
+  // 영속 저장소에서 직전 OS 권한 상태를 읽어 ref에 채움
+  const hydratePrevGranted = useCallback(async () => {
+    if (isPrevGrantedHydratedRef.current) {
+      return;
+    }
+
+    const stored = await getLastOsNotificationPermissionGranted();
+    prevGrantedRef.current = stored;
+    isPrevGrantedHydratedRef.current = true;
+  }, []);
+
+  // OS 권한과 서버 알림 설정을 양방향으로 맞춤
   const syncSettingsWithOsPermission = useCallback(async () => {
-    if (!notificationSettings || isNotificationUpdateInFlightRef.current) {
+    if (
+      !notificationSettings ||
+      isNotificationUpdateInFlightRef.current ||
+      isOsPermissionSyncInFlightRef.current
+    ) {
       return;
     }
 
-    if (!hasAnyNotificationEnabled(notificationSettings)) {
-      return;
-    }
-
-    const granted = await getNotificationPermissionGrantedAsync();
-    if (granted) {
-      return;
-    }
-
-    isNotificationUpdateInFlightRef.current = true;
-    setIsNotificationUpdateLocked(true);
+    isOsPermissionSyncInFlightRef.current = true;
 
     try {
-      await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
-      setPermissionDeniedModalVisible(true);
+      // hydrate 전에 sync하면 전환 감지가 깨짐
+      await hydratePrevGranted();
+
+      const granted = await getNotificationPermissionGrantedAsync();
+      const prevGranted = prevGrantedRef.current;
+      // 조회 직후 이전 상태를 갱신해 중복 전환 감지를 막음
+      prevGrantedRef.current = granted;
+      await setLastOsNotificationPermissionGranted(granted);
+
+      const anyEnabled = hasAnyNotificationEnabled(notificationSettings);
+      const allDisabled = areAllNotificationSettingsDisabled(notificationSettings);
+
+      // denied인데 서버에 true가 있으면 전체 OFF로 내림
+      if (!granted && anyEnabled) {
+        isNotificationUpdateInFlightRef.current = true;
+        setIsNotificationUpdateLocked(true);
+
+        try {
+          await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
+          setPermissionDeniedModalVisible(true);
+        } finally {
+          isNotificationUpdateInFlightRef.current = false;
+          setIsNotificationUpdateLocked(false);
+        }
+        return;
+      }
+
+      // denied에서 granted로 바뀐 뒤에만 서버 전체 OFF를 전체 ON으로 올림
+      if (granted && prevGranted === false && allDisabled) {
+        isNotificationUpdateInFlightRef.current = true;
+        setIsNotificationUpdateLocked(true);
+
+        try {
+          await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_ENABLED);
+        } finally {
+          isNotificationUpdateInFlightRef.current = false;
+          setIsNotificationUpdateLocked(false);
+        }
+      }
     } finally {
-      isNotificationUpdateInFlightRef.current = false;
-      setIsNotificationUpdateLocked(false);
+      isOsPermissionSyncInFlightRef.current = false;
     }
-  }, [notificationSettings, updateNotificationSettings]);
+  }, [hydratePrevGranted, notificationSettings, updateNotificationSettings]);
 
   useFocusEffect(
     useCallback(() => {
