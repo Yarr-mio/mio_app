@@ -105,6 +105,12 @@ export const NOTIFICATION_TOKEN_UNAVAILABLE_ALERT = {
     '기기 알림을 바로 준비하지 못했어요. 지금은 앱을 열었을 때 알림을 확인할 수 있어요. 잠시 후 다시 시도해 주세요.',
 } as const;
 
+export const NOTIFICATION_TOKEN_UNAVAILABLE_MODAL = {
+  title: '알림을 바로 준비하지 못했어요',
+  description: '기기 알림을 준비하는 중 문제가 생겼어요.\n잠시 후 다시 시도해 주세요.',
+  confirmLabel: '확인',
+} as const;
+
 export const NotificationModalColors = {
   icon: '#7060E0',
   iconBg: '#7060E01A',

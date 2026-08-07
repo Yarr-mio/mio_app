@@ -11,6 +11,7 @@ import { getOnboardingCharacterById } from '@/constants/characters';
 import {
   NOTIFICATION_MODAL,
   NOTIFICATION_PERMISSION_DENIED_ALERT,
+  NOTIFICATION_TOKEN_UNAVAILABLE_ALERT,
   NotificationModalColors,
 } from '@/constants/notifications';
 import { AUTH_ROUTES } from '@/constants/routes';
@@ -91,6 +92,12 @@ export function SignUpCompleteScreen() {
                 },
               },
             ]
+          );
+        }
+        if (result === 'token_unavailable') {
+          Alert.alert(
+            NOTIFICATION_TOKEN_UNAVAILABLE_ALERT.title,
+            NOTIFICATION_TOKEN_UNAVAILABLE_ALERT.message
           );
         }
         // 권한 상태를 재조회해 granted를 얻음

@@ -10,6 +10,7 @@ import {
   NOTIFICATION_PERMISSION_DENIED_MODAL,
   NOTIFICATION_SETTINGS_ALL_DISABLED,
   NOTIFICATION_SETTINGS_ALL_ENABLED,
+  NOTIFICATION_TOKEN_UNAVAILABLE_MODAL,
 } from '@/constants/notifications';
 import { MAIN_ROUTES } from '@/constants/routes';
 import { FALLBACK_NICKNAME } from '@/constants/user';
@@ -68,6 +69,8 @@ function areAllNotificationSettingsDisabled(settings: {
   );
 }
 
+type NotificationReadyModal = 'permission_denied' | 'token_unavailable' | null;
+
 export function SettingsScreen() {
   const router = useRouter();
   const { data: myPageData } = useMyPage();
@@ -77,7 +80,7 @@ export function SettingsScreen() {
     useUpdateNotificationSettings();
   const { ensureReady } = useEnsurePushNotificationReady();
   const [isNotificationUpdateLocked, setIsNotificationUpdateLocked] = useState(false);
-  const [permissionDeniedModalVisible, setPermissionDeniedModalVisible] = useState(false);
+  const [readyModal, setReadyModal] = useState<NotificationReadyModal>(null);
   const isNotificationUpdateInFlightRef = useRef(false);
   // 직전 OS 권한 상태 null은 미조회 또는 저장값 없음
   const prevGrantedRef = useRef<boolean | null>(null);
@@ -111,12 +114,12 @@ export function SettingsScreen() {
     isNotificationSettingsPending ||
     !notificationSettings;
 
-  const closePermissionDeniedModal = () => {
-    setPermissionDeniedModalVisible(false);
+  const closeReadyModal = () => {
+    setReadyModal(null);
   };
 
   const openSystemSettings = () => {
-    closePermissionDeniedModal();
+    closeReadyModal();
     void Linking.openSettings();
   };
 
@@ -163,7 +166,7 @@ export function SettingsScreen() {
 
         try {
           await updateNotificationSettings(NOTIFICATION_SETTINGS_ALL_DISABLED);
-          setPermissionDeniedModalVisible(true);
+          setReadyModal('permission_denied');
         } finally {
           isNotificationUpdateInFlightRef.current = false;
           setIsNotificationUpdateLocked(false);
@@ -237,7 +240,13 @@ export function SettingsScreen() {
 
           if (result === 'permission_denied') {
             // denied 시 true PATCH 금지 및 토글 OFF 유지함
-            setPermissionDeniedModalVisible(true);
+            setReadyModal('permission_denied');
+            return;
+          }
+
+          if (result === 'token_unavailable') {
+            // 토큰 등록 실패 시 true PATCH 금지 및 토글 OFF 유지함
+            setReadyModal('token_unavailable');
             return;
           }
         }
@@ -345,14 +354,23 @@ export function SettingsScreen() {
       </ScreenContainer>
 
       <AppModal
-        visible={permissionDeniedModalVisible}
-        onClose={closePermissionDeniedModal}
+        visible={readyModal === 'permission_denied'}
+        onClose={closeReadyModal}
         title={NOTIFICATION_PERMISSION_DENIED_MODAL.title}
         description={NOTIFICATION_PERMISSION_DENIED_MODAL.description}
         confirmLabel={NOTIFICATION_PERMISSION_DENIED_MODAL.confirmLabel}
         cancelLabel={NOTIFICATION_PERMISSION_DENIED_MODAL.cancelLabel}
         onConfirm={openSystemSettings}
-        onCancel={closePermissionDeniedModal}
+        onCancel={closeReadyModal}
+      />
+
+      <AppModal
+        visible={readyModal === 'token_unavailable'}
+        onClose={closeReadyModal}
+        title={NOTIFICATION_TOKEN_UNAVAILABLE_MODAL.title}
+        description={NOTIFICATION_TOKEN_UNAVAILABLE_MODAL.description}
+        confirmLabel={NOTIFICATION_TOKEN_UNAVAILABLE_MODAL.confirmLabel}
+        onConfirm={closeReadyModal}
       />
     </View>
   );
