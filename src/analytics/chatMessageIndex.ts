@@ -27,6 +27,17 @@ const counters = new Map<string, SessionCounter>();
 /**
  * 캐시된 활성 세션 응답에서 시드를 읽는다.
  * 신규 세션은 캐시에 해당 세션이 없어 0이 되고, 이는 사실과 일치한다.
+ *
+ * ⚠️ **단위가 다르다 — 알려진 한계다(명세 v3.5 §4-C · 2026-08-07 결정 ⓑ).**
+ * `message_count`는 **사용자 메시지 + AI 응답을 합친 총 메시지 수**라서, 재시작 세션의
+ * `message_index`는 실제 사용자 발화 순번보다 대략 2배로 점프한다. 그래도 시드를 넣는 쪽이
+ * 낫다 — 빼면 재시작 유저가 영영 index 0으로만 찍혀 「유의미 대화(index ≥ 1)」 판정 자체가
+ * 성립하지 않는다.
+ *
+ * 그래서 `message_index`는 **`≥ 1` 여부로만 읽고 절대값 지표로 쓰지 않는다.**
+ * 정확히 하려면 BE가 사용자 메시지만 센 `user_message_count`를 내려주면 되고, 그때
+ * 여기 한 줄만 바꾸면 된다(`schema_version` 변경 불필요). T0 전 BE 작업을 늘리지 않으려고
+ * 이번 릴리스에서는 채택하지 않았다.
  */
 function readSeedFromActiveSession(sessionId: string): number {
   const activeSession = queryClient.getQueryData<ActiveSessionResponse>(
