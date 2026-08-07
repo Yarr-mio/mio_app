@@ -57,6 +57,9 @@ export function useChatSse(sessionId: string | null) {
   // 이번 턴에 수신한 done 데이터 — chat_message_sent의 대화 품질 4필드 원천.
   // consumeStream의 반환 계약을 바꾸지 않고 값을 꺼내기 위한 계측 전용 통로다
   const lastDoneRef = useRef<SseDoneData | null>(null);
+  // 이번 턴에 session_meta(사용자 메시지 ack)를 받았는지. 서버가 메시지를 받은 것이 확인된 뒤에만
+  // chat_message_sent를 발행하기 위한 계측 전용 통로 — consumeStream의 반환 계약은 그대로 둔다
+  const sessionMetaAckRef = useRef(false);
   const queryClient = useQueryClient();
 
   // 언마운트/세션 전환 시 진행 중인 스트림 취소 — 쌓인 부분 응답은 롤백하지 않고 스토어에 그대로 둔다
@@ -94,6 +97,7 @@ export function useChatSse(sessionId: string | null) {
   // data.message_id는 inboundMsgId(사용자 메시지 ack)일 뿐 AI 메시지 id가 아니다 — 아직 모르는
   // outboundMsgId 대신 placeholder id로 빈 AI 메시지를 추적하고, 최초 delta 수신 시 확정한다
   function handleSessionMeta(data: SseSessionMetaData) {
+    sessionMetaAckRef.current = true;
     const placeholderId = `pending-ai-${data.message_id}`;
     const store = useChatStore.getState();
     store.addMessage({
@@ -281,8 +285,10 @@ export function useChatSse(sessionId: string | null) {
     // PR #55의 401 재시도는 while 루프로 이 함수 안쪽에 있어 finally가 메시지당 1회만 실행된다
     const messageIndex = peekNextMessageIndex(currentSessionId);
     const charCount = content.length;
-    // 서버가 메시지를 받지 못한 경로에서는 발행하지 않는다 — 발행하면 활성화율이 부푼다
-    let shouldTrackSend = true;
+    // 서버가 메시지를 받지 못한 경로에서는 발행하지 않는다 — 발행하면 활성화율이 부푼다.
+    // 기준은 session_meta 수신(= 사용자 메시지 ack)이다. HTTP 200 헤더는 영속화 전에 flush될 수
+    // 있고, fetch 자체가 거부되는 연결 오류 경로는 애초에 여기까지 오지도 않는다
+    sessionMetaAckRef.current = false;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -329,14 +335,12 @@ export function useChatSse(sessionId: string | null) {
                 accessToken = await refreshAccessTokenForNonAxios();
               } catch (refreshError) {
                 authRefreshFailed = true;
-                shouldTrackSend = false;
                 throw refreshError;
               }
               continue;
             }
           }
 
-          shouldTrackSend = false;
           resetStreamingState();
           handleSyncValidationError(res.status, currentSessionId);
           return;
@@ -376,7 +380,7 @@ export function useChatSse(sessionId: string | null) {
         abortRef.current = null;
       }
 
-      if (shouldTrackSend) {
+      if (sessionMetaAckRef.current) {
         commitSentMessage(currentSessionId);
         // done을 못 받았으면 대화 품질 4필드는 null로 둔다 — 결손을 0/false로 감추지 않는다
         const doneData = lastDoneRef.current;
@@ -391,8 +395,9 @@ export function useChatSse(sessionId: string | null) {
         });
       }
 
-      // 읽은 뒤 비운다 — 다음 턴이 done을 못 받았을 때 이번 턴의 값이 새어 들어가면 안 된다
+      // 읽은 뒤 비운다 — 다음 턴이 done/ack을 못 받았을 때 이번 턴의 값이 새어 들어가면 안 된다
       lastDoneRef.current = null;
+      sessionMetaAckRef.current = false;
     }
   }
 
