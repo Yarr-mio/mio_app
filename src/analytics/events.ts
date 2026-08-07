@@ -68,9 +68,12 @@ export interface ProfileSubmittedProperties {
   age_range: AgeRange | null;
   gender: Gender | null;
   /**
-   * MVP 코호트 2분할의 축. 앱은 3종(`student_or_unemployed` 포함)이고 명세 §8은 2종이라
-   * 서버 화이트리스트를 3종으로 확장하기 전에 적재를 시작하면 대학(원)생·무직 응답자만
-   * 선택적으로 드롭돼 `(미응답)`으로 흡수된다 (분석 R-3).
+   * MVP 코호트 분할의 축. 서버 화이트리스트는 3종으로 확장됐으나(#347) **프로덕션에는
+   * 아직 반영되지 않았다** — 프로덕션 화이트리스트는 여전히 2종이라
+   * `student_or_unemployed`는 이 property만 드롭되고 `(미응답)`으로 흡수된다 (분석 R-3).
+   *
+   * 이벤트는 그래도 적재되지만 가입 API는 400으로 막히므로, 그쪽은
+   * `mapSignupProfileInput`에서 해당 값을 미전송해 우회 중이다. 서버 반영 시 함께 되돌린다.
    */
   employment_status: EmploymentStatus | null;
 }
