@@ -61,11 +61,29 @@ function takeBatch(): AnyAnalyticsEvent[] {
   return batch;
 }
 
-function logRejections(batch: AnyAnalyticsEvent[], rejections: EventBatchRejection[]): void {
+/**
+ * 배치 전송 결과를 남긴다 — 실적재를 앱에서 확인할 수 있는 유일한 창구다.
+ * 서버 로그 파일에 접근할 수 없는 상태에서 "몇 건이 실제로 접수됐는지"를 여기서만 볼 수 있다.
+ */
+function logBatchResult(
+  batch: AnyAnalyticsEvent[],
+  acceptedCount: number,
+  rejections: EventBatchRejection[]
+): void {
+  console.log(`[analytics] batch sent=${batch.length} accepted=${acceptedCount}`);
+
   for (const rejection of rejections) {
     const eventName = rejection.event_name ?? batch[rejection.index]?.event_name ?? 'unknown';
     console.warn(
       `[analytics] event rejected by server — index=${rejection.index} event_name=${eventName} reason=${rejection.reason}`
+    );
+  }
+
+  // 접수도 거부도 아닌 건이 있으면 서버가 조용히 버린 것이다 — 거부 목록만으로는 안 드러난다
+  const unaccounted = batch.length - acceptedCount - rejections.length;
+  if (unaccounted !== 0) {
+    console.warn(
+      `[analytics] batch count mismatch — sent=${batch.length} accepted=${acceptedCount} rejected=${rejections.length} unaccounted=${unaccounted}`
     );
   }
 }
@@ -99,7 +117,7 @@ async function drainQueue(): Promise<void> {
       return;
     }
 
-    logRejections(batch, result.rejections);
+    logBatchResult(batch, result.acceptedCount, result.rejections);
     // ⚠️ 인덱스로 자르면 안 된다 — await 동안 restoreQueue가 앞에 prepend하거나
     // enqueueEvent가 상한 초과로 앞에서 버리면 전송되지 않은 이벤트가 조용히 사라진다
     const sentIds = new Set(batch.map((event) => event.event_id));
