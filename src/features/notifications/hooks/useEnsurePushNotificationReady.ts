@@ -1,27 +1,11 @@
-import { Alert, Linking } from 'react-native';
+import { Alert } from 'react-native';
 
-import {
-  NOTIFICATION_PERMISSION_DENIED_ALERT,
-  NOTIFICATION_TOKEN_UNAVAILABLE_ALERT,
-} from '@/constants/notifications';
+import { NOTIFICATION_TOKEN_UNAVAILABLE_ALERT } from '@/constants/notifications';
 import { useRegisterNotificationDevice } from '@/features/notifications/hooks/useNotificationDevice';
-import { ensurePushNotificationReady } from '@/notifications/ensurePushNotificationReady';
-
-function showPermissionDeniedAlert(): void {
-  Alert.alert(
-    NOTIFICATION_PERMISSION_DENIED_ALERT.title,
-    NOTIFICATION_PERMISSION_DENIED_ALERT.message,
-    [
-      { text: NOTIFICATION_PERMISSION_DENIED_ALERT.cancelLabel, style: 'cancel' },
-      {
-        text: NOTIFICATION_PERMISSION_DENIED_ALERT.confirmLabel,
-        onPress: () => {
-          void Linking.openSettings();
-        },
-      },
-    ]
-  );
-}
+import {
+  ensurePushNotificationReady,
+  type EnsurePushNotificationReadyResult,
+} from '@/notifications/ensurePushNotificationReady';
 
 function showTokenUnavailableAlert(): void {
   Alert.alert(
@@ -31,22 +15,18 @@ function showTokenUnavailableAlert(): void {
 }
 
 // 알림 ON 시 권한 요청 및 디바이스 등록
-// 실패 시에도 PATCH 허용
-// void 반환
+// permission_denied는 호출부에서 PATCH 차단 처리함
 export function useEnsurePushNotificationReady() {
   const { mutateAsync: registerDeviceToken } = useRegisterNotificationDevice();
 
-  const ensureReady = async (): Promise<void> => {
+  const ensureReady = async (): Promise<EnsurePushNotificationReadyResult> => {
     const result = await ensurePushNotificationReady({ registerDeviceToken });
-
-    if (result === 'permission_denied') {
-      showPermissionDeniedAlert();
-      return;
-    }
 
     if (result === 'token_unavailable') {
       showTokenUnavailableAlert();
     }
+
+    return result;
   };
 
   return { ensureReady };
