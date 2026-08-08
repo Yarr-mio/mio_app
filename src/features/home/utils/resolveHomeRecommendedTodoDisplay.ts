@@ -132,28 +132,40 @@ function sortDisplayedTodoIds(
 
 /**
  * 홈 추천 행동 카드 초기 노출 ID 목록
- * 전체 투두 순서대로 미완료 항목을 최대 maxCount개까지 반환
+ * 전체 투두 순서대로 미완료 항목을 최대 maxCount개까지 채움
+ * 부족분은 완료 항목을 전체 투두 순서대로 maxCount까지 채움
  */
 export function getInitialHomeRecommendedTodoDisplayIds(
   allTodos: TodoResponse[],
   doneIds: ReadonlySet<string>,
   maxCount: number = HOME_RECOMMENDED_TODO_MAX_COUNT
 ): string[] {
-  const displayedIds: string[] = [];
+  const incompleteIds: string[] = [];
 
   for (const todo of allTodos) {
     if (doneIds.has(todo.todo_id)) {
       continue;
     }
 
-    displayedIds.push(todo.todo_id);
+    incompleteIds.push(todo.todo_id);
 
-    if (displayedIds.length >= maxCount) {
+    if (incompleteIds.length >= maxCount) {
       break;
     }
   }
 
-  return displayedIds;
+  const remainingSlotCount = maxCount - incompleteIds.length;
+
+  if (remainingSlotCount <= 0) {
+    return incompleteIds;
+  }
+
+  const doneIdsInOrder = allTodos
+    .filter((todo) => doneIds.has(todo.todo_id))
+    .slice(0, remainingSlotCount)
+    .map((todo) => todo.todo_id);
+
+  return [...incompleteIds, ...doneIdsInOrder];
 }
 
 interface ResolveHomeRecommendedTodoDisplayIdsParams {

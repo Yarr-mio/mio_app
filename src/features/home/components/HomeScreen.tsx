@@ -158,9 +158,10 @@ export function HomeScreen() {
               headerActionLabel={HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL}
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
+              contentClassName={HomeCardClasses.recommendedActionsContent}
             >
               {isTodayTodosPending ? (
-                <View className={HomeCardClasses.emptyState}>
+                <View className={HomeCardClasses.recommendedActionsEmptyState}>
                   <ActivityIndicator color={ButtonColors.spinnerLight} />
                 </View>
               ) : hasActions ? (
@@ -170,7 +171,7 @@ export function HomeScreen() {
                   onCompleteTodo={completeTodo}
                 />
               ) : (
-                <View className={HomeCardClasses.emptyState}>
+                <View className={HomeCardClasses.recommendedActionsEmptyState}>
                   <ThemedText type="small" className="text-label">
                     등록된 추천 행동이 없어요
                   </ThemedText>

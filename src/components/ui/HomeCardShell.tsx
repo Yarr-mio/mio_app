@@ -88,6 +88,7 @@ export function HomeCardShell({
             </ThemedText>
           ) : null}
         </View>
+
         {showHeaderAction ? (
           <CardHeaderLink label={headerActionLabel!} onPress={onHeaderActionPress} />
         ) : null}
