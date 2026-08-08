@@ -10,8 +10,6 @@ import {
   HOME_MIND_EXPLORE_COMING_SOON_MODAL,
   HOME_RECOMMENDED_ACTIONS_TITLE,
   HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL,
-  HOME_RECOMMENDED_TODO_MAX_COUNT,
-  HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN,
   HOME_SPEECH_BUBBLE_MESSAGES,
   HOME_TITLES,
 } from '@/constants/home';
@@ -37,7 +35,7 @@ import { formatCheckinTime, getDateIso } from '@/utils/date';
 import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
@@ -67,13 +65,9 @@ export function HomeScreen() {
     refetch: refetchTodayTodos,
   } = useTodos(getDateIso(new Date()));
   const { completeTodo, isSubmitting: isHomeTodoSubmitting } = useHomeRecommendedTodoCheckin();
-  const recommendedTodoTotalCount = todayTodos?.length ?? 0;
-  const recommendedTodoTitleCount =
-    recommendedTodoTotalCount >= HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN
-      ? recommendedTodoTotalCount
-      : undefined;
-  const visibleRecommendedTodos = (todayTodos ?? []).slice(0, HOME_RECOMMENDED_TODO_MAX_COUNT);
-  const hasActions = visibleRecommendedTodos.length > 0;
+  // React Compiler opt-out useHomeRecommendedTodoDisplay allTodos 참조 안정화
+  const recommendedTodos = useMemo(() => todayTodos ?? [], [todayTodos]);
+  const hasActions = recommendedTodos.length > 0;
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
     pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
@@ -161,7 +155,6 @@ export function HomeScreen() {
 
             <HomeCardShell
               title={HOME_RECOMMENDED_ACTIONS_TITLE}
-              titleCount={recommendedTodoTitleCount}
               headerActionLabel={HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL}
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
@@ -172,7 +165,7 @@ export function HomeScreen() {
                 </View>
               ) : hasActions ? (
                 <HomeRecommendedActionsList
-                  actions={visibleRecommendedTodos}
+                  actions={recommendedTodos}
                   isSubmitting={isHomeTodoSubmitting}
                   onCompleteTodo={completeTodo}
                 />

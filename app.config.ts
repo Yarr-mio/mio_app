@@ -33,6 +33,16 @@ const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
 const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
 
+// 앱 자체 커스텀 스킴도 variant별로 분리
+// dev/preview/prod 앱이 동시에 설치돼 있을 때 동일한 scheme을 쓰면 OS가 어느 앱을 열지 비결정적으로 고름
+// (카카오/애플 로그인 리다이렉트 딥링크가 엉뚱한 앱으로 빠지는 원인이 될 수 있음
+const APP_SCHEME =
+  APP_VARIANT === 'production'
+    ? 'mioapp'
+    : APP_VARIANT === 'preview'
+      ? 'mioapp-preview'
+      : 'mioapp-dev';
+
 // Android FCM 클라이언트 FCM 토큰 발급용 백엔드 발송은 Firebase Admin SDK
 const GOOGLE_SERVICES_FILE = './google-services.json';
 
@@ -56,7 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   // 홈 화면 앱 아이콘 mio_logo 적용함
   icon: './assets/images/mio_logo.png',
-  scheme: 'mioapp',
+  scheme: APP_SCHEME,
   userInterfaceStyle: 'automatic',
   ios: {
     // iOS 아이콘 정사각 원본 사용함

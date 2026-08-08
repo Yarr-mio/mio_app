@@ -1,11 +1,9 @@
 import CheckboxCheckIcon from '@/assets/icons/checkbox-check.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { HOME_RECOMMENDED_TODO_MAX_COUNT } from '@/constants/home';
 import { FgColors, HomeActionClasses, HomeLayout } from '@/constants/theme';
-import { resolveStableHomeTodoOrder } from '@/features/home/utils/resolveStableHomeTodoOrder';
+import { useHomeRecommendedTodoDisplay } from '@/features/home/hooks/useHomeRecommendedTodoDisplay';
 import type { TodoResponse, TodoStatus } from '@/types/todo';
 import { cn } from '@/utils/cn';
-import { useEffect, useRef } from 'react';
 import { Pressable, View } from 'react-native';
 
 const HOME_TODO_ACTIONABLE_STATUS: TodoStatus = 'suggested';
@@ -13,7 +11,7 @@ const HOME_TODO_ACTIONABLE_STATUS: TodoStatus = 'suggested';
 interface HomeRecommendedActionsListProps {
   actions: TodoResponse[];
   isSubmitting: boolean;
-  onCompleteTodo: (todoId: string) => void;
+  onCompleteTodo: (todoId: string, options?: { onError?: () => void }) => void;
 }
 
 interface RecommendedActionCheckboxProps {
@@ -38,10 +36,6 @@ function RecommendedActionCheckbox({ done }: RecommendedActionCheckboxProps) {
       ) : null}
     </View>
   );
-}
-
-function isTodoDone(status: TodoStatus): boolean {
-  return status === 'completed' || status === 'partial_completed';
 }
 
 function canCompleteFromHome(status: TodoStatus): boolean {
@@ -81,27 +75,17 @@ export function HomeRecommendedActionsList({
   isSubmitting,
   onCompleteTodo,
 }: HomeRecommendedActionsListProps) {
-  const orderIdsRef = useRef<string[]>([]);
-  const idSetKeyRef = useRef('');
-
-  const { orderedActions, orderIds, idSetKey } = resolveStableHomeTodoOrder(
-    actions,
-    orderIdsRef.current,
-    idSetKeyRef.current
-  );
-  // 홈 카드 표시용 개수 제한함
-  const visibleActions = orderedActions.slice(0, HOME_RECOMMENDED_TODO_MAX_COUNT);
-
-  useEffect(() => {
-    orderIdsRef.current = orderIds;
-    idSetKeyRef.current = idSetKey;
-  }, [idSetKey, orderIds]);
+  const { displayedTodos, completeDisplayedTodo, isDisplayedTodoDone } =
+    useHomeRecommendedTodoDisplay({
+      allTodos: actions,
+      onCompleteTodo,
+    });
 
   return (
     <View className="gap-4">
-      {visibleActions.map((action) => {
-        const done = isTodoDone(action.status);
-        const actionable = canCompleteFromHome(action.status);
+      {displayedTodos.map((action) => {
+        const done = isDisplayedTodoDone(action.todo_id);
+        const actionable = canCompleteFromHome(action.status) && !done;
 
         return (
           <RecommendedActionItem
@@ -113,7 +97,7 @@ export function HomeRecommendedActionsList({
               if (!actionable || isSubmitting) {
                 return;
               }
-              onCompleteTodo(action.todo_id);
+              completeDisplayedTodo(action.todo_id);
             }}
           />
         );
