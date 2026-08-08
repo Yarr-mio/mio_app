@@ -1,7 +1,6 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
-import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 
-import { IOS_BUNDLE_IDENTIFIER_FALLBACK } from '@/constants/config';
 import { decodeJwtPayload } from '@/utils/jwt';
 
 export type AppleSignInResult = { cancelled: true } | { cancelled: false; identityToken: string };
@@ -20,8 +19,8 @@ function logAppleIdentityTokenClaimsInDev(identityToken: string): void {
   const aud = payload.aud;
   const iss = payload.iss;
   const exp = typeof payload.exp === 'number' ? payload.exp : undefined;
-  const expectedBundleId =
-    Constants.expoConfig?.ios?.bundleIdentifier ?? IOS_BUNDLE_IDENTIFIER_FALLBACK;
+  // 설치된 바이너리의 실제 번들 ID — OTA로 오염되는 Constants.expoConfig 대신 사용
+  const expectedBundleId = Application.applicationId ?? '(unknown)';
   const audValue = Array.isArray(aud) ? aud.join(', ') : aud;
   const audMatchesExpectedBundleId =
     typeof aud === 'string'
