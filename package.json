@@ -10,6 +10,9 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "lint:fix": "eslint --fix --cache .",
+    "update:production": "APP_VARIANT=production eas update --channel production --environment production",
+    "update:preview": "APP_VARIANT=preview eas update --channel preview --environment preview",
+    "update:development": "APP_VARIANT=development eas update --channel development --environment development",
     "format": "prettier --write .",
     "prepare": "husky",
     "sync-icons": "node ./scripts/sync-icons.js"
@@ -38,6 +41,7 @@
     "date-fns": "^4.3.0",
     "expo": "~55.0.28",
     "expo-apple-authentication": "~55.0.15",
+    "expo-application": "~55.0.17",
     "expo-build-properties": "~55.0.16",
     "expo-constants": "~55.0.17",
     "expo-crypto": "~55.0.17",
