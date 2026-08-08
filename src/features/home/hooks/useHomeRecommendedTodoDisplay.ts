@@ -23,6 +23,7 @@ export function useHomeRecommendedTodoDisplay({
 }: UseHomeRecommendedTodoDisplayParams) {
   const [displayedIds, setDisplayedIds] = useState<string[]>([]);
   const [optimisticDoneIds, setOptimisticDoneIds] = useState<Set<string>>(() => new Set());
+  const optimisticDoneIdsRef = useRef(optimisticDoneIds);
   const previousTodoSetKeyRef = useRef('');
 
   const todoById = useMemo(() => new Map(allTodos.map((todo) => [todo.todo_id, todo])), [allTodos]);
@@ -39,7 +40,9 @@ export function useHomeRecommendedTodoDisplay({
     previousTodoSetKeyRef.current = todoSetKey;
     const doneIds = buildHomeTodoDoneIdSet(allTodos);
 
-    setOptimisticDoneIds(new Set());
+    const nextOptimisticDoneIds = new Set<string>();
+    optimisticDoneIdsRef.current = nextOptimisticDoneIds;
+    setOptimisticDoneIds(nextOptimisticDoneIds);
     setDisplayedIds(getInitialHomeRecommendedTodoDisplayIds(allTodos, doneIds));
   }, [allTodos, todoSetKey]);
 
@@ -56,9 +59,12 @@ export function useHomeRecommendedTodoDisplay({
         })
       );
 
-      return nextOptimisticDoneIds.size === previousOptimisticDoneIds.size
-        ? previousOptimisticDoneIds
-        : nextOptimisticDoneIds;
+      if (nextOptimisticDoneIds.size === previousOptimisticDoneIds.size) {
+        return previousOptimisticDoneIds;
+      }
+
+      optimisticDoneIdsRef.current = nextOptimisticDoneIds;
+      return nextOptimisticDoneIds;
     });
   }, [allTodos, todoById]);
 
@@ -81,11 +87,12 @@ export function useHomeRecommendedTodoDisplay({
       setOptimisticDoneIds((previousOptimisticDoneIds) => {
         const nextOptimisticDoneIds = new Set(previousOptimisticDoneIds);
         nextOptimisticDoneIds.add(todoId);
+        optimisticDoneIdsRef.current = nextOptimisticDoneIds;
         return nextOptimisticDoneIds;
       });
 
       setDisplayedIds((previousDisplayedIds) => {
-        const nextOptimisticDoneIds = new Set(optimisticDoneIds);
+        const nextOptimisticDoneIds = new Set(optimisticDoneIdsRef.current);
         nextOptimisticDoneIds.add(todoId);
 
         const nextDoneIds = buildHomeTodoDoneIdSet(allTodos, nextOptimisticDoneIds);
@@ -103,11 +110,12 @@ export function useHomeRecommendedTodoDisplay({
           setOptimisticDoneIds((previousOptimisticDoneIds) => {
             const rolledBackOptimisticDoneIds = new Set(previousOptimisticDoneIds);
             rolledBackOptimisticDoneIds.delete(todoId);
+            optimisticDoneIdsRef.current = rolledBackOptimisticDoneIds;
             return rolledBackOptimisticDoneIds;
           });
 
           setDisplayedIds((previousDisplayedIds) => {
-            const rolledBackOptimisticDoneIds = new Set(optimisticDoneIds);
+            const rolledBackOptimisticDoneIds = new Set(optimisticDoneIdsRef.current);
             rolledBackOptimisticDoneIds.delete(todoId);
 
             return resolveHomeRecommendedTodoDisplayIds({
@@ -120,7 +128,7 @@ export function useHomeRecommendedTodoDisplay({
         },
       });
     },
-    [allTodos, onCompleteTodo, optimisticDoneIds]
+    [allTodos, onCompleteTodo]
   );
 
   return {
