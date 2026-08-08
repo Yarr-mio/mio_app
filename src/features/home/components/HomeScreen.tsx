@@ -26,7 +26,6 @@ import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeRecommendedTodoCheckin } from '@/features/home/hooks/useHomeRecommendedTodoCheckin';
-import { isHomeTodoDone } from '@/features/home/utils/resolveHomeRecommendedTodoDisplay';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
 import { useTodos } from '@/features/todo/hooks/useTodo';
 import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
@@ -36,7 +35,7 @@ import { formatCheckinTime, getDateIso } from '@/utils/date';
 import { pickRandomItem } from '@/utils/random';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 function getLatestTodayCheckin(checkins: CheckinRecord[]): CheckinRecord | undefined {
@@ -66,8 +65,9 @@ export function HomeScreen() {
     refetch: refetchTodayTodos,
   } = useTodos(getDateIso(new Date()));
   const { completeTodo, isSubmitting: isHomeTodoSubmitting } = useHomeRecommendedTodoCheckin();
-  const recommendedTodos = todayTodos ?? [];
-  const hasActions = recommendedTodos.some((todo) => !isHomeTodoDone(todo.status));
+  // React Compiler opt-out useHomeRecommendedTodoDisplay allTodos 참조 안정화
+  const recommendedTodos = useMemo(() => todayTodos ?? [], [todayTodos]);
+  const hasActions = recommendedTodos.length > 0;
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
     pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
