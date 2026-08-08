@@ -10,8 +10,6 @@ import {
   HOME_MIND_EXPLORE_COMING_SOON_MODAL,
   HOME_RECOMMENDED_ACTIONS_TITLE,
   HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL,
-  HOME_RECOMMENDED_TODO_MAX_COUNT,
-  HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN,
   HOME_SPEECH_BUBBLE_MESSAGES,
   HOME_TITLES,
 } from '@/constants/home';
@@ -28,6 +26,7 @@ import { FALLBACK_NICKNAME } from '@/constants/user';
 import { useCheckinToday } from '@/features/checkin/hooks/useCheckin';
 import { HomeRecommendedActionsList } from '@/features/home/components/HomeRecommendedActionsList';
 import { useHomeRecommendedTodoCheckin } from '@/features/home/hooks/useHomeRecommendedTodoCheckin';
+import { isHomeTodoDone } from '@/features/home/utils/resolveHomeRecommendedTodoDisplay';
 import { EmotionConstellationPreview } from '@/features/report/components/EmotionConstellation';
 import { useTodos } from '@/features/todo/hooks/useTodo';
 import { useSelectedCharacterId, useSelectedNickname } from '@/hooks/useSelectedCharacterId';
@@ -67,13 +66,8 @@ export function HomeScreen() {
     refetch: refetchTodayTodos,
   } = useTodos(getDateIso(new Date()));
   const { completeTodo, isSubmitting: isHomeTodoSubmitting } = useHomeRecommendedTodoCheckin();
-  const recommendedTodoTotalCount = todayTodos?.length ?? 0;
-  const recommendedTodoTitleCount =
-    recommendedTodoTotalCount >= HOME_RECOMMENDED_TODO_TITLE_COUNT_MIN
-      ? recommendedTodoTotalCount
-      : undefined;
-  const visibleRecommendedTodos = (todayTodos ?? []).slice(0, HOME_RECOMMENDED_TODO_MAX_COUNT);
-  const hasActions = visibleRecommendedTodos.length > 0;
+  const recommendedTodos = todayTodos ?? [];
+  const hasActions = recommendedTodos.some((todo) => !isHomeTodoDone(todo.status));
 
   const [speechBubbleMessage, setSpeechBubbleMessage] = useState(() =>
     pickRandomItem(HOME_SPEECH_BUBBLE_MESSAGES)
@@ -161,7 +155,6 @@ export function HomeScreen() {
 
             <HomeCardShell
               title={HOME_RECOMMENDED_ACTIONS_TITLE}
-              titleCount={recommendedTodoTitleCount}
               headerActionLabel={HOME_RECOMMENDED_ACTIONS_VIEW_ALL_LABEL}
               onHeaderActionPress={() => router.push(HOME_ROUTES.todo)}
               headerContainerClassName="mb-5"
@@ -172,7 +165,7 @@ export function HomeScreen() {
                 </View>
               ) : hasActions ? (
                 <HomeRecommendedActionsList
-                  actions={visibleRecommendedTodos}
+                  actions={recommendedTodos}
                   isSubmitting={isHomeTodoSubmitting}
                   onCompleteTodo={completeTodo}
                 />
