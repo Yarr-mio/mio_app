@@ -24,6 +24,19 @@ function resolveAppVariant(): AppVariant {
 const APP_VARIANT = resolveAppVariant();
 const IS_DEV_VARIANT = APP_VARIANT === 'development' || APP_VARIANT === 'preview';
 
+const VERSION = '1.0.0';
+
+// runtimeVersion을 variant별로 분리해 잘못 평가된 번들이 다른 variant 빌드에 설치되는 것을 차단
+// production은 기존 배포 빌드와의 업데이트 호환을 위해 appVersion 정책 유지
+// dev/preview는 명시 문자열이라 production 채널에 올라가도 runtimeVersion 불일치로 설치 거부됨
+const RUNTIME_VERSION: ExpoConfig['runtimeVersion'] =
+  APP_VARIANT === 'production' ? { policy: 'appVersion' } : `${VERSION}-${APP_VARIANT}`;
+
+// build/update 실행 로그에서 어느 variant로 평가됐는지 즉시 확인용
+console.log(
+  `[app.config] variant=${APP_VARIANT} runtimeVersion=${JSON.stringify(RUNTIME_VERSION)}`
+);
+
 // 네이티브 플러그인 키 빌드 시 고정 pnpm start 만으로는 변경 불가
 // 모듈 로드 시 throw 금지 eas bootstrap config 후 Dashboard 키 주입
 const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
@@ -62,7 +75,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: APP_NAME,
   slug: 'mio',
-  version: '1.0.0',
+  version: VERSION,
+  runtimeVersion: RUNTIME_VERSION,
   orientation: 'portrait',
   // 홈 화면 앱 아이콘 mio_logo 적용함
   icon: './assets/images/mio_logo.png',
