@@ -13,7 +13,7 @@ import {
 /**
  * 알림 탭 → `notification_opened` 발행 + 앱 세션 진입점(`push_notification`) 판정
  *
- * ⚠️ 세션 시작 판정보다 먼저 붙어야 한다. 늦게 붙으면 알림으로 열린 콜드 스타트가
+ * 세션 시작 판정보다 먼저 붙어야 한다. 늦게 붙으면 알림으로 열린 콜드 스타트가
  * `cold_start`로 잘못 찍힌다.
  */
 
@@ -54,11 +54,11 @@ export function startNotificationEntryTracking(): () => void {
 }
 
 /**
- * 콜드 스타트가 알림 탭으로 시작됐는지 판정한다.
+ * 콜드 스타트가 알림 탭으로 시작됐는지 판정
  *
  * `getLastNotificationResponseAsync()`는 지난 실행의 응답도 그대로 돌려주므로,
  * 이미 소비한 응답 id를 남겨 두고 같으면 무시한다 — 안 그러면 그 뒤의 모든 콜드 스타트가
- * `push_notification`으로 찍힌다.
+ * `push_notification`으로 찍힘
  */
 export async function resolveColdStartPushEntry(): Promise<boolean> {
   try {
