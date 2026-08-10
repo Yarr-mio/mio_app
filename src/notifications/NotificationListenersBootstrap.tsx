@@ -25,19 +25,17 @@ export function NotificationListenersBootstrap() {
   };
 
   /**
-   * 스플래시/인증 리다이렉트가 끝나기 전에는 탭을 큐에 담아 둔다.
-   *
-   * 콜드 스타트(앱 종료 상태 탭)에서 곧바로 router.push 하면, 뒤이어 실행되는
-   * restoreSession 의 router.replace(홈)에 딥링크가 덮여 어떤 알림을 눌러도 홈으로 떨어진다.
-   * splashDone 이 true 가 된 뒤(= 인증 리다이렉트 이후)에만 이동시켜 이를 막는다.
+   * 스플래시/인증 리다이렉트가 끝나기 전에는 탭을 큐에 담아둠
    */
   const processResponse = (response: Notifications.NotificationResponse) => {
     if (!useAuthStore.getState().splashDone) {
       pendingResponseRef.current = response;
       return;
     }
-    // 로그인 상태에서만 보호 화면으로 이동 (로그아웃 사용자는 로그인 리다이렉트를 덮지 않는다)
+    // 로그인 상태에서만 보호 화면으로 이동
     if (!useAuthStore.getState().accessToken) {
+      // 폐기한 응답이 다음 콜드 스타트에서 다시 조회되지 않도록 플랫폼 캐시도 비운다
+      Notifications.clearLastNotificationResponse();
       return;
     }
     runNotificationTap(response);
@@ -69,8 +67,7 @@ export function NotificationListenersBootstrap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 스플래시/인증 완료 시 대기 중이던 콜드 스타트 탭을 실행한다.
-  // 이 시점은 restoreSession 의 router.replace(홈) 이후이므로 딥링크가 덮이지 않는다.
+  // 스플래시/인증 완료 시 대기 중이던 콜드 스타트 탭을 실행
   useEffect(() => {
     if (!splashDone) {
       return;
@@ -82,6 +79,8 @@ export function NotificationListenersBootstrap() {
     pendingResponseRef.current = null;
     // 로그아웃 상태면 로그인 리다이렉트를 존중하고 대기 탭을 버린다
     if (!useAuthStore.getState().accessToken) {
+      // 버린 탭이 다음 콜드 스타트에서 다시 조회되지 않도록 플랫폼 캐시도 비운다
+      Notifications.clearLastNotificationResponse();
       return;
     }
     runNotificationTap(pending);
