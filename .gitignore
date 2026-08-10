@@ -56,3 +56,6 @@ app-example
 *.ipa
 Info.plist
 .eslintcache
+
+# Claude
+.claude/settings.local.json

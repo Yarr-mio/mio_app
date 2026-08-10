@@ -439,6 +439,9 @@ export const HomeCardClasses = {
   emptyState: 'min-h-[120px] items-center justify-center',
   titleRow: 'min-w-0 flex-1 flex-row items-center gap-2',
   titleCount: 'text-fg-default',
+  // 추천 행동 카드 전용 최소 높이 92 기준은 todo 3개 렌더링 높이 행 20 셋과 간격 16 둘의 합
+  recommendedActionsContent: 'min-h-[92px]',
+  recommendedActionsEmptyState: 'min-h-[92px] items-center justify-center',
 } as const;
 
 /** NativeWind className — HomeLayout.checkboxSize(20) 등과 함께 유지 */

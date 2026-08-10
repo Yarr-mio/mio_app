@@ -5,11 +5,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/mio_logo.png",
-    "scheme": "mioapp",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/mio_logo.png",
-      "bundleIdentifier": "com.mio.yarr.dev",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -20,8 +18,7 @@
         "backgroundColor": "#000010",
         "foregroundImage": "./assets/images/mio_logo.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.mio.yarr.dev"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -54,8 +51,7 @@
       "eas": {
         "projectId": "f2a19c23-76cc-4936-b370-0c160ceb33e9"
       },
-      "router": {},
-      "appVariant": "development"
+      "router": {}
     },
     "owner": "mio_yarr",
     "runtimeVersion": {
