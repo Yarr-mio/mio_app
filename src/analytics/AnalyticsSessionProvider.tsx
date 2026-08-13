@@ -20,15 +20,16 @@ import { flushAnalytics, startAnalytics, track } from '@/analytics/track';
 import { normalizeScreenName } from '@/utils/screenName';
 
 /**
- * 앱 세션 생명주기 계측 (event-logging-spec v3.5 §4-A)
+ * 앱 세션 생명주기 계측
  *
- * - cold start / 백그라운드 30분+ 복귀 → 새 `app_session_id` + `app_session_started`
- * - 백그라운드 전환 → `app_session_ended` + 큐 강제 flush
- * - 라우트 진입 → `screen_viewed` (정규화된 화면명)
+ * - cold start / 백그라운드 30분+ 복귀 -> 새 `app_session_id` + `app_session_started`
+ * - 백그라운드 전환 -> `app_session_ended` + 큐 강제 flush
+ * - 라우트 진입 -> `screen_viewed` (정규화된 화면명)
  *
- * ⚠️ 앱 전역 `AppState` 리스너는 여기 하나뿐이어야 한다. `useChat.ts`·`useSyncAuthProfileOnForeground.ts`의
- * 기존 리스너는 활성 세션 재조회·프로필 동기화라는 다른 목적이라 건드리지 않는다.
- * ⚠️ `screen_viewed`는 로그인 전에도 발행된다 — 가입 첫 화면 도달이 퍼널의 분모다.
+ * 앱 전역 `AppState` 리스너는 여기 하나뿐이어야 함
+ * `useChat.ts`·`useSyncAuthProfileOnForeground.ts`의 기존 리스너는
+ * 활성 세션 재조회/프로필 동기화라는 다른 목적이라 건드리지 않음
+ * `screen_viewed`는 로그인 전에도 발행됨 — 가입 첫 화면 도달이 퍼널의 분모
  */
 async function emitAppSessionStarted(entryPoint: EntryPoint): Promise<void> {
   const meta = await resolveAppSessionMeta();

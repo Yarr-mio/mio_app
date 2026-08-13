@@ -1,4 +1,4 @@
-import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 
 /**
  * mock 모드 플래그
@@ -27,17 +27,19 @@ export const API_BASE_URL = resolveApiBaseUrl();
 /** 약관 동의 API 요청 시 사용하는 약관 버전 */
 export const AUTH_CONSENT_VERSION = '1.0';
 
-// APP_VARIANT는 EXPO_PUBLIC 이 아니라 런타임 process.env 로 읽히지 않음
-// Metro 가 평가한 expoConfig 의 bundleId 로 dev production 판별
-// 로컬 pnpm start 시 APP_VARIANT 가 production 이면 bundleId 도 production 으로 내려옴
-const IS_DEV_VARIANT =
-  (Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package) ===
-  'com.mio.yarr.dev';
+/** production 앱의 네이티브 번들 ID (iOS bundleIdentifier / Android applicationId) */
+export const PROD_APPLICATION_ID = 'com.mio.yarr';
+
+// variant 판별은 설치된 바이너리의 실제 번들 ID(Application.applicationId)를 원천으로 한다.
+// Constants.expoConfig는 OTA 업데이트 manifest의 config로 교체되는 값이라, dev로 export된
+// 업데이트가 production 앱에 들어오면 판별이 뒤집혀 카카오 로그인이 dev 앱으로 점프했다.
+// applicationId는 OS가 주는 값이라 OTA로 절대 안 바뀜. 미상 환경(Expo Go 등)은 dev로 fail-safe.
+const IS_PROD_VARIANT = Application.applicationId === PROD_APPLICATION_ID;
 
 /** 카카오 네이티브 앱 키 Kakao SDK 초기화용 app.config nativeAppKey 와 동일 분기 */
-export const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
-  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
-  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
+export const KAKAO_NATIVE_APP_KEY = IS_PROD_VARIANT
+  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '')
+  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '');
 
 /**
  * HTTP 상태 코드 상수
@@ -92,6 +94,3 @@ export const API_TIMEOUT_MS = 10_000;
 
 /** 체크인 목록 페이지당 개수 (백엔드 CheckinService.PAGE_SIZE와 동일하게 유지) */
 export const CHECKIN_LIST_PAGE_SIZE = 20;
-
-/** iOS bundle identifier 폴백 (expoConfig 미설정 환경용) */
-export const IOS_BUNDLE_IDENTIFIER_FALLBACK = 'com.mio.yarr.dev';

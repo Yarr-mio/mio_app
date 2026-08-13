@@ -53,6 +53,9 @@ importers:
       expo-apple-authentication:
         specifier: ~55.0.15
         version: 55.0.15(expo@55.0.28)(react-native@0.83.10(@babel/core@7.29.0)(@types/react@19.2.15)(react@19.2.0))
+      expo-application:
+        specifier: ~55.0.17
+        version: 55.0.17(expo@55.0.28)
       expo-build-properties:
         specifier: ~55.0.16
         version: 55.0.16(expo@55.0.28)

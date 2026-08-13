@@ -21,8 +21,20 @@ export const NOTIFICATION_STATUS = {
 
 export type NotificationStatus = (typeof NOTIFICATION_STATUS)[keyof typeof NOTIFICATION_STATUS];
 
-/** 푸시 data 페이로드 서버 to 디바이스 전달 필드 */
+/**
+ * 푸시 data 페이로드 서버 to 디바이스 전달 필드
+ *
+ * 알림 탭 라우팅
+ * REST 이력 조회의 `trigger_code` 와 달리
+ * 푸시 payload 에서 알림 종류는 `type` 키로 전달
+ */
 export interface PushNotificationDataPayload {
+  /** 값 알림 종류 구분용 (푸시 payload 키는 `type`) */
+  type?: string;
+  /** 알림 탭 시 이동할 서버 경로 */
+  route?: string;
+  /** 체크인 슬롯 - 체크인 리마인더에만 포함 */
+  slot?: string;
+  /** 알림 고유 ID 서버 미전송 — forward-compatibility */
   notification_id?: string;
-  trigger_code?: string;
 }

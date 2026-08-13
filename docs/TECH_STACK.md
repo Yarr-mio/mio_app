@@ -77,13 +77,14 @@
 
 ## 유틸리티
 
-| 패키지                  | 용도                                    |
-| ----------------------- | --------------------------------------- |
-| `clsx`                  | 조건부 className 조합                   |
-| `tailwind-merge`        | NativeWind 클래스 충돌 해결             |
-| `expo-image`            | 이미지 렌더링 (캐싱, 성능 최적화)       |
-| `expo-device`           | 디바이스 정보 (FCM 토큰 등록 등에 활용) |
-| `react-native-worklets` | Reanimated 4 의존성                     |
+| 패키지                  | 용도                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `clsx`                  | 조건부 className 조합                                                                                               |
+| `tailwind-merge`        | NativeWind 클래스 충돌 해결                                                                                         |
+| `expo-image`            | 이미지 렌더링 (캐싱, 성능 최적화)                                                                                   |
+| `expo-device`           | 디바이스 정보 (FCM 토큰 등록 등에 활용)                                                                             |
+| `expo-application`      | 설치된 바이너리의 실제 번들 ID(`applicationId`) — OTA로 오염되지 않는 variant 판별 원천 (`src/constants/config.ts`) |
+| `react-native-worklets` | Reanimated 4 의존성                                                                                                 |
 
 ---
 

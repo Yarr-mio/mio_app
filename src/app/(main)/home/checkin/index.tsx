@@ -7,21 +7,36 @@ import { useCheckinToday, useInfiniteCheckinList } from '@/features/checkin/hook
 import { useCheckinStore } from '@/features/checkin/store/checkinStore';
 import type { CheckinRecord } from '@/types/checkin';
 import { getCurrentTimeOfDay } from '@/utils/date';
-import { router } from 'expo-router';
-import { useRef } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
 export default function CheckinListScreen() {
+  // 푸시 알림(체크인 리마인더)이 실어 보내는 슬롯! 일반 탭 진입 시 없음
+  const { slot } = useLocalSearchParams<{ slot?: string }>();
   const { data: todayData } = useCheckinToday();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteCheckinList();
   const isNavigating = useRef(false);
+  const autoOpenedFromSlot = useRef(false);
 
   const records: CheckinRecord[] = data?.pages.flatMap((page) => page.data) ?? [];
 
   const currentTimeOfDay = getCurrentTimeOfDay();
   const canCheckInNow = todayData?.available_slots.includes(currentTimeOfDay) ?? false;
   const hasCheckedInCurrentSlot = todayData !== undefined && !canCheckInNow;
+
+  // 리마인더 슬롯이 지금 열려 있는 현재 슬롯과 일치할 때만 폼으로 바로 진입
+  // 체크인 기록은 항상 현재 시간대로 저장되므로 뒤늦게 탭해
+  // 슬롯이 어긋나면 목록만 보여줘 오기록 막음
+  useEffect(() => {
+    if (autoOpenedFromSlot.current) return;
+    if (!slot || slot !== currentTimeOfDay || !canCheckInNow) return;
+
+    autoOpenedFromSlot.current = true;
+    useCheckinStore.getState().reset();
+    router.push('/(main)/home/checkin/form');
+  }, [slot, currentTimeOfDay, canCheckInNow]);
 
   return (
     <View className="flex-1 bg-midnight">
