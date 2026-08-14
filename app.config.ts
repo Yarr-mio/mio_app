@@ -85,6 +85,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     // iOS 아이콘 정사각 원본 사용함
     icon: './assets/images/mio_logo.png',
+    // 아이패드 미지원 아이폰 전용 앱으로 고정함
+    supportsTablet: false,
     bundleIdentifier: BUNDLE_IDENTIFIER,
     usesAppleSignIn: true,
     infoPlist: {
