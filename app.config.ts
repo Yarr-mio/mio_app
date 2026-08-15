@@ -1,5 +1,13 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
+// variant 판별 규칙 단일 소스 번들 ID 카카오 키 선택 config 파일과 공유
+// tsconfig alias 는 config 평가 시점 미해석 상대경로 import 강제
+import {
+  DEV_APPLICATION_ID,
+  PROD_APPLICATION_ID,
+  selectKakaoNativeAppKey,
+} from './src/constants/appVariant';
+
 const APP_VARIANTS = ['development', 'preview', 'production'] as const;
 type AppVariant = (typeof APP_VARIANTS)[number];
 
@@ -39,12 +47,11 @@ console.log(
 
 // 네이티브 플러그인 키 빌드 시 고정 pnpm start 만으로는 변경 불가
 // 모듈 로드 시 throw 금지 eas bootstrap config 후 Dashboard 키 주입
-const KAKAO_NATIVE_APP_KEY = IS_DEV_VARIANT
-  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '')
-  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '');
+// 키 선택 규칙 config 파일과 공유 selectKakaoNativeAppKey 네이티브 JS 키 불일치 방지
+const KAKAO_NATIVE_APP_KEY = selectKakaoNativeAppKey(!IS_DEV_VARIANT);
 
 const APP_NAME = IS_DEV_VARIANT ? 'Mio Dev' : 'MIO';
-const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? 'com.mio.yarr.dev' : 'com.mio.yarr';
+const BUNDLE_IDENTIFIER = IS_DEV_VARIANT ? DEV_APPLICATION_ID : PROD_APPLICATION_ID;
 
 // 앱 자체 커스텀 스킴도 variant별로 분리
 // dev/preview/prod 앱이 동시에 설치돼 있을 때 동일한 scheme을 쓰면 OS가 어느 앱을 열지 비결정적으로 고름
