@@ -1,5 +1,7 @@
 import * as Application from 'expo-application';
 
+import { PROD_APPLICATION_ID, selectKakaoNativeAppKey } from './appVariant';
+
 /**
  * mock 모드 플래그
  *
@@ -27,19 +29,15 @@ export const API_BASE_URL = resolveApiBaseUrl();
 /** 약관 동의 API 요청 시 사용하는 약관 버전 */
 export const AUTH_CONSENT_VERSION = '1.0';
 
-/** production 앱의 네이티브 번들 ID (iOS bundleIdentifier / Android applicationId) */
-export const PROD_APPLICATION_ID = 'com.mio.yarr';
-
 // variant 판별은 설치된 바이너리의 실제 번들 ID(Application.applicationId)를 원천으로 한다.
 // Constants.expoConfig는 OTA 업데이트 manifest의 config로 교체되는 값이라, dev로 export된
 // 업데이트가 production 앱에 들어오면 판별이 뒤집혀 카카오 로그인이 dev 앱으로 점프했다.
 // applicationId는 OS가 주는 값이라 OTA로 절대 안 바뀜. 미상 환경(Expo Go 등)은 dev로 fail-safe.
+// PROD_APPLICATION_ID 는 app config 와 공유하는 prod 번들 ID appVariant 단일 소스
 const IS_PROD_VARIANT = Application.applicationId === PROD_APPLICATION_ID;
 
 /** 카카오 네이티브 앱 키 Kakao SDK 초기화용 app.config nativeAppKey 와 동일 분기 */
-export const KAKAO_NATIVE_APP_KEY = IS_PROD_VARIANT
-  ? (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY?.trim() ?? '')
-  : (process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY_DEV?.trim() ?? '');
+export const KAKAO_NATIVE_APP_KEY = selectKakaoNativeAppKey(IS_PROD_VARIANT);
 
 /**
  * HTTP 상태 코드 상수
@@ -76,15 +74,15 @@ export const SPLASH_DURATION_MS = 2500;
 export const SESSION_SUMMARY_POLL_INTERVAL_MS = 3000;
 
 /**
- * 화면에 한 번 그려진 세션 요약을 쿼리 캐시에 유지하는 시간(ms).
+ * 화면에 한 번 그려진 세션 요약을 쿼리 캐시에 유지하는 시간(ms)
  * 다음 세션 요약 화면이 감정 변화율 비교용으로 이 값을 다시 읽는데, 두 세션 사이의 간격이
- * 기본 gcTime(5분)보다 긴 경우가 많아 넉넉하게 24시간으로 잡는다.
+ * 기본 gcTime(5분)보다 긴 경우가 많아 넉넉하게 24시간으로 잡음
  */
 export const SESSION_SUMMARY_CACHE_GC_TIME_MS = 1000 * 60 * 60 * 24;
 
 /**
- * 채팅 SSE 스트림 안전 타임아웃(ms).
- * 서버 SseEmitter 타임아웃이 60초라 그보다 약간 길게 잡아, 연결이 완전히 멈춰버리는 극단적 케이스에서만 클라이언트가 직접 중단시킨다.
+ * 채팅 SSE 스트림 안전 타임아웃(ms)
+ * 서버 SseEmitter 타임아웃이 60초라 그보다 약간 길게 잡아, 연결이 완전히 멈춰버리는 극단적 케이스에서만 클라이언트가 직접 중단
  */
 export const SSE_STREAM_SAFETY_TIMEOUT_MS = 65000;
 /** AI 응답 청크가 화면에 나타날 때 적용하는 fade-in 애니메이션 시간(ms) */
