@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { CheckboxCheckIcon } from '@/assets/icons';
 import { ErrorState } from '@/components/feedback/ErrorState';
@@ -193,45 +193,51 @@ export default function TermsOfServiceScreen() {
           <StepIndicator totalSteps={SIGNUP_STEP_COUNT} currentStep={SIGNUP_CURRENT_STEP} />
         </View>
 
-        <View className="mt-12">
-          <ThemedText type="title" className="text-fg">
-            {TERMS_OF_SERVICE_COPY.pageTitle}
-          </ThemedText>
-          <ThemedText type="subtitle" className="mt-3 text-subtitle">
-            {TERMS_OF_SERVICE_COPY.pageSubtitle}
-          </ThemedText>
-        </View>
-
-        <View className="mt-8 gap-5">
-          <AgreementTab selected={isAgreeAllChecked} className="px-3">
-            <Pressable
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: isAgreeAllChecked }}
-              onPress={handleToggleAgreeAll}
-              className={cn('flex-row items-center gap-4 px-4', AGREEMENT_CARD_HEIGHT)}
-            >
-              <AgreementCheckbox checked={isAgreeAllChecked} />
-              <ThemedText type="smallTitle" className="text-fg-high">
-                {TERMS_OF_SERVICE_COPY.agreeAllLabel}
-              </ThemedText>
-            </Pressable>
-          </AgreementTab>
-
-          <View className={TermsOfServiceClasses.termList}>
-            {TERM_ITEMS.map((item) => (
-              <AgreementTab key={item.id} selected={checkedState[item.id]} className="px-4">
-                <AgreementRow
-                  label={item.label}
-                  required={item.required}
-                  checked={checkedState[item.id]}
-                  hasDetail={item.hasDetail}
-                  onToggle={() => handleToggleTerm(item.id)}
-                  onDetailPress={item.hasDetail ? () => handleDetailPress(item) : undefined}
-                />
-              </AgreementTab>
-            ))}
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="grow pb-4"
+        >
+          <View className="mt-12">
+            <ThemedText type="title" className="text-fg">
+              {TERMS_OF_SERVICE_COPY.pageTitle}
+            </ThemedText>
+            <ThemedText type="subtitle" className="mt-3 text-subtitle">
+              {TERMS_OF_SERVICE_COPY.pageSubtitle}
+            </ThemedText>
           </View>
-        </View>
+
+          <View className="mt-8 gap-5">
+            <AgreementTab selected={isAgreeAllChecked} className="px-3">
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isAgreeAllChecked }}
+                onPress={handleToggleAgreeAll}
+                className={cn('flex-row items-center gap-4 px-4', AGREEMENT_CARD_HEIGHT)}
+              >
+                <AgreementCheckbox checked={isAgreeAllChecked} />
+                <ThemedText type="smallTitle" className="text-fg-high">
+                  {TERMS_OF_SERVICE_COPY.agreeAllLabel}
+                </ThemedText>
+              </Pressable>
+            </AgreementTab>
+
+            <View className={TermsOfServiceClasses.termList}>
+              {TERM_ITEMS.map((item) => (
+                <AgreementTab key={item.id} selected={checkedState[item.id]} className="px-4">
+                  <AgreementRow
+                    label={item.label}
+                    required={item.required}
+                    checked={checkedState[item.id]}
+                    hasDetail={item.hasDetail}
+                    onToggle={() => handleToggleTerm(item.id)}
+                    onDetailPress={item.hasDetail ? () => handleDetailPress(item) : undefined}
+                  />
+                </AgreementTab>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
 
         <View className={TermsOfServiceClasses.footer}>
           {error ? (
