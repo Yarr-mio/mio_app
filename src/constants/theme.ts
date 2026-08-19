@@ -281,6 +281,24 @@ export const TermsOfServiceClasses = {
   privacyPolicyLinkText: 'text-center text-subtitle underline',
 } as const;
 
+// 하단 플로팅 시트 className
+export const BottomSheetClasses = {
+  root: 'flex-1 justify-end',
+  backdrop: 'absolute inset-0 bg-modal-overlay',
+  surface: 'rounded-t-3xl border-t border-modal-border bg-modal-surface px-[30px] pt-4',
+  grabber: 'mb-8 mt-1 h-1 w-10 self-center rounded-full bg-line-md',
+  title: 'text-fg-high',
+  body: 'mt-3 text-fg-soft leading-6',
+  bodyScroll: 'mt-4 max-h-[420px]',
+  // 요약텍스트 확인 버튼 사이 내부 여백
+  bodyToButtonGap: 'mt-14',
+} as const;
+
+// 하단 시트 홈 인디케이터 최소 여백 px
+export const BottomSheetLayout = {
+  bottomInsetMin: 16,
+} as const;
+
 /** 약관 및 개인정보 문서 화면 */
 export const LegalDocumentClasses = {
   root: 'flex-1',

@@ -9,6 +9,8 @@ export const TERMS_OF_SERVICE_COPY = {
   privacyPolicyLinkLabel: '개인정보 처리방침',
   requiredBadge: '[필수]',
   optionalBadge: '[선택]',
+  sensitiveSheetTitle: '민감정보 처리 안내',
+  sensitiveSheetConfirmLabel: '확인했으며 동의합니다',
 } as const;
 
 export interface TermItem {
@@ -17,6 +19,7 @@ export interface TermItem {
   required: boolean;
   hasDetail: boolean;
   documentId: LegalDocumentId | null;
+  summary?: string;
 }
 
 export const TERM_ITEMS: TermItem[] = [
@@ -41,6 +44,8 @@ export const TERM_ITEMS: TermItem[] = [
     required: true,
     hasDetail: true,
     documentId: LEGAL_DOCUMENT_IDS.sensitive,
+    summary:
+      '감정·심리 상태가 포함될 수 있는 대화와 체크인 정보를 AI 정서 코칭에 사용합니다. 이 과정에서 대화 내용이 AI 응답 생성을 위해 OpenAI(미국)로 전송되며, 모델 학습에는 사용되지 않습니다.',
   },
   {
     id: 'marketing',

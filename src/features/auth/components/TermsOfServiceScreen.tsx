@@ -21,6 +21,7 @@ import {
   SignupFlowLayout,
   TermsOfServiceClasses,
 } from '@/constants/theme';
+import { SensitiveConsentSheet } from '@/features/auth/components/SensitiveConsentSheet';
 import { StepIndicator } from '@/features/auth/components/StepIndicator';
 import {
   INITIAL_CHECKED_STATE,
@@ -131,16 +132,28 @@ function AgreementRow({
   );
 }
 
+const SENSITIVE_SUMMARY = TERM_ITEMS.find((item) => item.id === 'sensitive')?.summary ?? '';
+
+// 민감정보 고지 시트 진입 경로
+type SheetIntent = 'agreeAll' | 'continue' | null;
+
 export default function TermsOfServiceScreen() {
   const router = useRouter();
   const { submit, isPending, error, clearError } = useTermsOfServiceSubmit();
   const [checkedState, setCheckedState] = useState(INITIAL_CHECKED_STATE);
+  const [sheetIntent, setSheetIntent] = useState<SheetIntent>(null);
+  // 민감정보 고지 시트 확인 여부
+  const [sensitiveAcknowledged, setSensitiveAcknowledged] = useState(false);
 
   const requiredChecked = REQUIRED_TERM_IDS.every((id) => checkedState[id]);
   const isAgreeAllChecked = TERM_ITEMS.every((item) => checkedState[item.id]);
 
   const handleToggleTerm = (id: TermConsentId) => {
     clearError();
+    // 민감정보 해제 시 고지 확인 무효화
+    if (id === 'sensitive' && checkedState.sensitive) {
+      setSensitiveAcknowledged(false);
+    }
     setCheckedState((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -149,22 +162,59 @@ export default function TermsOfServiceScreen() {
 
   const handleToggleAgreeAll = () => {
     clearError();
-    const nextValue = !isAgreeAllChecked;
-    setCheckedState({
-      age: nextValue,
-      service: nextValue,
-      privacy: nextValue,
-      sensitive: nextValue,
-      marketing: nextValue,
-    });
+    if (isAgreeAllChecked) {
+      // 전체 해제 시 고지 확인도 무효화
+      setSensitiveAcknowledged(false);
+      setCheckedState({
+        age: false,
+        service: false,
+        privacy: false,
+        sensitive: false,
+        marketing: false,
+      });
+      return;
+    }
+    // 전체 동의 시 민감정보 고지 시트 먼저 노출
+    setSheetIntent('agreeAll');
   };
 
   const handleContinue = () => {
     if (!requiredChecked) {
       return;
     }
+    // 고지 미확인 시 진행 대신 시트 노출
+    if (!sensitiveAcknowledged) {
+      setSheetIntent('continue');
+      return;
+    }
 
     void submit(checkedState);
+  };
+
+  const handleSheetConfirm = () => {
+    setSensitiveAcknowledged(true);
+    setSheetIntent(null);
+
+    // 시트 확인 즉시 제출 후 다음 단계 진입
+    if (sheetIntent === 'agreeAll') {
+      const allChecked: typeof checkedState = {
+        age: true,
+        service: true,
+        privacy: true,
+        sensitive: true,
+        marketing: true,
+      };
+      setCheckedState(allChecked);
+      void submit(allChecked);
+      return;
+    }
+
+    // continue 경로 현재 상태로 제출
+    void submit(checkedState);
+  };
+
+  const handleSheetClose = () => {
+    setSheetIntent(null);
   };
 
   const handleDetailPress = (item: (typeof TERM_ITEMS)[number]) => {
@@ -261,6 +311,13 @@ export default function TermsOfServiceScreen() {
           </Button>
         </View>
       </ScreenContainer>
+
+      <SensitiveConsentSheet
+        visible={sheetIntent !== null}
+        summary={SENSITIVE_SUMMARY}
+        onConfirm={handleSheetConfirm}
+        onClose={handleSheetClose}
+      />
     </View>
   );
 }
