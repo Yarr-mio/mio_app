@@ -102,3 +102,10 @@ export const SESSION_HISTORY_PAGE_SIZE = 100;
 
 /** has_next가 계속 true로 오는 이상 상황에서 무한 루프를 만들지 않기 위한 페이지 수 상한 */
 export const SESSION_HISTORY_MAX_PAGES = 20;
+
+/**
+ * 대화 이력 전량 수집의 전체 상한(ms).
+ * 복원 중에는 입력창이 잠기므로, 요청당 타임아웃(API_TIMEOUT_MS)이 페이지 수만큼 누적되지 않도록
+ * 수집 전체에 마감을 둔다. 초과하면 실패로 떨궈 사용자에게 재시도 권한을 넘긴다
+ */
+export const SESSION_HISTORY_TOTAL_TIMEOUT_MS = 15_000;

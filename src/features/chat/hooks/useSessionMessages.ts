@@ -29,6 +29,10 @@ export function useSessionMessages() {
     enabled: shouldRestore,
     // 한 번 복원하면 다시 받을 이유가 없다 — 이후 대화는 SSE가 스토어에 직접 쌓는다
     staleTime: Infinity,
+    // 자동 재시도를 끈다 — 복원 중에는 입력창이 잠기므로, 전체 마감(SESSION_HISTORY_TOTAL_TIMEOUT_MS)이
+    // 재시도 횟수만큼 곱해지면 상한이 무의미해진다. 실패는 즉시 배너로 넘겨 재시도 권한을 사용자에게 준다
+    // (403/404처럼 재시도해도 결과가 같은 오류를 두 번 때리지 않는 효과도 있다)
+    retry: false,
   });
 
   useEffect(() => {
@@ -39,8 +43,12 @@ export function useSessionMessages() {
 
   return {
     isRestoring: shouldRestore && query.isFetching,
-    // 이미 대화가 있으면(사용자가 먼저 말을 걸었거나 복원이 끝났으면) 실패 배너를 접는다
-    isRestoreFailed: query.isError && !hasMessages,
+    // 실패 사실은 사용자가 대화를 시작한 뒤에도 유지한다 — 여기서 접으면 "이력이 없는 것"과
+    // "이력을 못 불러온 것"을 구분할 수단이 화면에서 사라진다(배너를 넣은 목적 자체)
+    isRestoreFailed: query.isError,
+    // 대화가 이미 시작됐으면 재시도해도 스토어의 "전부 아니면 전무" 가드에 막힌다 —
+    // 눌러도 아무 일이 없는 버튼 대신 재시도 가능 여부를 호출부에 알려준다
+    canRetryRestore: shouldRestore,
     retryRestore: () => void query.refetch(),
   };
 }

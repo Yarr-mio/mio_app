@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
@@ -9,7 +10,7 @@ import { useChatSse } from '@/features/chat/hooks/useChatSse';
 import { useEndChatSession, useSubmitCbtEmotionScore } from '@/features/chat/hooks/useChat';
 import { useSessionMessages } from '@/features/chat/hooks/useSessionMessages';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
-import { ChatHistoryRetryBanner } from '@/features/chat/components/ChatHistoryRetryBanner';
+import { ChatHistoryFailureBanner } from '@/features/chat/components/ChatHistoryFailureBanner';
 import { ChatInputBar } from '@/features/chat/components/ChatInputBar';
 import { EmotionScorePanel } from '@/features/chat/components/EmotionScorePanel';
 import { MessageBubble } from '@/features/chat/components/MessageBubble';
@@ -33,7 +34,9 @@ export function ChatMain() {
   const setPendingEmotionScore = useChatStore((s) => s.setPendingEmotionScore);
 
   const { sendMessage, isStreaming } = useChatSse(sessionId);
-  const { isRestoring, isRestoreFailed, retryRestore } = useSessionMessages();
+  const { isRestoring, isRestoreFailed, canRetryRestore, retryRestore } = useSessionMessages();
+  // 복원 실패 배너는 사용자가 직접 닫을 때까지 유지한다 — 세션이 바뀌면 ChatMain이 언마운트되며 초기화된다
+  const [isRestoreFailureDismissed, setIsRestoreFailureDismissed] = useState(false);
   const { mutate: endChatSession } = useEndChatSession();
   const { mutate: submitEmotionScore, mutateAsync: submitEmotionScoreAsync } =
     useSubmitCbtEmotionScore();
@@ -71,7 +74,12 @@ export function ChatMain() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          {isRestoreFailed ? <ChatHistoryRetryBanner onRetry={retryRestore} /> : null}
+          {isRestoreFailed && !isRestoreFailureDismissed ? (
+            <ChatHistoryFailureBanner
+              onRetry={canRetryRestore ? retryRestore : undefined}
+              onDismiss={() => setIsRestoreFailureDismissed(true)}
+            />
+          ) : null}
           {isRestoring ? (
             // 복원 중에는 빈 목록 대신 로딩을 보여준다 — FlatList가 inverted라
             // ListEmptyComponent를 쓰면 뒤집혀 그려지므로 목록 바깥에 둔다
