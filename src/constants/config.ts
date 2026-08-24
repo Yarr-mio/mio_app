@@ -100,7 +100,10 @@ export const CHECKIN_LIST_PAGE_SIZE = 20;
  */
 export const SESSION_HISTORY_PAGE_SIZE = 100;
 
-/** has_next가 계속 true로 오는 이상 상황에서 무한 루프를 만들지 않기 위한 페이지 수 상한 */
+/**
+ * has_next가 계속 true로 오는 이상 상황에서 무한 루프를 만들지 않기 위한 페이지 수 상한.
+ * 초과하면 잘린 이력을 시딩하지 않고 실패로 떨군다 (부분 복원은 전량과 구별되지 않는다)
+ */
 export const SESSION_HISTORY_MAX_PAGES = 20;
 
 /**

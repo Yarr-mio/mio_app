@@ -80,15 +80,22 @@ export async function fetchAllSessionMessages(sessionId: string): Promise<Sessio
       );
       collected.push(...response.messages);
 
-      if (!response.has_next || !response.next_cursor) {
+      if (!response.has_next) {
         return collected;
+      }
+      // has_next=true인데 커서가 없으면 다음 페이지를 이어받을 방법이 없다 — 여기서 멈추면
+      // 받은 만큼만 완전한 이력처럼 시딩된다. 서버 계약 위반이므로 실패로 떨군다
+      if (!response.next_cursor) {
+        throw new Error('세션 이력 페이지네이션 커서 누락');
       }
       cursor = response.next_cursor;
     }
 
-    // 상한에 닿았다는 것은 서버가 has_next를 계속 참으로 주고 있다는 뜻 — 조용히 자르지 않고 남긴다
-    console.warn('[ChatHistory] 페이지 상한 도달, 이력이 잘렸을 수 있음', { sessionId });
-    return collected;
+    // 상한에 닿았다는 것은 서버가 has_next를 계속 참으로 주고 있다는 뜻.
+    // 이력은 오래된 → 최신 순이라 여기서 자르면 최근 대화가 통째로 빠진 채 전량처럼 보이고,
+    // restoreMessages의 "전부 아니면 전무" 가드 때문에 나중에 메울 수도 없다 —
+    // 조용히 자르는 대신 실패로 떨궈 복원 실패 배너로 알린다
+    throw new Error('세션 이력 페이지 상한 초과');
   } finally {
     clearTimeout(deadline);
   }
