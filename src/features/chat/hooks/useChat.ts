@@ -17,6 +17,7 @@ import {
 } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { toOpeningChatMessage } from '@/features/chat/utils/chatMessage';
 import type { ActiveSessionResponse } from '@/types/chat';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -55,13 +56,12 @@ export function useStartChatSession() {
       const previousActiveSession = queryClient.getQueryData<ActiveSessionResponse>(
         queryKeys.chat.activeSession()
       );
-      useChatStore
-        .getState()
-        .startSession(
-          data.session_id,
-          data.character_id,
-          previousActiveSession?.last_ended_session_id
-        );
+      useChatStore.getState().startSession(data.session_id, data.character_id, {
+        previousSessionId: previousActiveSession?.last_ended_session_id,
+        // 서버가 신규 세션에 붙여준 선제 인사를 첫 AI 말풍선으로 시딩 (없으면 null → 말풍선 0건)
+        openingMessage: toOpeningChatMessage(data.initial_message),
+        origin: 'created',
+      });
     },
     onError: (error) => {
       const status = readApiHttpStatus(error);

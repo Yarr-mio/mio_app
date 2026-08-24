@@ -68,6 +68,8 @@ export interface SseDoneData {
 
 export type SummaryStatus = 'pending' | 'done' | 'viewed' | 'failed';
 
+// 서버는 재진입 응답에도 initial_message를 싣지만 FE는 읽지 않는다 —
+// 이력 조회(GET /v1/sessions/{id}/messages)가 오프닝을 목록 첫 항목으로 포함하기 때문
 export interface ActiveSessionResponse {
   // 활성 세션이 없으면 앞 6개는 명시적 null, last_summary_status/last_ended_session_id만 값이 들어옴
   session_id: string | null;
@@ -80,11 +82,24 @@ export interface ActiveSessionResponse {
   last_ended_session_id: string | null;
 }
 
+// POST /v1/sessions의 선제 인사(session opening) — 서버가 LLM 없이 고른 검수 문구.
+// 문구는 서버 소유다. 클라이언트에 인사말을 하드코딩하지 않는다 (명세 v1.4.0 · #428)
+export interface SessionInitialMessage {
+  message_id: string;
+  role: 'assistant';
+  kind: 'session_opening';
+  content: string;
+  created_at: string;
+}
+
 export interface StartSessionResponse {
   session_id: string;
   character_id: OnboardingCharacterId;
   status: 'active';
   started_at: string;
+  // BE #428 배포 전에는 필드 자체가 없다(undefined) — `!== null` 체크로는 못 거른다.
+  // 배포 후 신규 세션에는 항상 존재한다
+  initial_message?: SessionInitialMessage | null;
 }
 
 export interface EndSessionResponse {
