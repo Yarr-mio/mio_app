@@ -102,6 +102,23 @@ export interface StartSessionResponse {
   initial_message?: SessionInitialMessage | null;
 }
 
+// 서버 이력 DTO — 앱 도메인 타입 ChatMessage와 별개다 (role 값이 다르고 type/crisisResources가 없다)
+export interface SessionHistoryMessage {
+  message_id: string;
+  role: 'user' | 'assistant';
+  kind: 'conversation' | 'session_opening';
+  content: string;
+  created_at: string;
+}
+
+export interface SessionMessagesResponse {
+  session_id: string;
+  messages: SessionHistoryMessage[];
+  // opaque 문자열 — 파싱하거나 만들어 쓰지 않는다. 서버가 준 값을 그대로 되돌려준다
+  next_cursor: string | null;
+  has_next: boolean;
+}
+
 export interface EndSessionResponse {
   session_id: string;
   status: 'ended';

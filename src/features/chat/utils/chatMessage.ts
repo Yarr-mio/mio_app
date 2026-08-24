@@ -1,4 +1,4 @@
-import type { ChatMessage, SessionInitialMessage } from '@/types/chat';
+import type { ChatMessage, SessionHistoryMessage, SessionInitialMessage } from '@/types/chat';
 
 /**
  * 서버 메시지 DTO를 앱 도메인 타입 `ChatMessage`로 옮기는 순수 변환 모음.
@@ -25,4 +25,23 @@ export function toOpeningChatMessage(
     content: initialMessage.content,
     timestamp: initialMessage.created_at,
   };
+}
+
+/**
+ * `GET /v1/sessions/{id}/messages`의 이력을 대화창에 그릴 `ChatMessage[]`로 변환한다.
+ *
+ * 복원된 메시지는 전부 `type: 'normal'`이다 — 소크라테스 라벨(`is_socratic`)과 위기 말풍선은
+ * SSE `done` 이벤트에만 있는 정보라 이력 API로는 알 수 없다. 버그가 아니다.
+ *
+ * 정렬(오래된 → 최신)은 서버가 보장한다 — 여기서 다시 정렬하지 않는다.
+ * `ChatMain`이 그 순서를 그대로 뒤집어 쓰므로 임의 정렬을 넣으면 오히려 깨진다.
+ */
+export function toRestoredChatMessages(history: SessionHistoryMessage[]): ChatMessage[] {
+  return history.map((message) => ({
+    id: message.message_id,
+    role: message.role === 'assistant' ? 'ai' : 'user',
+    type: 'normal',
+    content: message.content,
+    timestamp: message.created_at,
+  }));
 }

@@ -12,6 +12,8 @@ export const queryKeys = {
     activeSession: () => ['chat', 'activeSession'] as const,
     character: () => ['chat', 'character'] as const,
     session: (sessionId: string) => ['chat', 'session', sessionId] as const,
+    // session(sessionId)(요약)와 다른 키 — 이쪽은 세션의 대화 이력 전량이다
+    sessionMessages: (sessionId: string) => ['chat', 'sessionMessages', sessionId] as const,
   },
   report: {
     all: () => ['report'] as const,

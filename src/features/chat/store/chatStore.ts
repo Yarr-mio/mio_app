@@ -37,6 +37,7 @@ interface ChatActions {
     characterId: OnboardingCharacterId,
     options?: StartSessionOptions
   ) => void;
+  restoreMessages: (sessionId: string, messages: ChatMessage[]) => void;
   addMessage: (message: ChatMessage) => void;
   appendDelta: (msgId: string, chunk: string) => void;
   replaceMessageContent: (msgId: string, content: string) => void;
@@ -88,6 +89,15 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
       // messages는 initialState에도 있으므로 반드시 스프레드 뒤에 와야 덮어써진다
       messages: options?.openingMessage ? [options.openingMessage] : [],
     }),
+
+  // 이력 복원은 병합이 아니라 "전부 아니면 전무" 시딩이다 —
+  // 로컬 사용자 메시지 id(`user-${Date.now()}`)는 서버 message_id와 겹치지 않아 중복 제거가
+  // 성립하지 않는다. 또 응답이 늦게 도착하는 사이 상태가 바뀌었을 수 있으므로,
+  // 적용 조건 검사를 set() 안에서 원자적으로 한다 (복원 중 전송 버튼 비활성화의 안전망)
+  restoreMessages: (sessionId, messages) =>
+    set((state) =>
+      state.sessionId === sessionId && state.messages.length === 0 ? { messages } : {}
+    ),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
 
