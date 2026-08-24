@@ -4,12 +4,24 @@ import type { ChatMessage, ChatMessageType, SseCrisisResource } from '@/types/ch
 
 export type SessionPhase = 'idle' | 'active' | 'ended';
 
+// 이 세션을 이번 실행에서 새로 만들었는지(created), 이미 있던 세션에 다시 들어온 건지(resumed).
+// 이력 복원이 "재진입한 세션만 조회"를 판정하는 근거다 — 신규 세션은 서버에도 오프닝 1건뿐이라
+// 조회할 이유가 없고, BE #428 미배포로 오프닝이 비어 있어도 조회가 새어나가지 않게 한다
+export type SessionOrigin = 'created' | 'resumed';
+
+interface StartSessionOptions {
+  previousSessionId?: string | null;
+  openingMessage?: ChatMessage | null;
+  origin?: SessionOrigin;
+}
+
 interface ChatState {
   sessionPhase: SessionPhase;
   sessionId: string | null;
   // 새 세션 시작 시점의 last_ended_session_id — 세션 요약 화면에서 직전 세션과의 감정 변화율 계산용
   previousSessionId: string | null;
   characterId: OnboardingCharacterId;
+  sessionOrigin: SessionOrigin;
   messages: ChatMessage[];
   streamingMessageId: string | null;
   isAiTyping: boolean;
@@ -23,8 +35,9 @@ interface ChatActions {
   startSession: (
     sessionId: string,
     characterId: OnboardingCharacterId,
-    previousSessionId?: string | null
+    options?: StartSessionOptions
   ) => void;
+  restoreMessages: (sessionId: string, messages: ChatMessage[]) => void;
   addMessage: (message: ChatMessage) => void;
   appendDelta: (msgId: string, chunk: string) => void;
   replaceMessageContent: (msgId: string, content: string) => void;
@@ -50,6 +63,8 @@ const initialState: ChatState = {
   // 세션 시작 전엔 아무도 이 기본값을 읽지 않음(SessionStart는 useSelectedCharacterId() 사용) —
   // startSession() 호출 시 서버 응답(character_id)으로 즉시 덮어써짐
   characterId: 'mio',
+  // 기본값은 안전한 쪽(resumed) — 출처를 명시하지 않은 호출은 재진입으로 보고 이력 복원을 허용한다
+  sessionOrigin: 'resumed',
   messages: [],
   streamingMessageId: null,
   isAiTyping: false,
@@ -61,14 +76,28 @@ const initialState: ChatState = {
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
   ...initialState,
 
-  startSession: (sessionId, characterId, previousSessionId = null) =>
+  startSession: (sessionId, characterId, options) =>
     set({
       ...initialState,
       sessionPhase: 'active',
       sessionId,
       characterId,
-      previousSessionId,
+      previousSessionId: options?.previousSessionId ?? null,
+      sessionOrigin: options?.origin ?? 'resumed',
+      // 리셋과 같은 set()에서 시딩한다 — 뒤이어 addMessage()로 넣으면 인사말 없는 중간 상태가
+      // 한 번 그려지고, 중복 삽입 가드도 따로 필요해진다.
+      // messages는 initialState에도 있으므로 반드시 스프레드 뒤에 와야 덮어써진다
+      messages: options?.openingMessage ? [options.openingMessage] : [],
     }),
+
+  // 이력 복원은 병합이 아니라 "전부 아니면 전무" 시딩이다 —
+  // 로컬 사용자 메시지 id(`user-${Date.now()}`)는 서버 message_id와 겹치지 않아 중복 제거가
+  // 성립하지 않는다. 또 응답이 늦게 도착하는 사이 상태가 바뀌었을 수 있으므로,
+  // 적용 조건 검사를 set() 안에서 원자적으로 한다 (복원 중 전송 버튼 비활성화의 안전망)
+  restoreMessages: (sessionId, messages) =>
+    set((state) =>
+      state.sessionId === sessionId && state.messages.length === 0 ? { messages } : {}
+    ),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
 

@@ -17,6 +17,7 @@ import {
 } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { toOpeningChatMessage } from '@/features/chat/utils/chatMessage';
 import type { ActiveSessionResponse } from '@/types/chat';
 import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -55,13 +56,12 @@ export function useStartChatSession() {
       const previousActiveSession = queryClient.getQueryData<ActiveSessionResponse>(
         queryKeys.chat.activeSession()
       );
-      useChatStore
-        .getState()
-        .startSession(
-          data.session_id,
-          data.character_id,
-          previousActiveSession?.last_ended_session_id
-        );
+      useChatStore.getState().startSession(data.session_id, data.character_id, {
+        previousSessionId: previousActiveSession?.last_ended_session_id,
+        // 서버가 신규 세션에 붙여준 선제 인사를 첫 AI 말풍선으로 시딩 (없으면 null → 말풍선 0건)
+        openingMessage: toOpeningChatMessage(data.initial_message),
+        origin: 'created',
+      });
     },
     onError: (error) => {
       const status = readApiHttpStatus(error);
@@ -93,8 +93,11 @@ export function useStartChatSession() {
 export function useEndChatSession() {
   const queryClient = useQueryClient();
 
-  function handleSessionEnded() {
+  function handleSessionEnded(sessionId: string) {
     useChatStore.getState().endSession();
+    // 복호화된 상담 대화 원문을 세션 종료 후까지 캐시에 들고 있을 이유가 없다
+    // (서버도 보존 기간 후 원문을 삭제한다 — MIO-Session-005)
+    queryClient.removeQueries({ queryKey: queryKeys.chat.sessionMessages(sessionId) });
     // 종료된 세션이 activeSession 캐시(staleTime 5분)에 남아있으면, 그 안에 chat/index.tsx가 새로
     // 마운트될 때 이미 끝난 세션을 다시 활성 세션으로 착각해 startSession()을 재호출할 수 있다
     // (chat-trouble-shoot/08 원인 E)
@@ -108,14 +111,14 @@ export function useEndChatSession() {
 
   return useMutation({
     mutationFn: (sessionId: string) => endSession(sessionId),
-    onSuccess: handleSessionEnded,
-    onError: (error) => {
+    onSuccess: (_data, sessionId) => handleSessionEnded(sessionId),
+    onError: (error, sessionId) => {
       const status = readApiHttpStatus(error);
 
       // 30분 무응답 자동 종료 등으로 서버가 이미 세션을 끝낸 뒤 사용자가 수동 종료를 시도한 경우 —
       // 성공과 동일하게 처리해 동일한 요약 화면 이동 로직을 타게 한다
       if (status === HTTP_STATUS.GONE || status === HTTP_STATUS.NOT_FOUND) {
-        handleSessionEnded();
+        handleSessionEnded(sessionId);
         return;
       }
 

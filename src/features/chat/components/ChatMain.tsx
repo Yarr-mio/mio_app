@@ -1,11 +1,16 @@
-import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
+import { ThemedText } from '@/components/themed/ThemedText';
 import { getOnboardingCharacterById } from '@/constants/characters';
+import { PrimaryColors } from '@/constants/theme';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useChatSse } from '@/features/chat/hooks/useChatSse';
 import { useEndChatSession, useSubmitCbtEmotionScore } from '@/features/chat/hooks/useChat';
+import { useSessionMessages } from '@/features/chat/hooks/useSessionMessages';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
+import { ChatHistoryFailureBanner } from '@/features/chat/components/ChatHistoryFailureBanner';
 import { ChatInputBar } from '@/features/chat/components/ChatInputBar';
 import { EmotionScorePanel } from '@/features/chat/components/EmotionScorePanel';
 import { MessageBubble } from '@/features/chat/components/MessageBubble';
@@ -29,6 +34,9 @@ export function ChatMain() {
   const setPendingEmotionScore = useChatStore((s) => s.setPendingEmotionScore);
 
   const { sendMessage, isStreaming } = useChatSse(sessionId);
+  const { isRestoring, isRestoreFailed, canRetryRestore, retryRestore } = useSessionMessages();
+  // 복원 실패 배너는 사용자가 직접 닫을 때까지 유지한다 — 세션이 바뀌면 ChatMain이 언마운트되며 초기화된다
+  const [isRestoreFailureDismissed, setIsRestoreFailureDismissed] = useState(false);
   const { mutate: endChatSession } = useEndChatSession();
   const { mutate: submitEmotionScore, mutateAsync: submitEmotionScoreAsync } =
     useSubmitCbtEmotionScore();
@@ -66,21 +74,38 @@ export function ChatMain() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <FlatList<ChatMessage>
-            data={[...visibleMessages].reverse()}
-            inverted
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <MessageBubble
-                message={item}
-                characterId={characterId}
-                characterName={character.name}
-                isStreaming={item.id === streamingMessageId}
-              />
-            )}
-            ListHeaderComponent={isAiTyping ? <TypingIndicator /> : null}
-            contentContainerClassName="gap-4 px-4 py-4"
-          />
+          {isRestoreFailed && !isRestoreFailureDismissed ? (
+            <ChatHistoryFailureBanner
+              onRetry={canRetryRestore ? retryRestore : undefined}
+              onDismiss={() => setIsRestoreFailureDismissed(true)}
+            />
+          ) : null}
+          {isRestoring ? (
+            // 복원 중에는 빈 목록 대신 로딩을 보여준다 — FlatList가 inverted라
+            // ListEmptyComponent를 쓰면 뒤집혀 그려지므로 목록 바깥에 둔다
+            <View className="flex-1 items-center justify-center gap-4">
+              <ActivityIndicator color={PrimaryColors.DEFAULT} size="large" />
+              <ThemedText type="small" className="text-fg-muted">
+                이전 대화를 불러오는 중...
+              </ThemedText>
+            </View>
+          ) : (
+            <FlatList<ChatMessage>
+              data={[...visibleMessages].reverse()}
+              inverted
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <MessageBubble
+                  message={item}
+                  characterId={characterId}
+                  characterName={character.name}
+                  isStreaming={item.id === streamingMessageId}
+                />
+              )}
+              ListHeaderComponent={isAiTyping ? <TypingIndicator /> : null}
+              contentContainerClassName="gap-4 px-4 py-4"
+            />
+          )}
           {emotionScoringActive ? (
             <EmotionScorePanel
               initialScore={pendingEmotionScore}
@@ -88,7 +113,9 @@ export function ChatMain() {
               onScoreChange={setPendingEmotionScore}
             />
           ) : (
-            <ChatInputBar onSend={sendMessage} disabled={isStreaming} />
+            // 복원 중에는 전송을 막는다 — 이력이 도착하기 전에 보낸 메시지가 있으면
+            // "전부 아니면 전무" 시딩이 성립하지 않아 그 세션은 이력을 영영 못 받는다
+            <ChatInputBar onSend={sendMessage} disabled={isStreaming || isRestoring} />
           )}
         </KeyboardAvoidingView>
       </ScreenContainer>

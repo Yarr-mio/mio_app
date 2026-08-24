@@ -92,3 +92,23 @@ export const API_TIMEOUT_MS = 10_000;
 
 /** 체크인 목록 페이지당 개수 (백엔드 CheckinService.PAGE_SIZE와 동일하게 유지) */
 export const CHECKIN_LIST_PAGE_SIZE = 20;
+
+/**
+ * GET /v1/sessions/{id}/messages의 limit 최대값.
+ * 세션은 30분 무응답 시 종료되어 길이가 제한적이라 대부분 1회 호출로 전량을 받는다
+ * (기본값 50을 쓰면 왕복만 늘어난다)
+ */
+export const SESSION_HISTORY_PAGE_SIZE = 100;
+
+/**
+ * has_next가 계속 true로 오는 이상 상황에서 무한 루프를 만들지 않기 위한 페이지 수 상한.
+ * 초과하면 잘린 이력을 시딩하지 않고 실패로 떨군다 (부분 복원은 전량과 구별되지 않는다)
+ */
+export const SESSION_HISTORY_MAX_PAGES = 20;
+
+/**
+ * 대화 이력 전량 수집의 전체 상한(ms).
+ * 복원 중에는 입력창이 잠기므로, 요청당 타임아웃(API_TIMEOUT_MS)이 페이지 수만큼 누적되지 않도록
+ * 수집 전체에 마감을 둔다. 초과하면 실패로 떨궈 사용자에게 재시도 권한을 넘긴다
+ */
+export const SESSION_HISTORY_TOTAL_TIMEOUT_MS = 15_000;

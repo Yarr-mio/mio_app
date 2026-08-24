@@ -26,6 +26,8 @@ export default function ChatScreen() {
       if (sessionPhase === 'active' && sessionId === activeSession.session_id) {
         return;
       }
+      // 재진입 경로에서는 인사말을 직접 넣지 않는다 — 오프닝은 서버 이력의 첫 항목이라
+      // 대화 이력 복원이 나머지 대화와 함께 가져온다 (origin 기본값 'resumed'가 그 조회를 연다)
       startSession(activeSession.session_id, activeSession.character_id);
       return;
     }
