@@ -2,6 +2,7 @@ import { commitSentMessage, peekNextMessageIndex } from '@/analytics/chatMessage
 import { track } from '@/analytics/track';
 import { refreshAccessTokenForNonAxios } from '@/api/client';
 import { queryKeys } from '@/api/queryKeys';
+import { pushSessionSummaryOnce } from '@/features/chat/services/sessionSummaryNavigation';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import {
   API_BASE_URL,
@@ -20,7 +21,6 @@ import type {
 import { readErrorCodeFromBody } from '@/utils/readApiError';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
-import { router } from 'expo-router';
 // 글로벌 fetch는 RN에서 response.body.getReader() 스트리밍을 지원하지 않음 — expo/fetch는 WinterCG 호환 구현으로 스트리밍 지원
 import { fetch } from 'expo/fetch';
 import { useEffect, useRef, useState } from 'react';
@@ -217,7 +217,7 @@ export function useChatSse(sessionId: string | null) {
       useChatStore.getState().endSession();
       queryClient.invalidateQueries({ queryKey: queryKeys.chat.activeSession() });
       Alert.alert('대화가 이미 종료됐어요', '대화 요약을 확인해 주세요.');
-      router.push({ pathname: '/(main)/chat/summary', params: { sessionId: currentSessionId } });
+      pushSessionSummaryOnce(currentSessionId);
       return;
     }
     if (status === 400) {

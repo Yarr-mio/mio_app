@@ -16,6 +16,7 @@ import {
   SESSION_SUMMARY_POLL_INTERVAL_MS,
 } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
+import { pushSessionSummaryOnce } from '@/features/chat/services/sessionSummaryNavigation';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { toOpeningChatMessage } from '@/features/chat/utils/chatMessage';
 import type { ActiveSessionResponse } from '@/types/chat';
@@ -105,8 +106,10 @@ export function useEndChatSession() {
     // 세션 종료 후 Todo 및 리포트 캐시 무효화
     void invalidateTodoRelatedQueries(queryClient);
     // SessionEnd의 dismissAll()이 스택 루트(index)로 돌아간다는 전제를 깨지 않기 위해 push 유지 —
-    // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당
-    router.push('/(main)/chat/summary');
+    // 뒤로가기 차단은 SessionSummary/SessionEnd의 beforeRemove 리스너가 담당.
+    // chat/index.tsx의 재진입 리다이렉트가 같은 세션으로 또 push해 요약 화면이 두 장 쌓이지 않도록
+    // 세션 단위 가드를 거친다
+    pushSessionSummaryOnce(sessionId);
   }
 
   return useMutation({

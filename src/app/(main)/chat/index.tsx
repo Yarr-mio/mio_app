@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { View } from 'react-native';
-import { router } from 'expo-router';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { useActiveSession } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { SessionStart } from '@/features/chat/components/SessionStart';
 import { ChatMain } from '@/features/chat/components/ChatMain';
+import { pushSessionSummaryOnce } from '@/features/chat/services/sessionSummaryNavigation';
 import { storage } from '@/utils/storage';
 
 export default function ChatScreen() {
@@ -14,16 +14,16 @@ export default function ChatScreen() {
   const sessionId = useChatStore((s) => s.sessionId);
   const startSession = useChatStore((s) => s.startSession);
   const endSession = useChatStore((s) => s.endSession);
-  // 같은 마운트 동안 재진입 리다이렉트를 한 번만 트리거 (refetch로 effect가 다시 돌아도 중복 push 방지)
-  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
     if (!activeSession) return;
 
     if (activeSession.session_id && activeSession.character_id) {
-      // 로컬 스토어가 이미 같은 세션을 active로 들고 있으면 재조회로 인한 스토어 리셋을 막는다 —
-      // startSession()은 콜드 스타트나 세션이 실제로 바뀐 경우에만 호출
-      if (sessionPhase === 'active' && sessionId === activeSession.session_id) {
+      // 스토어가 이미 이 세션을 아는 상태면 재시작하지 않는다 — 'active'는 재조회로 인한 스토어
+      // 리셋 방지, 'ended'는 요약으로 넘어가는 중인 세션을 (invalidate 직후에도 남아있는) 옛
+      // activeSession 캐시로 되살리는 것 방지. startSession()은 콜드 스타트나 세션이 실제로
+      // 바뀐 경우에만 호출한다
+      if (sessionId === activeSession.session_id) {
         return;
       }
       // 재진입 경로에서는 인사말을 직접 넣지 않는다 — 오프닝은 서버 이력의 첫 항목이라
@@ -41,27 +41,22 @@ export default function ChatScreen() {
       endSession();
     }
 
-    if (
-      hasRedirectedRef.current ||
-      !endedSessionId ||
-      !summaryStatus ||
-      summaryStatus === 'viewed'
-    ) {
+    if (!endedSessionId || !summaryStatus || summaryStatus === 'viewed') {
       return;
     }
 
-    hasRedirectedRef.current = true;
     void (async () => {
       // summary_status가 viewed로 전환되는 시점이 불명확해, 서버 상태와 무관하게 같은 세션으로는
       // 한 번만 리다이렉트하도록 로컬에 마지막으로 보여준 세션 id를 기록해둔다
       const lastRedirectedSessionId = await storage.chatRedirectedSessionId.get();
       if (lastRedirectedSessionId === endedSessionId) return;
 
+      // 종료 플로우가 이번 실행에서 이미 이 세션의 요약으로 보냈다면 화면을 겹쳐 쌓지 않는다.
+      // 영속 가드는 리다이렉트가 실제로 push했을 때만 기록해야 한다 — 요약을 못 본 채 앱을 죽인
+      // 사용자를 재실행 시 구제하는 경로가 이 기록에 막히면 안 된다
+      if (!pushSessionSummaryOnce(endedSessionId)) return;
+
       await storage.chatRedirectedSessionId.set(endedSessionId);
-      router.push({
-        pathname: '/(main)/chat/summary',
-        params: { sessionId: endedSessionId },
-      });
     })();
   }, [activeSession, sessionPhase, sessionId, startSession, endSession]);
 
