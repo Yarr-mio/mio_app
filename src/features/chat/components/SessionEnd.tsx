@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { getOnboardingCharacterById } from '@/constants/characters';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { useBlockTabPressStackReset } from '@/hooks/useBlockTabPressStackReset';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { useCallback, useEffect } from 'react';
@@ -22,6 +23,9 @@ export function SessionEnd() {
   useEffect(() => {
     navigation.setOptions({ gestureEnabled: false });
   }, [navigation]);
+
+  // 채팅 탭 재클릭으로 인한 스택 리셋 차단 — 종료 지점 화면의 이탈 차단 정책을 요약 화면과 맞춘다
+  useBlockTabPressStackReset();
 
   // Android 하드웨어 백 / router.back() 같은 프로그램적 뒤로가기(POP/GO_BACK)만 차단한다. usePreventRemove는
   // 액션 타입을 가리지 않고 모두 막아서 handleGoHome의 dismissAll()(POP_TO_TOP)까지 무효화시켰다

@@ -12,6 +12,7 @@ import { KeyThoughtsList } from '@/features/chat/components/KeyThoughtsList';
 import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { useBlockTabPressStackReset } from '@/hooks/useBlockTabPressStackReset';
 import type { SessionSummaryResponse } from '@/types/chat';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -52,6 +53,10 @@ export function SessionSummary() {
   useEffect(() => {
     navigation.setOptions({ gestureEnabled: false });
   }, [navigation]);
+
+  // 채팅 탭 재클릭으로 이 화면이 스택에서 걷혀나가는 세 번째 이탈로를 막는다 — 걷혀나가면
+  // chat/index가 sessionPhase 'ended' 빈 화면으로 남는다
+  useBlockTabPressStackReset();
 
   // Android 하드웨어 백 / router.back() 같은 프로그램적 뒤로가기(POP/GO_BACK)만 차단한다. usePreventRemove는
   // 액션 타입을 가리지 않고 모두 막아서 SessionEnd의 dismissAll()(POP_TO_TOP)까지 무효화시켰다

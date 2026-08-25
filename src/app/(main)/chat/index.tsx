@@ -1,3 +1,4 @@
+import { useIsFocused } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { ChatBackground } from '@/components/themed/ChatBackground';
@@ -5,11 +6,15 @@ import { useActiveSession } from '@/features/chat/hooks/useChat';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { SessionStart } from '@/features/chat/components/SessionStart';
 import { ChatMain } from '@/features/chat/components/ChatMain';
-import { pushSessionSummaryOnce } from '@/features/chat/services/sessionSummaryNavigation';
+import {
+  pushSessionSummaryOnce,
+  releaseSessionSummaryNavigation,
+} from '@/features/chat/services/sessionSummaryNavigation';
 import { storage } from '@/utils/storage';
 
 export default function ChatScreen() {
   const { data: activeSession, isLoading } = useActiveSession();
+  const isFocused = useIsFocused();
   const sessionPhase = useChatStore((s) => s.sessionPhase);
   const sessionId = useChatStore((s) => s.sessionId);
   const startSession = useChatStore((s) => s.startSession);
@@ -45,6 +50,15 @@ export default function ChatScreen() {
       return;
     }
 
+    // 요약으로 보낸 줄 알았던 세션인데 이 화면이 포커스를 잡고 있다 = 요약 화면이 스택에서 사라졌다는
+    // 뜻이다(덮여 있는 동안에는 마운트돼 있어도 포커스가 없다). 아래 'ended' 분기가 빈 배경만 그리는
+    // 막다른 길이므로 이동 claim을 풀어 다시 보낼 수 있게 한다. 정상 이탈(SessionEnd → dismissAll →
+    // 홈)은 탭이 함께 바뀌어 이 화면이 포커스를 얻지 못하고, reset()으로 phase도 'idle'이라 걸리지 않는다.
+    // 해제를 await 앞에 두는 것이 중요하다 — 뒤로 옮기면 동시에 도는 effect 둘이 각자 push할 수 있다
+    if (isFocused && sessionPhase === 'ended') {
+      releaseSessionSummaryNavigation(endedSessionId);
+    }
+
     void (async () => {
       // summary_status가 viewed로 전환되는 시점이 불명확해, 서버 상태와 무관하게 같은 세션으로는
       // 한 번만 리다이렉트하도록 로컬에 마지막으로 보여준 세션 id를 기록해둔다
@@ -58,7 +72,7 @@ export default function ChatScreen() {
 
       await storage.chatRedirectedSessionId.set(endedSessionId);
     })();
-  }, [activeSession, sessionPhase, sessionId, startSession, endSession]);
+  }, [activeSession, sessionPhase, sessionId, isFocused, startSession, endSession]);
 
   // sessionPhase가 'ended'인 동안은 요약 화면으로 전환 중인 과도기 상태 — 이 화면이 잠깐이라도
   // 보이면(전환 애니메이션, 뒤로 스와이프 등) "대화 시작하기" 화면이 깜빡이지 않도록 빈 배경만 보여준다
