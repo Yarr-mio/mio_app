@@ -56,5 +56,8 @@ export const storage = {
   chatRedirectedSessionId: {
     get: () => getItem(STORAGE_KEYS.chatRedirectedSessionId),
     set: (sessionId: string) => setItem(STORAGE_KEYS.chatRedirectedSessionId, sessionId),
+    // 요약 대기 중 사용자가 직접 나간 경우에만 지운다 — 지워야 채팅 탭 재진입 시 자동
+    // 리다이렉트가 다시 살아나 아직 못 본 요약으로 돌아갈 수 있다
+    delete: () => deleteItem(STORAGE_KEYS.chatRedirectedSessionId),
   },
 };

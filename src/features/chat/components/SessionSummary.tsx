@@ -5,19 +5,33 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
+import {
+  SUMMARY_FETCH_FAILED_MESSAGE,
+  SUMMARY_FETCH_FAILED_RETRY_LABEL,
+} from '@/constants/chatSummaryFailure';
+import { HTTP_STATUS } from '@/constants/config';
 import { EMOTION_META } from '@/constants/emotions';
-import { PrimaryColors } from '@/constants/theme';
+import { SummaryFailureClasses } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
 import { KeyThoughtsList } from '@/features/chat/components/KeyThoughtsList';
+import { SessionSummaryLoading } from '@/features/chat/components/SessionSummaryLoading';
+import { SessionSummaryUnavailable } from '@/features/chat/components/SessionSummaryUnavailable';
 import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
+import {
+  exitSummaryToChatStart,
+  exitSummaryToHome,
+} from '@/features/chat/services/sessionSummaryExit';
 import { useChatStore } from '@/features/chat/store/chatStore';
+import { useBlockTabPressStackReset } from '@/hooks/useBlockTabPressStackReset';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import type { SessionSummaryResponse } from '@/types/chat';
+import { readApiHttpStatus } from '@/utils/readApiError';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -38,8 +52,16 @@ export function SessionSummary() {
   const sessionId = routeSessionId ?? storeSessionId;
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  // SessionEnd와 동일하게 store가 아닌 여기서 읽는다 — store의 characterId는 reset() 시 기본값으로
+  // 되돌아가는데, 나가기 핸들러가 바로 그 reset()을 호출한다
+  const characterId = useSelectedCharacterId();
 
-  const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
+  const { data: summary, isLoading, error, refetch } = useSessionSummary(sessionId);
+  // 410 GONE = 서버가 이 세션의 요약을 FAILED로 확정했다는 뜻 — 재조회로 뒤집히지 않는다
+  const isSummaryGone = readApiHttpStatus(error) === HTTP_STATUS.GONE;
+  // 요약 본문이 실제로 화면에 그려지는 상태 — 대기·실패 화면은 "요약을 봤다"가 아니다
+  const isSummaryRendered =
+    summary?.summary_status === 'done' || summary?.summary_status === 'viewed';
   // 직전 세션은 화면에 그리는 대상이 아니라 감정 변화율 계산용 숫자만 필요하다. useSessionSummary로 다시
   // 부르면 GET .../summary의 부수효과로 그 세션을 "열람" 처리해버리므로, 이미 캐시된 값만 읽고
   // 없으면(예: 두 세션 사이 앱 재시작) 비교 없이 넘어간다
@@ -52,6 +74,10 @@ export function SessionSummary() {
   useEffect(() => {
     navigation.setOptions({ gestureEnabled: false });
   }, [navigation]);
+
+  // 채팅 탭 재클릭으로 이 화면이 스택에서 걷혀나가는 세 번째 이탈로를 막는다 — 걷혀나가면
+  // chat/index가 sessionPhase 'ended' 빈 화면으로 남는다
+  useBlockTabPressStackReset();
 
   // Android 하드웨어 백 / router.back() 같은 프로그램적 뒤로가기(POP/GO_BACK)만 차단한다. usePreventRemove는
   // 액션 타입을 가리지 않고 모두 막아서 SessionEnd의 dismissAll()(POP_TO_TOP)까지 무효화시켰다
@@ -79,15 +105,17 @@ export function SessionSummary() {
 
   // ⚠️ 발행을 useSessionSummary(폴링 useQuery)에 걸면 요약이 생성될 때까지 한 화면 진입에 수 건이
   // 나간다. 이 이벤트만 뒷단 중복 제거 대상이 아니라(반복 조회가 곧 값) 부푼 값이 그대로
-  // Core Action 건수로 들어가므로, 화면 포커스 1회 + sessionId별 가드로 못박는다.
+  // Core Action 건수로 들어가므로, 요약 본문 렌더 1회 + sessionId별 가드로 못박는다.
+  // ⚠️ 포커스만으로 발행하면 안 된다 — 요약이 아예 없는 세션(410)이나 대기 중 이탈까지 "열람"으로
+  // 세어 Core Action이 부푼다. claimSummaryView()는 소비형이므로 항상 조건 마지막에 둔다.
   // 가드는 모듈 스코프다 — 인스턴스별 ref로 두면 이 화면이 두 번 마운트될 때 각자 1건씩 발행한다
   useEffect(() => {
-    if (!isFocused || !sessionId || !claimSummaryView(sessionId)) {
+    if (!isFocused || !sessionId || !isSummaryRendered || !claimSummaryView(sessionId)) {
       return;
     }
 
     track('session_summary_viewed', { chat_session_id: sessionId });
-  }, [isFocused, sessionId]);
+  }, [isFocused, sessionId, isSummaryRendered]);
 
   if (!sessionId) {
     return (
@@ -97,30 +125,44 @@ export function SessionSummary() {
     );
   }
 
-  if (isLoading || !summary || summary.summary_status === 'pending') {
+  // ⚠️ 실패 분기는 반드시 로딩 분기보다 위에 온다 — 폴링 중 실패하면 직전 pending 응답이 data에
+  // 그대로 남아, 아래로 내리면 영영 도달하지 못하는 죽은 코드가 되고 대기 화면에 고착된다.
+  //
+  // 무입력 세션은 종료 시점(useChat의 handleSessionEnded)에 걸러져 이 화면까지 오지 않는다 —
+  // 여기까지 왔다는 건 대화가 오갔는데 요약 생성이 실패했다는 뜻이므로 항상 안내를 보여준다
+  if (isSummaryGone) {
+    return <SessionSummaryUnavailable onConfirm={() => exitSummaryToChatStart(sessionId)} />;
+  }
+
+  // 네트워크 오류·5xx 등 일시적 실패 — 여기서는 재조회가 유효하므로 재시도 버튼을 준다.
+  // 이미 그릴 요약이 있는데 배경 재조회만 실패한 경우라면 본문을 계속 보여주는 편이 낫다
+  if (error && !isSummaryRendered) {
     return (
-      <View className="flex-1 bg-midnight items-center justify-center">
+      <View className={SummaryFailureClasses.root}>
         <ChatBackground />
-        <ActivityIndicator color={PrimaryColors.DEFAULT} size="large" />
-        <ThemedText type="small" className="text-fg-muted mt-4">
-          대화 요약을 불러오는 중...
+        <ThemedText type="default" className={SummaryFailureClasses.message}>
+          {SUMMARY_FETCH_FAILED_MESSAGE}
         </ThemedText>
+        <Button variant="ghost" size="md" onPress={() => refetch()}>
+          {SUMMARY_FETCH_FAILED_RETRY_LABEL}
+        </Button>
       </View>
     );
   }
 
-  if (summary.summary_status === 'failed') {
+  if (isLoading || !summary || summary.summary_status === 'pending') {
     return (
-      <View className="flex-1 bg-midnight items-center justify-center px-8 gap-4">
-        <ChatBackground />
-        <ThemedText type="default" className="text-fg-muted text-center">
-          대화 요약을 만드는 데 문제가 생겼어요.{'\n'}다시 시도해 주세요.
-        </ThemedText>
-        <Button variant="ghost" size="md" onPress={() => refetch()}>
-          다시 시도
-        </Button>
-      </View>
+      <SessionSummaryLoading
+        characterId={characterId}
+        onExit={() => exitSummaryToHome(sessionId)}
+      />
     );
+  }
+
+  // 백엔드가 실패를 200 + summary_status:'failed'로 표현하게 되면 이 분기로 들어온다
+  // (현재는 410으로만 내려와 위 isSummaryGone이 받는다)
+  if (summary.summary_status === 'failed') {
+    return <SessionSummaryUnavailable onConfirm={() => exitSummaryToChatStart(sessionId)} />;
   }
 
   const previousEmotionScore = previousSummary?.avg_emotion_score;
