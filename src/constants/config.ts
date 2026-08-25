@@ -112,3 +112,32 @@ export const SESSION_HISTORY_MAX_PAGES = 20;
  * 수집 전체에 마감을 둔다. 초과하면 실패로 떨궈 사용자에게 재시도 권한을 넘긴다
  */
 export const SESSION_HISTORY_TOTAL_TIMEOUT_MS = 15_000;
+
+/**
+ * 세션 요약 대기 화면 연출 타이밍
+ *
+ * 서버는 `summary_status`의 `pending` 외에 진행 단계를 알려주지 않는다 — 아래 값들은 진짜 진행률이
+ * 아니라 전부 클라이언트 타이머 기반 연출이며, 실측 소요(10~15초) 기준의 초기값이다.
+ * ⚠️ 실측 후 조정 대상 — 튜닝은 컴포넌트를 고치지 말고 이 상수들만 바꾼다
+ */
+
+/** 대기 문구가 다음 단계로 넘어가는 주기(ms) — 실측 후 조정 대상 */
+export const SUMMARY_LOADING_STAGE_INTERVAL_MS = 4000;
+
+/**
+ * 첫 대기 문구의 최소 표시 시간(ms) — 실측 후 조정 대상
+ * 전환 주기를 짧게 낮춰도 진입 직후 문구가 깜빡이지 않도록 첫 단계에만 하한을 둔다
+ */
+export const SUMMARY_LOADING_FIRST_STAGE_MIN_MS = 1200;
+
+/** 이 시간을 넘기면 단계 문구 대신 안심 문구로 교체하는 임계(ms) — 실측 후 조정 대상 */
+export const SUMMARY_LOADING_REASSURE_AFTER_MS = 20_000;
+
+/** 이 시간을 넘기면 "먼저 나가기" 버튼을 노출하는 임계(ms) — 실측 후 조정 대상 */
+export const SUMMARY_LOADING_EXIT_AFTER_MS = 35_000;
+
+/** 캐릭터 이미지 breathing 애니메이션 1주기(ms) — 실측 후 조정 대상 */
+export const SUMMARY_LOADING_BREATH_DURATION_MS = 1800;
+
+/** 대기 문구가 바뀔 때 적용하는 fade-in 시간(ms) — 실측 후 조정 대상 */
+export const SUMMARY_LOADING_MESSAGE_FADE_DURATION_MS = 260;

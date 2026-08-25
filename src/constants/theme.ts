@@ -811,3 +811,19 @@ export const TodoExpiredBadgeClasses = {
   container: 'items-center rounded-full border border-line bg-surface px-4 py-2.5',
   text: 'text-label',
 } as const;
+
+/** 세션 요약 대기 화면 — 캐릭터 이미지 크기와 breathing 애니메이션 진폭 */
+export const SummaryLoadingLayout = {
+  characterImageSize: 200,
+  /** breathing 한 주기에서 확대되는 최대 배율 — 1에 가까울수록 은은하다 */
+  breathScaleMax: 1.05,
+} as const;
+
+/** 세션 요약 대기 화면 — 레이아웃 className */
+export const SummaryLoadingClasses = {
+  root: 'flex-1 bg-midnight items-center justify-center gap-8 px-8',
+  hero: 'items-center gap-6',
+  message: 'text-center text-fg-soft leading-6',
+  exitSection: 'w-full items-center gap-3',
+  exitNotice: 'text-center text-fg-muted leading-5',
+} as const;

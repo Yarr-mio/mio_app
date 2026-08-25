@@ -6,19 +6,22 @@ import { ChatBackground } from '@/components/themed/ChatBackground';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { Button } from '@/components/ui/Button';
 import { EMOTION_META } from '@/constants/emotions';
-import { PrimaryColors } from '@/constants/theme';
 import { BiasTypesDisplay } from '@/features/chat/components/BiasTypesDisplay';
 import { KeyThoughtsList } from '@/features/chat/components/KeyThoughtsList';
+import { SessionSummaryLoading } from '@/features/chat/components/SessionSummaryLoading';
 import { SessionTodoList } from '@/features/chat/components/SessionTodoList';
 import { useSessionSummary } from '@/features/chat/hooks/useChat';
+import { releaseSessionSummaryNavigation } from '@/features/chat/services/sessionSummaryNavigation';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { useBlockTabPressStackReset } from '@/hooks/useBlockTabPressStackReset';
+import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import type { SessionSummaryResponse } from '@/types/chat';
+import { storage } from '@/utils/storage';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -39,6 +42,9 @@ export function SessionSummary() {
   const sessionId = routeSessionId ?? storeSessionId;
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  // SessionEnd와 동일하게 store가 아닌 여기서 읽는다 — store의 characterId는 reset() 시 기본값으로
+  // 되돌아가는데, 나가기 핸들러가 바로 그 reset()을 호출한다
+  const characterId = useSelectedCharacterId();
 
   const { data: summary, isLoading, refetch } = useSessionSummary(sessionId);
   // 직전 세션은 화면에 그리는 대상이 아니라 감정 변화율 계산용 숫자만 필요하다. useSessionSummary로 다시
@@ -103,15 +109,21 @@ export function SessionSummary() {
   }
 
   if (isLoading || !summary || summary.summary_status === 'pending') {
-    return (
-      <View className="flex-1 bg-midnight items-center justify-center">
-        <ChatBackground />
-        <ActivityIndicator color={PrimaryColors.DEFAULT} size="large" />
-        <ThemedText type="small" className="text-fg-muted mt-4">
-          대화 요약을 불러오는 중...
-        </ThemedText>
-      </View>
-    );
+    // 요약이 오래 걸릴 때 사용자가 직접 나가는 유일한 경로. 순서를 바꾸면 안 된다:
+    // ① 이동 claim을 풀어야 이 세션으로 다시 보낼 수 있고 ② 영속 가드를 지워야 채팅 탭 재진입
+    // 리다이렉트가 살아나며 ③ reset()을 빠뜨리면 sessionPhase가 'ended'로 남아 chat/index가
+    // 빈 배경으로 고착된다. ④⑤는 SessionEnd.handleGoHome과 같은 이유로 순서 고정 —
+    // 탭을 먼저 바꾸면 dismissAll()의 타겟이 보장되지 않는다.
+    // 이탈 차단 3중 로직은 그대로 둔다 — dismissAll()은 POP_TO_TOP이라 필터를 통과한다
+    const handleExit = () => {
+      releaseSessionSummaryNavigation(sessionId);
+      void storage.chatRedirectedSessionId.delete();
+      useChatStore.getState().reset();
+      router.dismissAll();
+      router.replace('/(main)/home');
+    };
+
+    return <SessionSummaryLoading characterId={characterId} onExit={handleExit} />;
   }
 
   if (summary.summary_status === 'failed') {
