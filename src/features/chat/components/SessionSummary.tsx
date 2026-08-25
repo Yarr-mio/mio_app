@@ -23,7 +23,6 @@ import {
   exitSummaryToHome,
 } from '@/features/chat/services/sessionSummaryExit';
 import { useChatStore } from '@/features/chat/store/chatStore';
-import { isSessionWithoutUserMessage } from '@/features/chat/utils/sessionActivity';
 import { useBlockTabPressStackReset } from '@/hooks/useBlockTabPressStackReset';
 import { useSelectedCharacterId } from '@/hooks/useSelectedCharacterId';
 import type { SessionSummaryResponse } from '@/types/chat';
@@ -31,7 +30,7 @@ import { readApiHttpStatus } from '@/utils/readApiError';
 import { useIsFocused } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { ScrollView, View } from 'react-native';
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -60,9 +59,6 @@ export function SessionSummary() {
   const { data: summary, isLoading, error, refetch } = useSessionSummary(sessionId);
   // 410 GONE = 서버가 이 세션의 요약을 FAILED로 확정했다는 뜻 — 재조회로 뒤집히지 않는다
   const isSummaryGone = readApiHttpStatus(error) === HTTP_STATUS.GONE;
-  // 이탈 루틴의 reset()이 스토어를 비우면 아래 무입력 판별이 뒤집혀, 화면이 걷히기 전 한 프레임 동안
-  // 안내 화면이 스쳐 보인다 — 판별 결과를 여기 고정해 그 깜빡임을 막는다
-  const wasUntouchedSessionRef = useRef(false);
   // 요약 본문이 실제로 화면에 그려지는 상태 — 대기·실패 화면은 "요약을 봤다"가 아니다
   const isSummaryRendered =
     summary?.summary_status === 'done' || summary?.summary_status === 'viewed';
@@ -107,17 +103,6 @@ export function SessionSummary() {
     }
   }, [sessionId, isFocused]);
 
-  // 대화를 한 줄도 나누지 않은 세션은 애초에 요약할 것이 없다 — 실패를 알릴 필요도 없으므로
-  // 안내 없이 채팅 시작 화면으로 돌려보낸다. isFocused 가드 필수: 이 화면이 블러된 채 스택에 남아
-  // 있을 때 내비게이션이 튀면 사용자가 보고 있는 다른 화면을 덮어쓴다
-  useEffect(() => {
-    if (!sessionId || !isSummaryGone || !isFocused) return;
-    if (!isSessionWithoutUserMessage(sessionId)) return;
-
-    wasUntouchedSessionRef.current = true;
-    exitSummaryToChatStart(sessionId);
-  }, [sessionId, isSummaryGone, isFocused]);
-
   // ⚠️ 발행을 useSessionSummary(폴링 useQuery)에 걸면 요약이 생성될 때까지 한 화면 진입에 수 건이
   // 나간다. 이 이벤트만 뒷단 중복 제거 대상이 아니라(반복 조회가 곧 값) 부푼 값이 그대로
   // Core Action 건수로 들어가므로, 요약 본문 렌더 1회 + sessionId별 가드로 못박는다.
@@ -141,17 +126,11 @@ export function SessionSummary() {
   }
 
   // ⚠️ 실패 분기는 반드시 로딩 분기보다 위에 온다 — 폴링 중 실패하면 직전 pending 응답이 data에
-  // 그대로 남아, 아래로 내리면 영영 도달하지 못하는 죽은 코드가 되고 대기 화면에 고착된다
+  // 그대로 남아, 아래로 내리면 영영 도달하지 못하는 죽은 코드가 되고 대기 화면에 고착된다.
+  //
+  // 무입력 세션은 종료 시점(useChat의 handleSessionEnded)에 걸러져 이 화면까지 오지 않는다 —
+  // 여기까지 왔다는 건 대화가 오갔는데 요약 생성이 실패했다는 뜻이므로 항상 안내를 보여준다
   if (isSummaryGone) {
-    // 무입력 세션은 위 effect가 안내 없이 내보내는 중 — 그 사이 배경만 보여준다
-    if (wasUntouchedSessionRef.current || isSessionWithoutUserMessage(sessionId)) {
-      return (
-        <View className="flex-1 bg-midnight">
-          <ChatBackground />
-        </View>
-      );
-    }
-
     return <SessionSummaryUnavailable onConfirm={() => exitSummaryToChatStart(sessionId)} />;
   }
 
