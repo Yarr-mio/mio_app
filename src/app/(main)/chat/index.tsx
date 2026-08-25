@@ -41,6 +41,14 @@ export default function ChatScreen() {
     const endedSessionId = activeSession.last_ended_session_id;
     const summaryStatus = activeSession.last_summary_status;
 
+    // 방금 시작한 세션은 아직 이 응답에 반영돼 있지 않다 — 세션 생성은 activeSession 캐시를
+    // 무효화하지 않으므로, 스토어가 들고 있는 활성 세션이 여기서 말하는 종료 세션이 아니라면
+    // 이 응답 전체가 낡은 것이다. 아래의 정리·리다이렉트를 그대로 태우면 살아 있는 새 세션을
+    // 리셋하거나(대화 화면이 시작 화면으로 되돌아감) 그 위로 요약 화면을 덮어쓴다
+    if (sessionPhase === 'active' && sessionId !== endedSessionId) {
+      return;
+    }
+
     // 서버가 이미 이 세션을 끝냈는데 로컬 스토어는 여전히 active로 남아있는 경우 정리 —
     // 그래야 요약 확인 후 복귀 시 죽은 세션이 아니라 SessionStart가 보인다
     if (sessionPhase === 'active' && endedSessionId && sessionId === endedSessionId) {
@@ -56,7 +64,9 @@ export default function ChatScreen() {
     // 여기서 reset()을 빠뜨리면 sessionPhase가 'ended'로 남아 이 화면이 아래 빈 배경으로 굳는다 —
     // 리다이렉트를 막는 것과 phase를 되돌리는 것은 한 세트다
     if (summaryStatus === 'failed') {
-      if (isFocused && sessionPhase !== 'idle') {
+      // 되돌릴 대상은 "요약으로 넘어가려던 그 세션"뿐이다 — 대상을 특정하지 않으면 무관한 세션까지
+      // 리셋한다(위 endSession() 블록이 같은 이유로 sessionId를 대조한다)
+      if (isFocused && sessionPhase !== 'idle' && sessionId === endedSessionId) {
         reset();
       }
       return;
