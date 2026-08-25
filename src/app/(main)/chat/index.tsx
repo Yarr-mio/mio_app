@@ -19,6 +19,7 @@ export default function ChatScreen() {
   const sessionId = useChatStore((s) => s.sessionId);
   const startSession = useChatStore((s) => s.startSession);
   const endSession = useChatStore((s) => s.endSession);
+  const reset = useChatStore((s) => s.reset);
 
   useEffect(() => {
     if (!activeSession) return;
@@ -50,6 +51,17 @@ export default function ChatScreen() {
       return;
     }
 
+    // 'failed'는 서버가 요약을 FAILED로 확정한 상태 — 요약 화면으로 보내봐야 GET .../summary가 410으로
+    // 떨어져 대기 화면에 고착된다(API 명세도 done일 때만 요약으로 유도하라고 규정한다).
+    // 여기서 reset()을 빠뜨리면 sessionPhase가 'ended'로 남아 이 화면이 아래 빈 배경으로 굳는다 —
+    // 리다이렉트를 막는 것과 phase를 되돌리는 것은 한 세트다
+    if (summaryStatus === 'failed') {
+      if (isFocused && sessionPhase !== 'idle') {
+        reset();
+      }
+      return;
+    }
+
     // 요약으로 보낸 줄 알았던 세션인데 이 화면이 포커스를 잡고 있다 = 요약 화면이 스택에서 사라졌다는
     // 뜻이다(덮여 있는 동안에는 마운트돼 있어도 포커스가 없다). 아래 'ended' 분기가 빈 배경만 그리는
     // 막다른 길이므로 이동 claim을 풀어 다시 보낼 수 있게 한다. 정상 이탈(SessionEnd → dismissAll →
@@ -72,7 +84,7 @@ export default function ChatScreen() {
 
       await storage.chatRedirectedSessionId.set(endedSessionId);
     })();
-  }, [activeSession, sessionPhase, sessionId, isFocused, startSession, endSession]);
+  }, [activeSession, sessionPhase, sessionId, isFocused, startSession, endSession, reset]);
 
   // sessionPhase가 'ended'인 동안은 요약 화면으로 전환 중인 과도기 상태 — 이 화면이 잠깐이라도
   // 보이면(전환 애니메이션, 뒤로 스와이프 등) "대화 시작하기" 화면이 깜빡이지 않도록 빈 배경만 보여준다

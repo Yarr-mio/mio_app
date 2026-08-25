@@ -74,6 +74,13 @@ export const SPLASH_DURATION_MS = 2500;
 export const SESSION_SUMMARY_POLL_INTERVAL_MS = 3000;
 
 /**
+ * 세션 요약 조회 재시도 횟수 (4xx 제외)
+ * 전역 기본값(queryClient의 retry: 1)과 같은 값이지만, 이 쿼리는 4xx를 재시도에서 빼기 위해
+ * retry를 함수로 직접 지정해야 해서 상수로 둔다
+ */
+export const SESSION_SUMMARY_RETRY_COUNT = 1;
+
+/**
  * 화면에 한 번 그려진 세션 요약을 쿼리 캐시에 유지하는 시간(ms)
  * 다음 세션 요약 화면이 감정 변화율 비교용으로 이 값을 다시 읽는데, 두 세션 사이의 간격이
  * 기본 gcTime(5분)보다 긴 경우가 많아 넉넉하게 24시간으로 잡음

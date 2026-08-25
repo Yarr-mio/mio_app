@@ -819,6 +819,12 @@ export const SummaryLoadingLayout = {
   breathScaleMax: 1.05,
 } as const;
 
+/** 세션 요약 실패 안내 화면 — 레이아웃 className */
+export const SummaryFailureClasses = {
+  root: 'flex-1 bg-midnight items-center justify-center gap-4 px-8',
+  message: 'text-center text-fg-muted leading-6',
+} as const;
+
 /** 세션 요약 대기 화면 — 레이아웃 className */
 export const SummaryLoadingClasses = {
   root: 'flex-1 bg-midnight items-center justify-center gap-8 px-8',

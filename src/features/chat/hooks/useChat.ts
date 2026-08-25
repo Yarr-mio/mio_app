@@ -14,13 +14,14 @@ import {
   HTTP_STATUS,
   SESSION_SUMMARY_CACHE_GC_TIME_MS,
   SESSION_SUMMARY_POLL_INTERVAL_MS,
+  SESSION_SUMMARY_RETRY_COUNT,
 } from '@/constants/config';
 import { AUTH_ROUTES } from '@/constants/routes';
 import { pushSessionSummaryOnce } from '@/features/chat/services/sessionSummaryNavigation';
 import { useChatStore } from '@/features/chat/store/chatStore';
 import { toOpeningChatMessage } from '@/features/chat/utils/chatMessage';
 import type { ActiveSessionResponse } from '@/types/chat';
-import { readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
+import { isClientErrorStatus, readApiErrorCode, readApiHttpStatus } from '@/utils/readApiError';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
@@ -170,8 +171,18 @@ export function useSessionSummary(sessionId: string | null | undefined) {
     queryKey: queryKeys.chat.session(sessionId ?? 'none'),
     queryFn: () => fetchSessionSummary(sessionId as string),
     enabled: !!sessionId,
+    // ⚠️ data만 보면 안 된다 — 배경 리페치가 실패해도 직전 pending 데이터가 그대로 남아(status만
+    // 'error'로 바뀐다) 종료 조건이 영원히 참이 되고, 같은 에러를 주기마다 다시 받는다
     refetchInterval: (query) =>
-      query.state.data?.summary_status === 'pending' ? SESSION_SUMMARY_POLL_INTERVAL_MS : false,
+      query.state.status !== 'error' && query.state.data?.summary_status === 'pending'
+        ? SESSION_SUMMARY_POLL_INTERVAL_MS
+        : false,
+    // 410(요약 생성 영구 실패)처럼 재시도해도 결과가 바뀌지 않는 4xx는 즉시 확정시킨다 —
+    // 전역 retry가 한 번 더 왕복하는 동안 사용자는 대기 화면만 보게 된다
+    retry: (failureCount, error) =>
+      isClientErrorStatus(readApiHttpStatus(error))
+        ? false
+        : failureCount < SESSION_SUMMARY_RETRY_COUNT,
     // 다음 세션 요약 화면이 감정 변화율 비교용으로 이 캐시를 다시 읽을 수 있도록 기본보다 길게 유지
     gcTime: SESSION_SUMMARY_CACHE_GC_TIME_MS,
   });
