@@ -57,8 +57,8 @@ export const REPORT_PENDING_REASON_BODY =
   '체크인, TO-DO, 세션 데이터를 모아 더 정확한 리포트를 만들고 있어요';
 
 export const REPORT_PENDING_CHECKIN_NOTICE: Record<ReportPeriod, string> = {
-  week: '* 체크인 3회 이상 시 리포트가 생성됩니다',
-  month: '* 체크인 7회 이상 시 리포트가 생성됩니다',
+  week: '* 체크인 1회 이상 시 리포트가 생성됩니다',
+  month: '* 체크인 3회 이상 시 리포트가 생성됩니다',
 };
 
 export const REPORT_API_ERROR_CODE = 'SERVER_ERROR';
@@ -75,15 +75,15 @@ export const REPORT_ERROR_HELP_TITLE = '문제가 계속되나요?';
 
 export const REPORT_ERROR_HELP_BODY = '네트워크를 확인하거나\n잠시 후 다시 시도해 주세요';
 
-export const REPORT_REQUIRED_CHECKIN_COUNT = 3;
+export const REPORT_REQUIRED_CHECKIN_COUNT = 1;
 
 /** 월간 리포트 생성에 필요한 최소 체크인 횟수 */
-export const REPORT_REQUIRED_MONTHLY_CHECKIN_COUNT = 7;
+export const REPORT_REQUIRED_MONTHLY_CHECKIN_COUNT = 3;
 
 export const REPORT_INSUFFICIENT_TITLE = '아직 기록이 부족해요';
 
 export const REPORT_INSUFFICIENT_MONTHLY_DATA_MESSAGE =
-  '체크인을 7회 이상 완료하면 월간 리포트를 볼 수 있어요.';
+  '체크인을 3회 이상 완료하면 월간 리포트를 볼 수 있어요.';
 
 export const REPORT_INSUFFICIENT_CHECKIN_CARD_TITLE = {
   week: '이번 주 체크인',
