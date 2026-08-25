@@ -77,11 +77,20 @@ export default function ChatScreen() {
     // 막다른 길이므로 이동 claim을 풀어 다시 보낼 수 있게 한다. 정상 이탈(SessionEnd → dismissAll →
     // 홈)은 탭이 함께 바뀌어 이 화면이 포커스를 얻지 못하고, reset()으로 phase도 'idle'이라 걸리지 않는다.
     // 해제를 await 앞에 두는 것이 중요하다 — 뒤로 옮기면 동시에 도는 effect 둘이 각자 push할 수 있다
-    if (isFocused && sessionPhase === 'ended') {
+    const isSummaryScreenGone = isFocused && sessionPhase === 'ended';
+    if (isSummaryScreenGone) {
       releaseSessionSummaryNavigation(endedSessionId);
     }
 
     void (async () => {
+      // 복구 경로에서는 영속 가드도 함께 지운다 — 메모리 claim만 풀면, 이 화면의 리다이렉트가
+      // 한 번이라도 push했던 세션(아래에서 id를 기록한다)은 그 기록에 막혀 다시 못 보내고
+      // 'ended'의 빈 배경에 그대로 남는다. 두 가드는 한 세트로 다뤄야 한다
+      // (exitSummaryToHome도 같은 이유로 해제와 삭제를 나란히 한다)
+      if (isSummaryScreenGone) {
+        await storage.chatRedirectedSessionId.delete();
+      }
+
       // summary_status가 viewed로 전환되는 시점이 불명확해, 서버 상태와 무관하게 같은 세션으로는
       // 한 번만 리다이렉트하도록 로컬에 마지막으로 보여준 세션 id를 기록해둔다
       const lastRedirectedSessionId = await storage.chatRedirectedSessionId.get();
