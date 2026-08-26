@@ -13,6 +13,7 @@ import {
   HOME_SPEECH_BUBBLE_MESSAGES,
   HOME_TITLES,
 } from '@/constants/home';
+import { REPORT_CARD_TITLES } from '@/constants/report';
 import { HOME_ROUTES } from '@/constants/routes';
 import {
   ButtonColors,
@@ -180,7 +181,7 @@ export function HomeScreen() {
             </HomeCardShell>
 
             <HomeCardShell
-              title="감정 별자리"
+              title={REPORT_CARD_TITLES.constellation}
               headerActionLabel="자세히"
               onHeaderActionPress={() => router.push(HOME_ROUTES.report)}
             >

@@ -141,7 +141,7 @@ export const DISTORTION_TYPE_LABELS: Record<DistortionType, string> = {
 };
 
 export const REPORT_CARD_TITLES = {
-  constellation: '감정 별자리',
+  constellation: '감정 그래프',
   averageScore: '평균 감정 점수',
   distortion: '인지 왜곡 TOP 3',
   todo: 'TO-DO 현황',
